@@ -52,7 +52,29 @@ func _on_SelectNone_pressed():
 	_on_Tree_item_edited()
 
 func _on_CopyJSON_pressed():
-	pass # Replace with function body.
+	var json="[\n"
+	for i in range(Manager.get_test_count()):
+		if (i>0):
+			json+=",\n"
+		var name = Manager.get_test_name(i)
+		var category = Manager.get_test_category(i)
+		var results = Manager.get_test_result(i)
+		json+="{\n"
+		json+='\t"name":"'+name+'",\n'
+		json+='\t"category":"'+category+'"'
+		if results:
+			json+=',\n'
+			json+='\t"render_cpu":'+str(results.render_cpu)+',\n'
+			json+='\t"render_gpu":'+str(results.render_gpu)+',\n'
+			json+='\t"idle":'+str(results.idle)+',\n'
+			json+='\t"physics":'+str(results.physics)+'\n'
+		else:
+			json+='\n'
+		json+="}\n"
+	json+="]\n"
+	DisplayServer.clipboard_set(json)
+		
+	
 
 
 func _on_Run_pressed():
