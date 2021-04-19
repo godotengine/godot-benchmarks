@@ -21,6 +21,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 test_render_cpu = true
+test_render_gpu = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform( 0.933154, 0, 0.359476, -0.242196, 0.738961, 0.628711, -0.265639, -0.673748, 0.689565, 2.09069, 0, 0 )

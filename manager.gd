@@ -9,6 +9,7 @@ class Results:
 	var render_gpu := 0.0
 	var idle := 0.0
 	var physics := 0.0
+	var time := 0.0
 
 var frames_captured := 0
 
@@ -21,7 +22,7 @@ class Test:
 		name = p_name
 		category = p_category
 		path = p_path
-		
+
 var results : Results = null
 
 var tests=[
@@ -30,16 +31,23 @@ var tests=[
 	Test.new("Static Lights Cull","Culling","res://rendering/culling/static_light_cull.tscn"),
 	Test.new("Dynamic Lights Cull","Culling","res://rendering/culling/dynamic_light_cull.tscn"),
 	Test.new("Directional Light Cull","Culling","res://rendering/culling/directional_light_cull.tscn"),
+
+	Test.new("Untyped Int Array","GDScript","res://gdscript/untyped_int_array.tscn"),
+	Test.new("Typed Int Array","GDScript","res://gdscript/typed_int_array.tscn"),
+	Test.new("Untyped String Array","GDScript","res://gdscript/untyped_string_array.tscn"),
+	Test.new("Typed String Array","GDScript","res://gdscript/typed_string_array.tscn"),
+	Test.new("Packed String Array","GDScript","res://gdscript/packed_string_array.tscn"),
 ]
 
 var recording := false
+var begin_time := 0.0
 var remaining_time := 5.0
 
 func is_recording():
 	return recording
-	
+
 func get_test_count() -> int:
-	return tests.size()	
+	return tests.size()
 
 func get_test_name(idx) -> String:
 	return tests[idx].name
@@ -67,11 +75,13 @@ var record_render_gpu := false
 var record_render_cpu := false
 var record_idle := false
 var record_physics := false
+var time_limit := true
 
-func begin_test():	
+func begin_test():
 	results = Results.new()
 	recording = true
 	results = Results.new()
+	begin_time = Time.get_ticks_usec() * 0.001
 	remaining_time = test_time
 	set_process(true)
 	get_tree().change_scene(tests[tests_queue[0]].path)
@@ -82,23 +92,26 @@ func begin_test():
 		record_render_gpu = bm.test_render_gpu
 		record_idle = bm.test_idle
 		record_physics = bm.test_physics
+		time_limit = bm.time_limit
 	else:
 		record_render_cpu = true
 		record_render_gpu = true
 		record_idle = true
 		record_physics = true
-		
+		time_limit = true
+
 	skip_first = true
 	frames_captured = 0
-	
-	
+
+
 func end_test():
 	recording = false
-	results.render_cpu /= float(frames_captured)
-	results.render_gpu /= float(frames_captured)
-	results.idle /= float(frames_captured)
-	results.physics /= float(frames_captured)
-		
+	results.render_cpu /= float(max(1.0, float(frames_captured)))
+	results.render_gpu /= float(max(1.0, float(frames_captured)))
+	results.idle /= float(max(1.0, float(frames_captured)))
+	results.physics /= float(max(1.0, float(frames_captured)))
+	results.time = Time.get_ticks_usec() * 0.001 - begin_time
+
 	tests[tests_queue[0]].results = results
 	results = null
 	tests_queue.pop_front()
@@ -107,11 +120,11 @@ func end_test():
 	else:
 		get_tree().change_scene(return_to_scene)
 		return_to_scene=""
-		
-	
+
+
 func _process(delta):
 	if (not recording):
-		return 
+		return
 	if (skip_first):
 		skip_first=false
 		return
@@ -125,13 +138,16 @@ func _process(delta):
 	if (record_physics):
 		results.physics += 0.0
 	frames_captured += 1
-	remaining_time -= delta
-	if (remaining_time < 0.0):
-		end_test()		
-	
+
+	if time_limit:
+		# Some benchmarks (such as scripting) may not have a time limit.
+		remaining_time -= delta
+		if (remaining_time < 0.0):
+			end_test()
+
 func report_time(delta,render_cpu,render_gpu,idle_cpu,physics_cpu):
 	if (not recording):
-		return		
+		return
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

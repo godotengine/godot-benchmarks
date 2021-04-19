@@ -6,21 +6,22 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
+config_version=5
 
-_global_script_classes=[ {
+_global_script_classes=[{
 "base": "Label",
-"class": @"Benchmark",
-"language": @"GDScript",
+"class": &"Benchmark",
+"language": &"GDScript",
 "path": "res://benchmark.gd"
-} ]
+}]
 _global_script_class_icons={
-@"Benchmark": ""
+"Benchmark": ""
 }
 
 [application]
 
 run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.0")
 
 [autoload]
 

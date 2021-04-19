@@ -2,15 +2,16 @@ extends Panel
 
 var items = []
 func _ready():
-	$Tree.columns = 5
+	$Tree.columns = 6
 	$Tree.set_column_titles_visible(true)
 	$Tree.set_column_title(0,"Test Name")
 	$Tree.set_column_title(1,"Render CPU")
 	$Tree.set_column_title(2,"Render GPU")
 	$Tree.set_column_title(3,"Idle")
 	$Tree.set_column_title(4,"Physics")
+	$Tree.set_column_title(5,"Wall Clock Time")
 
-	var root = $Tree.create_item()	
+	var root = $Tree.create_item()
 	var categories = {}
 	for i in range(Manager.get_test_count()):
 		var name = Manager.get_test_name(i)
@@ -20,7 +21,7 @@ func _ready():
 			var c = $Tree.create_item(root) as TreeItem
 			c.set_text(0,category)
 			categories[category]=c
-			
+
 		var item = $Tree.create_item(categories[category]) as TreeItem
 		item.set_cell_mode(0,TreeItem.CELL_MODE_CHECK)
 		item.set_text(0,name)
@@ -34,7 +35,9 @@ func _ready():
 				item.set_text(3,str(results.idle," ms"))
 			if (results.physics):
 				item.set_text(4,str(results.physics," ms"))
-			
+			if (results.time):
+				item.set_text(5,str(results.time," ms"))
+
 		items.append(item)
 
 
@@ -67,14 +70,15 @@ func _on_CopyJSON_pressed():
 			json+='\t"render_cpu":'+str(results.render_cpu)+',\n'
 			json+='\t"render_gpu":'+str(results.render_gpu)+',\n'
 			json+='\t"idle":'+str(results.idle)+',\n'
-			json+='\t"physics":'+str(results.physics)+'\n'
+			json+='\t"physics":'+str(results.physics)+',\n'
+			json+='\t"time":'+str(results.time)+'\n'
 		else:
 			json+='\n'
 		json+="}\n"
 	json+="]\n"
 	DisplayServer.clipboard_set(json)
-		
-	
+
+
 
 
 func _on_Run_pressed():
@@ -85,10 +89,10 @@ func _on_Run_pressed():
 	for it in items:
 		if (it.is_checked(0)):
 			queue.append(idx)
-		idx+=1			
+		idx+=1
 	if (idx==0):
 		return
-		
+
 	Manager.benchmark(queue,$TestTime.value,"res://main.tscn")
 
 
