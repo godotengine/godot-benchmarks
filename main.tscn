@@ -1,11 +1,11 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://bcw2442lg1ymu"]
 
-[ext_resource path="res://main.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://main.gd" id="1"]
 
 [node name="Main" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource( 1 )
+script = ExtResource( "1" )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -16,8 +16,6 @@ offset_top = 16.0
 offset_right = 146.0
 offset_bottom = 56.0
 text = "Available Benchmarks:"
-structured_text_bidi_override_options = [  ]
-script = null
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -29,7 +27,9 @@ offset_left = 24.0
 offset_top = 40.0
 offset_right = -18.0
 offset_bottom = -45.0
-script = null
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="SelectAll" type="Button" parent="."]
 anchor_left = 1.0
@@ -40,9 +40,8 @@ offset_left = -520.0
 offset_top = -32.0
 offset_right = -438.0
 offset_bottom = -12.0
-rect_pivot_offset = Vector2( 41, 20 )
+rect_pivot_offset = Vector2(41, 20)
 text = "Select All"
-script = null
 
 [node name="SelectNone" type="Button" parent="."]
 anchor_left = 1.0
@@ -53,9 +52,8 @@ offset_left = -424.0
 offset_top = -32.0
 offset_right = -335.0
 offset_bottom = -12.0
-rect_pivot_offset = Vector2( 41, 20 )
+rect_pivot_offset = Vector2(41, 20)
 text = "Select None"
-script = null
 
 [node name="CopyJSON" type="Button" parent="."]
 anchor_left = 1.0
@@ -66,9 +64,8 @@ offset_left = -320.0
 offset_top = -32.0
 offset_right = -162.0
 offset_bottom = -12.0
-rect_pivot_offset = Vector2( 41, 20 )
+rect_pivot_offset = Vector2(41, 20)
 text = "Copy JSON to clipboard"
-script = null
 
 [node name="Run" type="Button" parent="."]
 anchor_left = 1.0
@@ -79,11 +76,10 @@ offset_left = -104.0
 offset_top = -32.0
 offset_right = -22.0
 offset_bottom = -12.0
-rect_pivot_offset = Vector2( 41, 20 )
+rect_pivot_offset = Vector2(41, 20)
 disabled = true
 text = "Run
 "
-script = null
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -94,8 +90,6 @@ offset_top = 572.436
 offset_right = 132.118
 offset_bottom = 612.436
 text = "Test Time (sec)"
-structured_text_bidi_override_options = [  ]
-script = null
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -107,7 +101,6 @@ offset_right = 326.0
 offset_bottom = 592.0
 min_value = 1.0
 value = 8.0
-script = null
 __meta__ = {
 "_edit_use_anchors_": false
 }

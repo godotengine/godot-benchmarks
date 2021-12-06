@@ -22,3 +22,4 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 test_render_cpu = true
+test_render_gpu = true

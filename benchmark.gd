@@ -9,6 +9,7 @@ class_name Benchmark
 @export var test_render_gpu : = false
 @export var test_idle : = false
 @export var test_physics : = false
+@export var time_limit := true
 
 # Called when the node enters the scene tree for the first time.
 func _process(delta):
@@ -18,7 +19,7 @@ func _process(delta):
 	if (test_render_gpu):
 		txt+=str("GPU: ",RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid()) ,"\n")
 	text = txt
-	
+
 func _ready():
 	add_to_group("bechnmark_config")
 	if (Manager.is_recording()):
