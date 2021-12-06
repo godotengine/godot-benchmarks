@@ -3,8 +3,8 @@ extends Node
 const ITERATIONS = 80_000
 
 
-func _ready():
-	var array: PackedStringArray = PackedStringArray()
+func _ready() -> void:
+	var array := PackedStringArray()
 	for i in ITERATIONS:
 		# Insert elements.
 		array.push_back(str("Godot ", i))
