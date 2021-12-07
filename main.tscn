@@ -12,9 +12,10 @@ __meta__ = {
 
 [node name="Label" type="Label" parent="."]
 offset_left = 24.0
-offset_top = 16.0
-offset_right = 146.0
-offset_bottom = 56.0
+offset_top = 12.0
+offset_right = 197.0
+offset_bottom = 52.0
+theme_override_font_sizes/font_size = 16
 text = "Available Benchmarks:"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -37,10 +38,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -520.0
-offset_top = -32.0
-offset_right = -438.0
-offset_bottom = -12.0
+offset_left = -592.0
+offset_top = -38.0
+offset_right = -510.0
+offset_bottom = -9.0
 rect_pivot_offset = Vector2(41, 20)
 text = "Select All"
 
@@ -49,10 +50,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -424.0
-offset_top = -32.0
-offset_right = -335.0
-offset_bottom = -12.0
+offset_left = -499.0
+offset_top = -38.0
+offset_right = -396.0
+offset_bottom = -9.0
 rect_pivot_offset = Vector2(41, 20)
 text = "Select None"
 
@@ -61,10 +62,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -320.0
-offset_top = -32.0
-offset_right = -162.0
-offset_bottom = -12.0
+offset_left = -344.0
+offset_top = -38.0
+offset_right = -153.0
+offset_bottom = -9.0
 rect_pivot_offset = Vector2(41, 20)
 text = "Copy JSON to clipboard"
 
@@ -73,11 +74,12 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -104.0
-offset_top = -32.0
-offset_right = -22.0
-offset_bottom = -12.0
+offset_left = -109.0
+offset_top = -41.0
+offset_right = -27.0
+offset_bottom = -7.0
 rect_pivot_offset = Vector2(41, 20)
+theme_override_font_sizes/font_size = 20
 disabled = true
 text = "Run
 "
@@ -86,22 +88,22 @@ __meta__ = {
 }
 
 [node name="Label2" type="Label" parent="."]
-offset_left = 35.1181
-offset_top = 572.436
-offset_right = 132.118
-offset_bottom = 612.436
+offset_left = 35.0
+offset_top = 563.0
+offset_right = 155.0
+offset_bottom = 603.0
 text = "Test Time (sec)"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="TestTime" type="SpinBox" parent="."]
-offset_left = 144.0
-offset_top = 568.0
-offset_right = 326.0
-offset_bottom = 592.0
+offset_left = 160.0
+offset_top = 560.0
+offset_right = 342.0
+offset_bottom = 593.0
 min_value = 1.0
-value = 8.0
+value = 5.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
