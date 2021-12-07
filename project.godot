@@ -21,6 +21,7 @@ _global_script_class_icons={
 [application]
 
 run/main_scene="res://main.tscn"
+config/icon="res://icon.png"
 config/features=PackedStringArray("4.0")
 
 [autoload]
