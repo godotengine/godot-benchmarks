@@ -55,6 +55,9 @@ func _ready() -> void:
 	# Select all benchmarks since the user most likely wants to run all of them by default.
 	_on_SelectAll_pressed()
 
+	if "--run-benchmarks" in OS.get_cmdline_args():
+		_on_Run_pressed()
+
 
 func _on_SelectAll_pressed() -> void:
 	for item in items:
@@ -69,58 +72,8 @@ func _on_SelectNone_pressed() -> void:
 
 
 func _on_CopyJSON_pressed() -> void:
-	var version_info := Engine.get_version_info()
-	var version_string: String
-	if version_info.patch >= 1:
-		version_string = "v%d.%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.patch, version_info.status, version_info.build]
-	else:
-		version_string = "v%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.status, version_info.build]
-		
-	var dict := {
-		engine = {
-			version = version_string,
-			version_hash = version_info.hash,
-			build_type = "debug" if OS.is_debug_build() else "release",
-		},
-		system = {
-			cpu_architecture = (
-				"x86_64" if OS.has_feature("x86_64")
-				else "arm64" if OS.has_feature("arm64")
-				else "arm" if OS.has_feature("arm")
-				else "x86" if OS.has_feature("x86")
-				else "unknown"
-			),
-			cpu_count = OS.get_processor_count(),
-			gpu_name = RenderingServer.get_video_adapter_name(),
-			gpu_vendor = RenderingServer.get_video_adapter_vendor(),
-		}
-	}
-	
-	var benchmarks := []
-	for i in Manager.get_test_count():
-		var test := {
-			category = Manager.get_test_category(i),
-			name = Manager.get_test_name(i),
-		}
-		
-		var result: Manager.Results = Manager.get_test_result(i)
-		if result:
-			test.results = {
-				render_cpu = snapped(result.render_cpu, 0.01),
-				render_gpu = snapped(result.render_gpu, 0.01),
-				idle = snapped(result.idle, 0.01),
-				physics = snapped(result.physics, 0.01),
-				time = round(result.time),
-			}
-		else:
-			test.results = {}
-			
-		benchmarks.push_back(test)
-	
-	dict.benchmarks = benchmarks
-
 	var json := JSON.new()
-	DisplayServer.clipboard_set(json.stringify(dict, "\t"))
+	DisplayServer.clipboard_set(json.stringify(Manager.get_results_dict(), "\t"))
 
 
 func _on_Run_pressed() -> void:
@@ -134,6 +87,7 @@ func _on_Run_pressed() -> void:
 	if index == 0:
 		return
 
+	print("Running %d benchmarks..." % items.size())
 	Manager.benchmark(queue, $TestTime.value, "res://main.tscn")
 
 

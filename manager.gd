@@ -37,6 +37,8 @@ var recording := false
 var begin_time := 0.0
 var remaining_time := 5.0
 var tests_queue = []
+## Used to display the number of benchmarks that need to be run in the console output and window title.
+var tests_queue_initial_size := 0
 var test_time := 5.0
 var return_to_scene : = ""
 var skip_first := false
@@ -100,12 +102,18 @@ func benchmark(queue: Array, time: float, return_path: String) -> void:
 	if tests_queue.size() == 0:
 		return
 
+	if tests_queue_initial_size == 0:
+		tests_queue_initial_size = queue.size()
+
 	test_time = time
 	return_to_scene = return_path
 	begin_test()
 
 
 func begin_test() -> void:
+	DisplayServer.window_set_title("%d/%d - Running - Godot Benchmarks" % [tests_queue_initial_size - tests_queue.size() + 1, tests_queue_initial_size])
+	print("Running benchmark %d of %d..." % [tests_queue_initial_size - tests_queue.size() + 1, tests_queue_initial_size])
+	
 	results = Results.new()
 	recording = true
 	results = Results.new()
@@ -152,3 +160,60 @@ func end_test() -> void:
 	else:
 		get_tree().change_scene(return_to_scene)
 		return_to_scene = ""
+		DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % tests_queue_initial_size)
+		print("Done running %d benchmarks. Results JSON:\n" % tests_queue_initial_size)
+		print(get_results_dict())
+
+
+func get_results_dict() -> Dictionary:
+	var version_info := Engine.get_version_info()
+	var version_string: String
+	if version_info.patch >= 1:
+		version_string = "v%d.%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.patch, version_info.status, version_info.build]
+	else:
+		version_string = "v%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.status, version_info.build]
+		
+	var dict := {
+		engine = {
+			version = version_string,
+			version_hash = version_info.hash,
+			build_type = "debug" if OS.is_debug_build() else "release",
+		},
+		system = {
+			cpu_architecture = (
+				"x86_64" if OS.has_feature("x86_64")
+				else "arm64" if OS.has_feature("arm64")
+				else "arm" if OS.has_feature("arm")
+				else "x86" if OS.has_feature("x86")
+				else "unknown"
+			),
+			cpu_count = OS.get_processor_count(),
+			gpu_name = RenderingServer.get_video_adapter_name(),
+			gpu_vendor = RenderingServer.get_video_adapter_vendor(),
+		}
+	}
+	
+	var benchmarks := []
+	for i in Manager.get_test_count():
+		var test := {
+			category = Manager.get_test_category(i),
+			name = Manager.get_test_name(i),
+		}
+		
+		var result: Manager.Results = Manager.get_test_result(i)
+		if result:
+			test.results = {
+				render_cpu = snapped(result.render_cpu, 0.01),
+				render_gpu = snapped(result.render_gpu, 0.01),
+				idle = snapped(result.idle, 0.01),
+				physics = snapped(result.physics, 0.01),
+				time = round(result.time),
+			}
+		else:
+			test.results = {}
+			
+		benchmarks.push_back(test)
+	
+	dict.benchmarks = benchmarks
+	
+	return dict
