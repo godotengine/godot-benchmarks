@@ -27,6 +27,7 @@ offset_left = 24.0
 offset_top = 40.0
 offset_right = -18.0
 offset_bottom = -45.0
+hide_root = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
