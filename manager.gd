@@ -42,6 +42,7 @@ var tests_queue_initial_size := 0
 var test_time := 5.0
 var return_to_scene : = ""
 var skip_first := false
+var run_from_cli := false
 
 var record_render_gpu := false
 var record_render_cpu := false
@@ -58,7 +59,7 @@ func _ready():
 func _process(delta: float) -> void:
 	if not recording:
 		return
-		
+
 	if skip_first:
 		skip_first = false
 		return
@@ -112,8 +113,12 @@ func benchmark(queue: Array, time: float, return_path: String) -> void:
 
 func begin_test() -> void:
 	DisplayServer.window_set_title("%d/%d - Running - Godot Benchmarks" % [tests_queue_initial_size - tests_queue.size() + 1, tests_queue_initial_size])
-	print("Running benchmark %d of %d..." % [tests_queue_initial_size - tests_queue.size() + 1, tests_queue_initial_size])
-	
+	print("Running benchmark %d of %d: %s" % [
+			tests_queue_initial_size - tests_queue.size() + 1,
+			tests_queue_initial_size,
+			tests[tests_queue[0]].path.trim_prefix("res://").trim_suffix(".tscn")]
+	)
+
 	results = Results.new()
 	recording = true
 	results = Results.new()
@@ -121,9 +126,9 @@ func begin_test() -> void:
 	remaining_time = test_time
 	set_process(true)
 	get_tree().change_scene(tests[tests_queue[0]].path)
-	
+
 	var benchmark_group := get_tree().get_nodes_in_group("benchmark_config")
-	
+
 	if benchmark_group.size() >= 1:
 		var benchmark: Node = benchmark_group[0]
 		record_render_cpu = benchmark.test_render_cpu
@@ -153,7 +158,7 @@ func end_test() -> void:
 	tests[tests_queue[0]].results = results
 	results = null
 	tests_queue.pop_front()
-	
+
 	# If more tests are still pending, go to the next test.
 	if tests_queue.size() > 0:
 		begin_test()
@@ -161,8 +166,11 @@ func end_test() -> void:
 		get_tree().change_scene(return_to_scene)
 		return_to_scene = ""
 		DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % tests_queue_initial_size)
-		print("Done running %d benchmarks. Results JSON:\n" % tests_queue_initial_size)
+		print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % tests_queue_initial_size)
 		print(get_results_dict())
+		if run_from_cli:
+			# Automatically exit after running benchmarks for automation purposes.
+			get_tree().quit()
 
 
 func get_results_dict() -> Dictionary:
@@ -172,7 +180,7 @@ func get_results_dict() -> Dictionary:
 		version_string = "v%d.%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.patch, version_info.status, version_info.build]
 	else:
 		version_string = "v%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.status, version_info.build]
-		
+
 	var dict := {
 		engine = {
 			version = version_string,
@@ -192,14 +200,14 @@ func get_results_dict() -> Dictionary:
 			gpu_vendor = RenderingServer.get_video_adapter_vendor(),
 		}
 	}
-	
+
 	var benchmarks := []
 	for i in Manager.get_test_count():
 		var test := {
 			category = Manager.get_test_category(i),
 			name = Manager.get_test_name(i),
 		}
-		
+
 		var result: Manager.Results = Manager.get_test_result(i)
 		if result:
 			test.results = {
@@ -211,9 +219,9 @@ func get_results_dict() -> Dictionary:
 			}
 		else:
 			test.results = {}
-			
+
 		benchmarks.push_back(test)
-	
+
 	dict.benchmarks = benchmarks
-	
+
 	return dict
