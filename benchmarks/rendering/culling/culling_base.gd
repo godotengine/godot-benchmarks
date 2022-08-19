@@ -52,7 +52,7 @@ void fragment() {
 		objects.append(ins)
 		object_xforms.append(xf)
 
-func fill_with_omni_lights(amount: int, use_shadows: bool = true) -> void:
+func fill_with_omni_lights(amount: int, use_shadows: bool) -> void:
 	var cam := $Camera3D as Camera3D
 	var zn := 2
 	var zextent := cam.far - zn

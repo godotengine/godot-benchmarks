@@ -51,20 +51,20 @@ The `--include-benchmarks` CLI argument can be used to specify the name.
 The project will print a message to acknowledge that your argument was taken
 into account for filtering benchmarks.
 
-Benchmark names all follow `category/some_name` naming, with `category` being the
-name of the *last* path component (folder) and `some_name` being the name of the
-benchmark's scene file.
+Benchmark names all follow `category/subcategory/some_name` naming, with
+`category/subcategory` being the name *all* path components (folders) and
+`some_name` being the name of the benchmark's scene file without the `.tscn` extension.
 
-```
-godot -- --run-benchmarks --include-benchmarks="culling/static_cull"
+```bash
+godot -- --run-benchmarks --include-benchmarks="rendering/culling/basic_cull"
 ```
 
 #### Run a category of benchmarks
 
 Use glob syntax (with `*` acting as a wildcard) to run a category of benchmarks:
 
-```
---include-benchmarks="culling/static_cull"
+```bash
+--include-benchmarks="rendering/culling/basic_cull"
 ```
 
 You can exclude specific benchmarks using the `--exclude-benchmarks` command line argument.

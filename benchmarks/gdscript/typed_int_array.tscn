@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://7qhexqvebn6s"]
+
+[ext_resource type="Script" path="res://benchmark.gd" id="1"]
+[ext_resource type="Script" path="res://benchmarks/gdscript/typed_int_array.gd" id="2"]
+
+[node name="TypedIntArray" type="Node"]
+script = ExtResource("2")
+
+[node name="Benchmark" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 14.0
+script = ExtResource("1")
+time_limit = false
