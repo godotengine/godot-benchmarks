@@ -10,6 +10,9 @@ var exclude_benchmarks_glob := ""
 func _ready() -> void:
 	# Use a fixed random seed to improve reproducibility of results.
 	seed(0x60d07)
+	
+	# No point in copying JSON without any results yet.
+	$CopyJSON.visible = false
 
 	tree.columns = 6
 	tree.set_column_titles_visible(true)
@@ -42,6 +45,8 @@ func _ready() -> void:
 		item.set_meta("path", path)
 
 		if results:
+			$CopyJSON.visible = true
+
 			if results.render_cpu:
 				item.set_text(1, "%s ms" % str(results.render_cpu).pad_decimals(2))
 			if results.render_gpu:
@@ -117,14 +122,12 @@ func _on_Run_pressed() -> void:
 		if item.is_checked(0):
 			queue.push_back(index)
 			paths.push_back(path)
-			print(queue)
 
 		index += 1
 
 	if index >= 1:
 		print_rich("[b]Running %d benchmarks:[/b] %s " % [queue.size(), ", ".join(paths)])
-
-		Manager.benchmark(queue, $TestTime.value, "res://main.tscn")
+		Manager.benchmark(queue, "res://main.tscn")
 	else:
 		print_rich("[color=red][b]ERROR:[/b] No benchmarks to run.[/color]")
 		if Manager.run_from_cli:

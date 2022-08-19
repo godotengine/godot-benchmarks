@@ -124,7 +124,7 @@ func get_test_path(index: int) -> String:
 	return tests[index].path
 
 
-func benchmark(queue: Array, time: float, return_path: String) -> void:
+func benchmark(queue: Array, return_path: String) -> void:
 	tests_queue = queue
 	if tests_queue.size() == 0:
 		return
@@ -132,7 +132,8 @@ func benchmark(queue: Array, time: float, return_path: String) -> void:
 	if tests_queue_initial_size == 0:
 		tests_queue_initial_size = queue.size()
 
-	test_time = time
+	# Run benchmarks for 5 seconds if they have a time limit.
+	test_time = 5.0
 	return_to_scene = return_path
 	begin_test()
 
