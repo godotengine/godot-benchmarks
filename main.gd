@@ -27,6 +27,7 @@ func _ready() -> void:
 		var test_name := Manager.get_test_name(i)
 		var category := Manager.get_test_category(i)
 		var results := Manager.get_test_result(i)
+		var path := Manager.get_test_path(i)
 
 		if category not in categories:
 			var c := tree.create_item(root)
@@ -37,6 +38,8 @@ func _ready() -> void:
 		item.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
 		item.set_text(0, test_name)
 		item.set_editable(0, true)
+		# Store the full scene path each TreeItem points towards (for include/exclude glob checking).
+		item.set_meta("path", path)
 
 		if results:
 			if results.render_cpu:
@@ -61,13 +64,15 @@ func _ready() -> void:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--include-benchmarks="):
 			var key_value := argument.split("=")
-			# Remove quotes around the argument's value, so that "`culling/*`" becomes `culling/*` for globbing.
+			# Remove quotes around the argument's value, so that "`rendering/culling/*`"
+			# becomes `rendering/culling/*` for globbing.
 			include_benchmarks_glob = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
 			print("Using benchmark include glob specified on command line: %s" % include_benchmarks_glob)
 
 		if argument.begins_with("--exclude-benchmarks="):
 			var key_value := argument.split("=")
-			# Remove quotes around the argument's value, so that "`culling/*`" becomes `culling/*` for globbing.
+			# Remove quotes around the argument's value, so that "`rendering/culling/*`"
+			# becomes `rendering/culling/*` for globbing.
 			exclude_benchmarks_glob = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
 			print("Using benchmark exclude glob specified on command line: %s" % exclude_benchmarks_glob)
 
@@ -99,17 +104,20 @@ func _on_Run_pressed() -> void:
 	var index := 0
 	var paths := []
 	for item in items:
-		var path := str(item.get_parent().get_text(0) + "/" + item.get_text(0)).to_lower().replace(" ", "_")
+		var path: String = item.get_meta("path").trim_prefix("res://benchmarks/").trim_suffix(".tscn")
+		
 		if not include_benchmarks_glob.is_empty():
 			if not path.match(include_benchmarks_glob):
-				continue
+				item.set_checked(0, false)
+				
 		if not exclude_benchmarks_glob.is_empty():
 			if path.match(exclude_benchmarks_glob):
-				continue
+				item.set_checked(0, false)
 
 		if item.is_checked(0):
 			queue.push_back(index)
 			paths.push_back(path)
+			print(queue)
 
 		index += 1
 
@@ -120,8 +128,8 @@ func _on_Run_pressed() -> void:
 	else:
 		print_rich("[color=red][b]ERROR:[/b] No benchmarks to run.[/color]")
 		if Manager.run_from_cli:
-			print("Double-check the syntax of the benchmarks include/exclude glob (quotes are required).")
-			print_rich('Example usage: [code]godot --run-benchmarks --include-benchmarks="culling/*" --exclude-benchmarks="culling/static_cull"[/code]')
+			print("       Double-check the syntax of the benchmarks include/exclude glob (quotes are required).")
+			print_rich('       Example usage: [code]godot -- --run-benchmarks --include-benchmarks="rendering/culling/*" --exclude-benchmarks="rendering/culling/basic_cull"[/code]')
 			get_tree().quit(1)
 
 

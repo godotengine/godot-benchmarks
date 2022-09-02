@@ -1,4 +1,4 @@
-extends "res://rendering/culling/culling_base.gd"
+extends "res://benchmarks/rendering/culling/culling_base.gd"
 
 const NUMBER_OF_OBJECTS = 10_000
 

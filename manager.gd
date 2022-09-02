@@ -17,19 +17,8 @@ class Test:
 		category = p_category
 		path = p_path
 
-var tests := [
-	Test.new("Static Cull", "Culling", "res://rendering/culling/basic_cull.tscn"),
-	Test.new("Dynamic Cull", "Culling", "res://rendering/culling/dynamic_cull.tscn"),
-	Test.new("Static Lights Cull", "Culling", "res://rendering/culling/static_light_cull.tscn"),
-	Test.new("Dynamic Lights Cull", "Culling", "res://rendering/culling/dynamic_light_cull.tscn"),
-	Test.new("Directional Light Cull", "Culling", "res://rendering/culling/directional_light_cull.tscn"),
-
-	Test.new("Untyped Int Array", "GDScript", "res://gdscript/untyped_int_array.tscn"),
-	Test.new("Typed Int Array", "GDScript", "res://gdscript/typed_int_array.tscn"),
-	Test.new("Untyped String Array", "GDScript", "res://gdscript/untyped_string_array.tscn"),
-	Test.new("Typed String Array", "GDScript", "res://gdscript/typed_string_array.tscn"),
-	Test.new("Packed String Array", "GDScript", "res://gdscript/packed_string_array.tscn"),
-]
+# List of benchmarks populated in `_ready()`.
+var tests: Array[Test] = []
 
 var frames_captured := 0
 var results: Results = null
@@ -51,9 +40,42 @@ var record_physics := false
 var time_limit := true
 
 
+## Returns file paths ending with `.tscn` within a folder, recursively.
+func dir_contents(path: String, contents: PackedStringArray = PackedStringArray()) -> PackedStringArray:
+
+	var dir := Directory.new()
+	if dir.open(path) == OK:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if dir.current_is_dir():
+				dir_contents(path.plus_file(file_name), contents)
+			elif file_name.ends_with(".tscn"):
+				contents.push_back(path.plus_file(file_name))
+			file_name = dir.get_next()
+	else:
+		print("An error occurred when trying to access the path: %s" % path)
+
+	return contents
+
+
 func _ready():
 	RenderingServer.viewport_set_measure_render_time(get_tree().root.get_viewport_rid(),true)
 	set_process(false)
+
+	# Register benchmarks automatically based on `.tscn` file paths in the `benchmarks/` folder.
+	# Scene names starting with `_` are excluded, as this denotes an instanced scene that is
+	# referred to in another scene.
+	var benchmark_paths := dir_contents("res://benchmarks/")
+	benchmark_paths.sort()
+	for benchmark_path in benchmark_paths:
+		var benchmark_name := benchmark_path.get_file().get_basename()
+		# Capitalize only after checking whether the name begins with `_`, as `capitalize()`
+		# removes underscores.
+		if not benchmark_name.begins_with("_"):
+			benchmark_name = benchmark_name.capitalize()
+			var category := benchmark_path.get_base_dir().trim_prefix("res://benchmarks/").replace("/", " > ").capitalize()
+			tests.push_back(Test.new(benchmark_name, category, benchmark_path))
 
 
 func _process(delta: float) -> void:
@@ -98,6 +120,10 @@ func get_test_result(index: int) -> Results:
 	return tests[index].results
 
 
+func get_test_path(index: int) -> String:
+	return tests[index].path
+
+
 func benchmark(queue: Array, time: float, return_path: String) -> void:
 	tests_queue = queue
 	if tests_queue.size() == 0:
@@ -116,26 +142,30 @@ func begin_test() -> void:
 	print("Running benchmark %d of %d: %s" % [
 			tests_queue_initial_size - tests_queue.size() + 1,
 			tests_queue_initial_size,
-			tests[tests_queue[0]].path.trim_prefix("res://").trim_suffix(".tscn")]
+			tests[tests_queue[0]].path.trim_prefix("res://benchmarks/").trim_suffix(".tscn")]
 	)
 
 	results = Results.new()
-	recording = true
-	results = Results.new()
-	begin_time = Time.get_ticks_usec() * 0.001
-	remaining_time = test_time
 	set_process(true)
 	get_tree().change_scene(tests[tests_queue[0]].path)
 
-	var benchmark_group := get_tree().get_nodes_in_group("benchmark_config")
+	recording = true
+	begin_time = Time.get_ticks_usec() * 0.001
+	remaining_time = test_time
 
-	if benchmark_group.size() >= 1:
-		var benchmark: Node = benchmark_group[0]
-		record_render_cpu = benchmark.test_render_cpu
-		record_render_gpu = benchmark.test_render_gpu
-		record_idle = benchmark.test_idle
-		record_physics = benchmark.test_physics
-		time_limit = benchmark.time_limit
+	# Wait for the scene tree to be ready (required for `benchmark_config` group to be available).
+	# This requires waiting for 2 frames to work consistently (1 frame is flaky).
+	for i in 2:
+		await get_tree().process_frame
+
+	var benchmark_node := get_tree().get_first_node_in_group("benchmark_config")
+
+	if benchmark_node:
+		record_render_cpu = benchmark_node.test_render_cpu
+		record_render_gpu = benchmark_node.test_render_gpu
+		record_idle = benchmark_node.test_idle
+		record_physics = benchmark_node.test_physics
+		time_limit = benchmark_node.time_limit
 	else:
 		record_render_cpu = true
 		record_render_gpu = true
