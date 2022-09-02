@@ -8,83 +8,77 @@ anchor_bottom = 1.0
 script = ExtResource("1")
 
 [node name="Label" type="Label" parent="."]
-offset_left = 24.0
-offset_top = 12.0
-offset_right = 197.0
-offset_bottom = 52.0
-theme_override_font_sizes/font_size = 16
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 285.0
+offset_bottom = 48.0
 text = "Available Benchmarks:"
+vertical_alignment = 1
 
 [node name="Tree" type="Tree" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 40.0
-offset_right = -18.0
-offset_bottom = -45.0
+offset_left = 10.0
+offset_top = 56.0
+offset_right = -10.0
+offset_bottom = -74.0
+grow_horizontal = 2
+grow_vertical = 2
 hide_root = true
+metadata/_edit_layout_mode = 1
 
 [node name="SelectAll" type="Button" parent="."]
-anchor_left = 1.0
 anchor_top = 1.0
-anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -592.0
-offset_top = -38.0
-offset_right = -510.0
+offset_left = 10.0
+offset_top = -66.0
+offset_right = 158.0
 offset_bottom = -9.0
+grow_vertical = 0
 text = "Select All"
+metadata/_edit_layout_mode = 1
 
 [node name="SelectNone" type="Button" parent="."]
-anchor_left = 1.0
 anchor_top = 1.0
-anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -499.0
-offset_top = -38.0
-offset_right = -396.0
+offset_left = 184.0
+offset_top = -66.0
+offset_right = 365.0
 offset_bottom = -9.0
+grow_vertical = 0
 text = "Select None"
+metadata/_edit_layout_mode = 1
 
 [node name="CopyJSON" type="Button" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -344.0
-offset_top = -38.0
-offset_right = -153.0
+offset_left = -542.0
+offset_top = -66.0
+offset_right = -224.0
 offset_bottom = -9.0
-text = "Copy JSON to clipboard"
+grow_horizontal = 0
+grow_vertical = 0
+text = "Copy JSON to Clipboard"
+metadata/_edit_layout_mode = 1
 
 [node name="Run" type="Button" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -109.0
-offset_top = -41.0
-offset_right = -27.0
-offset_bottom = -7.0
-theme_override_font_sizes/font_size = 20
+offset_left = -182.0
+offset_top = -66.0
+offset_right = -11.0
+offset_bottom = -9.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
 disabled = true
 text = "Run
 "
-
-[node name="Label2" type="Label" parent="."]
-offset_left = 35.0
-offset_top = 563.0
-offset_right = 155.0
-offset_bottom = 603.0
-text = "Test Time (sec)"
-
-[node name="TestTime" type="SpinBox" parent="."]
-offset_left = 160.0
-offset_top = 560.0
-offset_right = 342.0
-offset_bottom = 593.0
-min_value = 1.0
-value = 5.0
+metadata/_edit_layout_mode = 1
 
 [connection signal="item_edited" from="Tree" to="." method="_on_Tree_item_edited"]
 [connection signal="pressed" from="SelectAll" to="." method="_on_SelectAll_pressed"]
