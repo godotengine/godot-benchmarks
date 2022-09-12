@@ -3,11 +3,15 @@
 [ext_resource type="Script" path="res://main.gd" id="1"]
 
 [node name="Main" type="Panel"]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1")
 
 [node name="Label" type="Label" parent="."]
+layout_mode = 0
 offset_left = 20.0
 offset_top = 10.0
 offset_right = 285.0
@@ -16,6 +20,8 @@ text = "Available Benchmarks:"
 vertical_alignment = 1
 
 [node name="Tree" type="Tree" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 10.0
@@ -28,6 +34,8 @@ hide_root = true
 metadata/_edit_layout_mode = 1
 
 [node name="SelectAll" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 10.0
@@ -39,6 +47,8 @@ text = "Select All"
 metadata/_edit_layout_mode = 1
 
 [node name="SelectNone" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 184.0
@@ -50,6 +60,8 @@ text = "Select None"
 metadata/_edit_layout_mode = 1
 
 [node name="CopyJSON" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -64,6 +76,8 @@ text = "Copy JSON to Clipboard"
 metadata/_edit_layout_mode = 1
 
 [node name="Run" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0

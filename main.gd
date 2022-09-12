@@ -10,7 +10,7 @@ var exclude_benchmarks_glob := ""
 func _ready() -> void:
 	# Use a fixed random seed to improve reproducibility of results.
 	seed(0x60d07)
-	
+
 	# No point in copying JSON without any results yet.
 	$CopyJSON.visible = false
 
@@ -69,17 +69,24 @@ func _ready() -> void:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--include-benchmarks="):
 			var key_value := argument.split("=")
-			# Remove quotes around the argument's value, so that "`rendering/culling/*`"
+			# Remove quotes around the argument's value, so that `"rendering/culling/*"`
 			# becomes `rendering/culling/*` for globbing.
 			include_benchmarks_glob = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
 			print("Using benchmark include glob specified on command line: %s" % include_benchmarks_glob)
 
 		if argument.begins_with("--exclude-benchmarks="):
 			var key_value := argument.split("=")
-			# Remove quotes around the argument's value, so that "`rendering/culling/*`"
+			# Remove quotes around the argument's value, so that `"rendering/culling/*"`
 			# becomes `rendering/culling/*` for globbing.
 			exclude_benchmarks_glob = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
 			print("Using benchmark exclude glob specified on command line: %s" % exclude_benchmarks_glob)
+
+		if argument.begins_with("--save-json="):
+			var key_value := argument.split("=")
+			# Remove quotes around the argument's value, so that `"example.json"`
+			# becomes `example.json`.
+			Manager.save_json_to_path = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
+			print("Will save results JSON to: %s" % Manager.save_json_to_path)
 
 	if "--run-benchmarks" in OS.get_cmdline_user_args():
 		Manager.run_from_cli = true
@@ -110,11 +117,11 @@ func _on_Run_pressed() -> void:
 	var paths := []
 	for item in items:
 		var path: String = item.get_meta("path").trim_prefix("res://benchmarks/").trim_suffix(".tscn")
-		
+
 		if not include_benchmarks_glob.is_empty():
 			if not path.match(include_benchmarks_glob):
 				item.set_checked(0, false)
-				
+
 		if not exclude_benchmarks_glob.is_empty():
 			if path.match(exclude_benchmarks_glob):
 				item.set_checked(0, false)
