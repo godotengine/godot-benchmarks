@@ -32,6 +32,7 @@ var test_time := 5.0
 var return_to_scene : = ""
 var skip_first := false
 var run_from_cli := false
+var save_json_to_path := ""
 
 var record_render_gpu := false
 var record_render_cpu := false
@@ -49,9 +50,9 @@ func dir_contents(path: String, contents: PackedStringArray = PackedStringArray(
 		var file_name = dir.get_next()
 		while file_name != "":
 			if dir.current_is_dir():
-				dir_contents(path.plus_file(file_name), contents)
+				dir_contents(path.path_join(file_name), contents)
 			elif file_name.ends_with(".tscn"):
-				contents.push_back(path.plus_file(file_name))
+				contents.push_back(path.path_join(file_name))
 			file_name = dir.get_next()
 	else:
 		print("An error occurred when trying to access the path: %s" % path)
@@ -148,7 +149,7 @@ func begin_test() -> void:
 
 	results = Results.new()
 	set_process(true)
-	get_tree().change_scene(tests[tests_queue[0]].path)
+	get_tree().change_scene_to_file(tests[tests_queue[0]].path)
 
 	recording = true
 	begin_time = Time.get_ticks_usec() * 0.001
@@ -194,11 +195,23 @@ func end_test() -> void:
 	if tests_queue.size() > 0:
 		begin_test()
 	else:
-		get_tree().change_scene(return_to_scene)
+		get_tree().change_scene_to_file(return_to_scene)
 		return_to_scene = ""
 		DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % tests_queue_initial_size)
 		print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % tests_queue_initial_size)
-		print(get_results_dict())
+
+		print("Results JSON:")
+		print("----------------")
+		print(JSON.stringify(get_results_dict()))
+		print("----------------")
+
+		if not save_json_to_path.is_empty():
+			print("Saving JSON output to: %s" % save_json_to_path)
+			var file := File.new()
+			file.open(save_json_to_path, File.WRITE)
+			file.store_string(JSON.stringify(get_results_dict()))
+			file.close()
+
 		if run_from_cli:
 			# Automatically exit after running benchmarks for automation purposes.
 			get_tree().quit()
@@ -219,6 +232,8 @@ func get_results_dict() -> Dictionary:
 			build_type = "debug" if OS.is_debug_build() else "release",
 		},
 		system = {
+			os = OS.get_name(),
+			cpu_name = OS.get_processor_name(),
 			cpu_architecture = (
 				"x86_64" if OS.has_feature("x86_64")
 				else "arm64" if OS.has_feature("arm64")
@@ -239,7 +254,7 @@ func get_results_dict() -> Dictionary:
 			name = Manager.get_test_name(i),
 		}
 
-		var result: Manager.Results = Manager.get_test_result(i)
+		var result: Results = Manager.get_test_result(i)
 		if result:
 			test.results = {
 				render_cpu = snapped(result.render_cpu, 0.01),

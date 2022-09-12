@@ -25,6 +25,8 @@ you can run benchmarks from an editor or export template binary. The project wil
 automatically quit after running benchmarks.
 
 The results JSON is printed to standard output once all benchmarks are run.
+You can save the results JSON to a file using `--save-json="path/to/file.json"`
+(the target folder **must** exist).
 
 > **Note**
 >
