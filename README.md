@@ -47,6 +47,10 @@ You can save the results JSON to a file using `--save-json="path/to/file.json"`
 godot -- --run-benchmarks
 ```
 
+`--json-results-prefix=<string>` can be used to nest individual results within a
+dictionary that has the name `<string>`. This can be used for easier merging of
+separate result runs with `jq`.
+
 #### Run a single benchmark
 
 The `--include-benchmarks` CLI argument can be used to specify the name.

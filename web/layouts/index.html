@@ -1,0 +1,78 @@
+{{ define "main" }}
+<main aria-role="main">
+
+  <p>
+    This page tracks <a href="https://godotengine.org/">Godot Engine</a> performance running on a
+    <a href="https://github.com/godotengine/godot-benchmarks">benchmark suite</a>.
+    Benchmarks are run on a daily basis to track performance improvements and
+    regressions over time.
+  </p>
+
+  <h2>Latest benchmark runs</h2>
+  <ul>
+    {{ range first 100 .Pages.Reverse }}
+    <li><a href="{{ .Permalink }}">{{ index (split (path.BaseName .Permalink) "_") 0 }}
+        <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></li>
+    {{ end }}
+  </ul>
+
+  <hr>
+
+  <h2>Benchmarking machine</h2>
+  <p>
+    To allow for direct GPU access and avoid performance fluctuations due to the
+    use of a shared host, benchmarks are run on a dedicated server with the
+    following hardware:
+  </p>
+  <table class="table-first-column-align-right">
+    <tr>
+      <td>CPU</td>
+      <td>Intel Core i5-12400</td>
+    </tr>
+    <tr>
+      <td>RAM</td>
+      <td>16 GB (2×8 GB DDR4-3000 CL16)</td>
+    </tr>
+    <tr>
+      <td>SSD</td>
+      <td>Samsung 980 500 GB (M.2)</td>
+    </tr>
+<!--
+    <tr>
+      <td>GPU 1 (integrated)</td>
+      <td>🔵 Intel UHD Graphics 730</td>
+    </tr>
+-->
+    <tr>
+      <td>GPU (dedicated)</td>
+      <td>🔴 AMD Radeon RX 550</td>
+    </tr>
+<!--
+    <tr>
+      <td>GPU 3 (dedicated)</td>
+      <td>🟢 NVIDIA GeForce GT 1030</td>
+    </tr>
+-->
+    <tr>
+      <td>Operating system</td>
+      <td>Fedora 39 x86_64</td>
+    </tr>
+  </table>
+  <p>
+    All core and memory clocks are kept at stock frequencies. When running
+    benchmarks (except for compiling the engine), The CPU governor is set to
+    <code>performance</code> to improve result consistency. The OS is kept in a
+    default configuration as closely as posible. The machine is not running any
+    other tasks in parallel – this page is served from GitHub Pages.
+  </p>
+  <p>
+    Benchmarks that make use of the GPU are run 3 times (once on each GPU with a release build).
+    Benchmarks that don't make use of the GPU are run twice (once with a debug build, once with a release build).
+  </p>
+</main>
+{{ end }}
+
+{{ define "javascript" }}
+<script>
+</script>
+{{ end }}

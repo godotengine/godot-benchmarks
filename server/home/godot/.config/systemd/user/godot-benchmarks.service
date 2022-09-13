@@ -1,0 +1,8 @@
+[Service]
+ExecStartPre=/usr/bin/git -C /home/godot/godot-benchmarks/ reset --hard
+ExecStartPre=/usr/bin/git -C /home/godot/godot-benchmarks/ clean -qdfx
+ExecStartPre=/usr/bin/git -C /home/godot/godot-benchmarks/ pull
+ExecStart=/home/godot/godot-benchmarks/run-benchmarks.sh
+
+[Install]
+WantedBy=default.target

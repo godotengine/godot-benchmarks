@@ -37,7 +37,7 @@ func test_ids_from_path(path: String) -> Array[TestID]:
 		for method in bench_script.get_method_list():
 			if not method.name.begins_with(languages[extension]["test_prefix"]):
 				continue
-				
+
 			# This method is a runnable test. Push it onto the result
 			var test_id := TestID.new()
 			test_id.name = method.name.trim_prefix(languages[extension]["test_prefix"])
@@ -45,7 +45,7 @@ func test_ids_from_path(path: String) -> Array[TestID]:
 			test_id.language = extension
 			rv.push_back(test_id)
 
-	return rv		
+	return rv
 
 
 # List of supported languages and their styles.
@@ -55,6 +55,7 @@ var languages := {".gd": {"test_prefix": "benchmark_"}}
 var test_results := {}
 
 var save_json_to_path := ""
+var json_results_prefix := ""
 
 
 ## Recursively walks the given directory and returns all files found
@@ -114,18 +115,21 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 
 	print("Results JSON:")
 	print("----------------")
-	print(JSON.stringify(get_results_dict()))
+	print(JSON.stringify(get_results_dict(json_results_prefix)))
 	print("----------------")
 
 	if not save_json_to_path.is_empty():
 		print("Saving JSON output to: %s" % save_json_to_path)
+		print("Using prefix for results: %s" % json_results_prefix)
 		var file := FileAccess.open(save_json_to_path, FileAccess.WRITE)
-		file.store_string(JSON.stringify(get_results_dict()))
+		file.store_string(JSON.stringify(get_results_dict(json_results_prefix)))
 
 	if return_path:
 		get_tree().change_scene_to_file(return_path)
 	else:
-		get_tree().queue_delete(get_tree())
+		# FIXME: The line below crashes the engine. Commenting it results in a
+		# "ObjectDB instances leaked at exit" warning (but no crash).
+		#get_tree().queue_delete(get_tree())
 		get_tree().quit()
 
 
@@ -198,9 +202,13 @@ func get_result_as_string(test_id: TestID) -> String:
 
 	return JSON.stringify(rd)
 
-func get_test_result_as_dict(test_id: TestID) -> Dictionary:
+func get_test_result_as_dict(test_id: TestID, results_prefix: String = "") -> Dictionary:
 	var result : Results = test_results[test_id]
 	var rv := {}
+	if not results_prefix.is_empty():
+		# Nest the results dictionary with a prefix for easier merging of multiple unrelated runs with `jq`.
+		# For example, this is used on the benchmarks server to merge runs on several GPU vendors into a single JSON file.
+		rv = { results_prefix: {} }
 	if not result:
 		return rv
 
@@ -208,11 +216,16 @@ func get_test_result_as_dict(test_id: TestID) -> Dictionary:
 		if metric.type == TYPE_FLOAT:
 			var m : float = result.get(metric.name)
 			const sig_figs = 4
-			rv[metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
+			if not is_zero_approx(m):
+				# Only store metrics if not 0 to reduce JSON size.
+				if not results_prefix.is_empty():
+					rv[results_prefix][metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
+				else:
+					rv[metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
 
 	return rv
 
-func get_results_dict() -> Dictionary:
+func get_results_dict(results_prefix: String = "") -> Dictionary:
 	var version_info := Engine.get_version_info()
 	var version_string: String
 	if version_info.patch >= 1:
@@ -220,17 +233,13 @@ func get_results_dict() -> Dictionary:
 	else:
 		version_string = "v%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.status, version_info.build]
 
-	var engine_binary := FileAccess.open(OS.get_executable_path(), FileAccess.READ)
+	# Only list information that doesn't change across benchmark runs on different GPUs,
+	# as JSON files are merged together. Otherwise, the fields would overwrite each other
+	# with different information.
 	var dict := {
 		engine = {
 			version = version_string,
 			version_hash = version_info.hash,
-			build_type = (
-					"editor" if OS.has_feature("editor")
-					else "template_debug" if OS.is_debug_build()
-					else "template_release"
-			),
-			binary_size = engine_binary.get_length(),
 		},
 		system = {
 			os = OS.get_name(),
@@ -243,18 +252,25 @@ func get_results_dict() -> Dictionary:
 				else "unknown"
 			),
 			cpu_count = OS.get_processor_count(),
-			gpu_name = RenderingServer.get_video_adapter_name(),
-			gpu_vendor = RenderingServer.get_video_adapter_vendor(),
 		}
 	}
 
 	var benchmarks := []
 	for test_id in get_test_ids():
-		benchmarks.push_back({
-			category = test_id.pretty_category(),
-			name = test_id.pretty_name(),
-			results = get_test_result_as_dict(test_id),
-		})
+		var result_dict := get_test_result_as_dict(test_id, results_prefix)
+		# Only write a dictionary if a benchmark was run for it.
+		var should_write_dict := false
+		if results_prefix.is_empty():
+			should_write_dict = not result_dict.is_empty()
+		else:
+			should_write_dict = not result_dict[results_prefix].is_empty()
+
+		if should_write_dict:
+			benchmarks.push_back({
+				category = test_id.pretty_category(),
+				name = test_id.pretty_name(),
+				results = result_dict,
+			})
 
 	dict.benchmarks = benchmarks
 

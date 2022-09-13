@@ -1,0 +1,6 @@
+[Service]
+ExecStart=xinit
+Restart=always
+
+[Install]
+WantedBy=default.target
