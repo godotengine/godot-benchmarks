@@ -1,0 +1,110 @@
+{{ define "main" }}
+
+<h1>{{ index (split (path.BaseName .Permalink) "_") 0 }}
+  <a href="https://github.com/godotengine/godot/commit/{{ .Params.engine.version_hash }}"><code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></h1>
+
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
+  {{/* Order is inverted for this site. */}}
+  <div>
+    {{with .Site.RegularPages.Next . }}
+    <a href="{{ .RelPermalink }}">« Previous: {{ index (split (path.BaseName .Permalink) "_") 0 }}
+      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a>
+    {{end}}
+  </div>
+  <div style="text-align: right">
+    {{with .Site.RegularPages.Prev . }}
+    <a href="{{ .RelPermalink }}">Next: {{ index (split (path.BaseName .Permalink) "_") 0 }}
+      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code> »</a>
+    {{end}}
+  </div>
+</div>
+
+<h2>System information</h2>
+<table class="table-first-column-align-right">
+  <tr>
+    <td>CPU</td>
+    <td>{{ .Params.system.cpu_name }} ({{ .Params.system.cpu_count }} threads)</td>
+  </tr>
+  <tr>
+    <td>GPU</td>
+    <td>
+      {{ if in .Params.system.gpu_name "AMD" }}
+      🔴
+      {{ else if in .Params.system.gpu_name "Intel" }}
+      🔵
+      {{ else if in .Params.system.gpu_name "NVIDIA" }}
+      🟢
+      {{ end }}
+      {{ .Params.system.gpu_name }}</td>
+  </tr>
+  <tr>
+    <td>Operating system</td>
+    <td>{{ .Params.system.os }}</td>
+  </tr>
+</table>
+
+<h2>Engine information</h2>
+<table class="table-first-column-align-right">
+  <tr>
+    <td>Build type</td>
+    <td>{{ .Params.engine.build_type }}</td>
+  </tr>
+  <tr>
+    <td>Version</td>
+    <td>{{ .Params.engine.version }}
+      <code><a href="https://github.com/godotengine/godot/commit/{{ .Params.engine.version_hash }}">{{ slicestr .Params.engine.version_hash 0 9}}</a></code>
+    </td>
+  </tr>
+  <tr>
+    <td>Binary size</td>
+    <td>{{ mul .Params.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB</td>
+  </tr>
+</table>
+
+<h2>Benchmark results</h2>
+<table class="table-first-column-align-right">
+  <thead>
+    <tr>
+      <td>Name</td>
+      <td>Idle</td>
+      <td>Physics</td>
+      <td>Render CPU</td>
+      <td>Render GPU</td>
+      <td>Wall Clock Time</td>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range .Params.benchmarks }}
+    <tr>
+      <td><sub>{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+      <td>
+        {{ if gt .results.idle 0 }}
+        {{ .results.idle }} <sub>mspf</sub>
+        {{ end }}
+      </td>
+      <td>
+        {{ if gt .results.physics 0 }}
+        {{ .results.physics }} <sub>mspf</sub>
+        {{ end }}
+      </td>
+      <td>
+        {{ if gt .results.render_cpu 0 }}
+        {{ .results.render_cpu }} <sub>mspf</sub>
+        {{ end }}
+      </td>
+      <td>
+        {{ if gt .results.render_gpu 0 }}
+        {{ .results.render_gpu }} <sub>mspf</sub>
+        {{ end }}
+      </td>
+      <td>
+        {{ if gt .results.time 0 }}
+        {{ .results.time }} <sub>ms</sub>
+        {{ end }}
+      </td>
+    </tr>
+    {{ end }}
+  </tbody>
+</table>
+
+{{ end }}

@@ -1,0 +1,6 @@
+baseURL = 'https://godotengine.github.io/godot-benchmarks/'
+languageCode = 'en-us'
+title = 'Godot Benchmarks'
+
+# Disable generation of pages not relevant for godot-benchmarks.
+disableKinds = ['taxonomy', 'term', 'sitemap', 'RSS']

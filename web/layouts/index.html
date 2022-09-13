@@ -1,0 +1,183 @@
+{{ define "main" }}
+<main aria-role="main">
+
+  <p>
+    This page tracks <a href="https://godotengine.org/">Godot Engine</a> performance running on a
+    <a href="https://github.com/godotengine/godot-benchmarks">benchmark suite</a>.
+    Benchmarks are run on a daily basis to track performance improvements and
+    regressions over time.
+  </p>
+
+  <h2>Performance over time</h2>
+  <div id="benchmarks">
+    <template id="benchmark-template">
+      <h4 id="benchmark-header" style="margin-top: -0.25rem; margin-bottom: -0.75rem"></h4>
+      <div id="benchmark-graph"></div>
+      <hr>
+    </template>
+  </div>
+
+  <h2>Engine binary size over time</h2>
+  <div id="benchmark-graph-engine-binary-size"></div>
+
+  <h2>Latest benchmark runs</h2>
+  <ul>
+    {{ range first 100 .Pages.Reverse }}
+    <li><a href="{{ .Permalink }}">{{ index (split (path.BaseName .Permalink) "_") 0 }}
+        <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></li>
+    {{ end }}
+  </ul>
+
+  <hr>
+
+  <h2>Benchmarking machine</h2>
+  <p>
+    To allow for direct GPU access and avoid performance fluctuations due to the
+    use of a shared host, benchmarks are run on a dedicated server with the
+    following hardware:
+  </p>
+  <table class="table-first-column-align-right">
+    <tr>
+      <td>CPU</td>
+      <td>Intel Core i5-12400</td>
+    </tr>
+    <tr>
+      <td>RAM</td>
+      <td>16 GB (2×8 GB DDR4-3000 CL16)</td>
+    </tr>
+    <tr>
+      <td>SSD</td>
+      <td>Samsung 980 500 GB (M.2)</td>
+    </tr>
+    <tr>
+      <td>GPU 1 (integrated)</td>
+      <td>🔵 Intel UHD Graphics 730</td>
+    </tr>
+    <tr>
+      <td>GPU 2 (dedicated)</td>
+      <td>🔴 AMD Radeon RX 6500 XT</td>
+    </tr>
+    <tr>
+      <td>GPU 3 (dedicated)</td>
+      <td>🟢 NVIDIA GeForce GTX 1650</td>
+    </tr>
+    <tr>
+      <td>Operating system</td>
+      <td>Ubuntu Server 22.04 64-bit</td>
+    </tr>
+  </table>
+  <p>
+    All core and memory clocks are kept at stock frequencies. The OS is kept in
+    a default configuration as closely as posible. The machine is not running
+    any other tasks in parallel – this page is served from GitHub Pages.
+  </p>
+  <p>
+    Benchmarks that make use of the GPU are run 3 times (once on each GPU).
+    Benchmarks that don't make use of the GPU are run only once.
+  </p>
+</main>
+{{ end }}
+
+{{ define "javascript" }}
+<script>
+  /**
+   * Returns hash code for the specified string (may be negative).
+   */
+  function hashCode(str) {
+    return str.split('').reduce((prevHash, currVal) =>
+      (((prevHash << 5) - prevHash) + currVal.charCodeAt(0))|0, 0);
+  }
+
+  // Include benchmark data JSON to generate graphs.
+  const benchmarkJSONs = [
+    {{ range .Pages }}{{ .Params | jsonify | safeJS }}, {{ end }}
+  ];
+
+  const benchmarkList = document.getElementById("benchmarks");
+  const template = document.getElementById("benchmark-template");
+  const chartColors = [
+    // https://tailwindcolor.com/ - Brightness 500
+    "#EF4444", "#F97316", "#F59E0B", "#EAB308", "#84CC16", "#22C55E", "#10B981",
+    "#14B8A6", "#06B6D4", "#0EA5E9", "#3B82F6", "#6366F1", "#8B5CF6", "#A855F7",
+    "#D946EF", "#EC4899", "#F43F5E",
+  ];
+  const resultStrings = {
+    render_cpu: "Render CPU",
+    render_gpu: "Render GPU",
+    idle: "Idle",
+    physics: "Physics",
+    time: "Wall Clock Time",
+  };
+
+  benchmarkJSONs[0].benchmarks.forEach(benchmark => {
+    ["render_cpu", "render_gpu", "idle", "physics", "time"].forEach(resultType => {
+      if (benchmark.results[resultType] <= 0) {
+        // Benchmark doesn't have data for the specified result type.
+        return;
+      }
+
+      benchmarkList.append(template.content.cloneNode(true));
+
+      const header = document.getElementById("benchmark-header");
+      // Make ID unique after cloning.
+      header.id += benchmark.category + benchmark.name + resultType;
+      header.innerText = `${benchmark.category} > ${benchmark.name} - ${resultStrings[resultType]}`;
+
+      const graph = document.getElementById("benchmark-graph");
+      // Make ID unique after cloning.
+      graph.id += benchmark.category + benchmark.name + resultType;
+
+      const ourResult = benchmarkJSONs.map(benchmark2 => {
+        const ourBenchmark = benchmark2.benchmarks.filter(benchmark3 => benchmark3.name === benchmark.name);
+        return ourBenchmark[0].results[resultType];
+      });
+
+      const chartOptions = {
+        series: [{
+          data: ourResult,
+          name: `${benchmark.category} > ${benchmark.name} - ${resultType} (mspf)`,
+        }],
+        yaxis: {
+          min: resultType === "time" ? undefined : 0,
+          max: resultType === "time" ? undefined : 33.33,
+          tickAmount: 2,
+        },
+        chart: {
+          id: graph.id,
+          group: "benchmarks",
+          type: "line",
+          height: 200,
+          background: "transparent",
+        },
+        colors: [chartColors[Math.abs(hashCode(benchmark.category + benchmark.name)) % chartColors.length]],
+        theme: {
+          mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+        },
+      };
+
+      new ApexCharts(graph, chartOptions).render();
+    });
+  });
+
+  // Binary size chart is handled separately from benchmark results.
+  const chartOptions = {
+    series: [{
+      data: benchmarkJSONs.map(benchmark => Math.round(benchmark.engine.binary_size * 0.001)),
+      name: `Binary size (KB)`,
+    }],
+    chart: {
+      id: "benchmark-graph-engine-binary-size",
+      group: "benchmarks",
+      type: "line",
+      height: 200,
+      background: "transparent",
+    },
+    colors: ["#909090"],
+    theme: {
+      mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    },
+  };
+
+  new ApexCharts(document.getElementById("benchmark-graph-engine-binary-size"), chartOptions).render();
+</script>
+{{ end }}
