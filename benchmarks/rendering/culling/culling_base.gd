@@ -66,7 +66,7 @@ func fill_with_omni_lights(amount: int, use_shadows: bool) -> void:
 	# Dual parabolid shadows are faster than cubemap shadows.
 	RenderingServer.light_omni_set_shadow_mode(light, RenderingServer.LIGHT_OMNI_SHADOW_DUAL_PARABOLOID)
 	lights.append(light)
-	
+
 	for i in amount:
 		var xf := Transform3D()
 		xf.origin = Vector3(from.x + randf() * extents.x,from.y + randf() * extents.y, - (zn + zextent * randf()))

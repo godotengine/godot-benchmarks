@@ -11,7 +11,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	time_accum += delta * 4.0
-	
+
 	for i in objects.size():
 		var xf = object_xforms[i]
 		var angle = i * PI * 2.0 / objects.size()
