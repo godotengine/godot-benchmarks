@@ -1,5 +1,7 @@
 {{ define "main" }}
 
+{{ with .Resources.GetMatch "cpu_debug.md" }}
+
 <h1>{{ index (split (path.BaseName .Permalink) "_") 0 }}
   <a href="https://github.com/godotengine/godot/commit/{{ .Params.engine.version_hash }}"><code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></h1>
 
@@ -106,5 +108,7 @@
     {{ end }}
   </tbody>
 </table>
+
+{{end}}
 
 {{ end }}

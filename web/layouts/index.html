@@ -23,8 +23,13 @@
   <h2>Latest benchmark runs</h2>
   <ul>
     {{ range first 100 .Pages.Reverse }}
-    <li><a href="{{ .Permalink }}">{{ index (split (path.BaseName .Permalink) "_") 0 }}
-        <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></li>
+    <li>
+        <a href="{{ .Permalink }}">{{ index (split (path.BaseName .Permalink) "_") 0 }}
+        {{/* Engine version hash is the same in all benchmark runs for a given series of benchmarks. */}}
+        {{ with .Resources.GetMatch "cpu_debug.md" }}
+        <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a>
+        {{ end }}
+    </li>
     {{ end }}
   </ul>
 
@@ -89,9 +94,39 @@
   }
 
   // Include benchmark data JSON to generate graphs.
-  const benchmarkJSONs = [
-    {{ range .Pages }}{{ .Params | jsonify | safeJS }}, {{ end }}
-  ];
+  const benchmarkJSONs = {
+    cpu_debug: [
+      {{ range .Pages }}
+      {{ with .Resources.GetMatch "cpu_debug.md" }}
+      {{ .Params | jsonify | safeJS }},
+      {{ end }}
+      {{ end }}
+    ], cpu_release: [
+      {{ range .Pages }}
+      {{ with .Resources.GetMatch "cpu_release.md" }}
+      {{ .Params | jsonify | safeJS }},
+      {{ end }}
+      {{ end }}
+    ], gpu_amd: [
+      {{ range .Pages }}
+      {{ with .Resources.GetMatch "gpu_amd.md" }}
+      {{ .Params | jsonify | safeJS }},
+      {{ end }}
+      {{ end }}
+    ], gpu_intel: [
+      {{ range .Pages }}
+      {{ with .Resources.GetMatch "gpu_intel.md" }}
+      {{ .Params | jsonify | safeJS }},
+      {{ end }}
+      {{ end }}
+    ], gpu_nvidia: [
+      {{ range .Pages }}
+      {{ with .Resources.GetMatch "gpu_nvidia.md" }}
+      {{ .Params | jsonify | safeJS }},
+      {{ end }}
+      {{ end }}
+    ],
+  };
 
   const benchmarkList = document.getElementById("benchmarks");
   const template = document.getElementById("benchmark-template");
@@ -109,7 +144,10 @@
     time: "Wall Clock Time",
   };
 
-  benchmarkJSONs[0].benchmarks.forEach(benchmark => {
+  // TODO: Read other benchmark types than `cpu_debug`.
+  // TODO: Draw `cpu_debug` and `cpu_release` on the same graph.
+  // TODO: Draw `gpu_amd`, `gpu_intel` and `gpu_nvidia` on the same graph.
+  benchmarkJSONs.cpu_debug[0].benchmarks.forEach(benchmark => {
     ["render_cpu", "render_gpu", "idle", "physics", "time"].forEach(resultType => {
       if (benchmark.results[resultType] <= 0) {
         // Benchmark doesn't have data for the specified result type.
@@ -127,7 +165,7 @@
       // Make ID unique after cloning.
       graph.id += benchmark.category + benchmark.name + resultType;
 
-      const ourResult = benchmarkJSONs.map(benchmark2 => {
+      const ourResult = benchmarkJSONs.cpu_debug.map(benchmark2 => {
         const ourBenchmark = benchmark2.benchmarks.filter(benchmark3 => benchmark3.name === benchmark.name);
         return ourBenchmark[0].results[resultType];
       });
@@ -160,9 +198,11 @@
   });
 
   // Binary size chart is handled separately from benchmark results.
+  // TODO: Draw `cpu_debug` and `cpu_release` on the same graph for binary size
+  //       (`cpu_debug` will be an editor build to allow for resource importing).
   const chartOptions = {
     series: [{
-      data: benchmarkJSONs.map(benchmark => Math.round(benchmark.engine.binary_size * 0.001)),
+      data: benchmarkJSONs.cpu_debug.map(benchmark => Math.round(benchmark.engine.binary_size * 0.001)),
       name: `Binary size (KB)`,
     }],
     chart: {
