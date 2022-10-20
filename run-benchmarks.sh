@@ -9,36 +9,53 @@ IFS=$'\n\t'
 export DIR
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [[ ! "${1:-}" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-  echo "Usage: $(basename "$0") <path to full, non-shallow Godot Git clone directory>"
+# Make the command line argument optional without tripping up `set -u`.
+ARG1="${1:-''}"
 
-  # Exit with code 0 only if help was explicitly requested.
-  if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-    exit 0
-  else
-    exit 1
-  fi
+if [[ "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
+  echo "Usage: $0 [--skip-build]"
+  exit
 fi
 
-GODOT_REPO_DIR="$1"
+if [[ ! -d "godot" ]]; then
+  git clone https://github.com/godotengine/godot.git
+fi
 
-pushd "$GODOT_REPO_DIR"
+GODOT_REPO_DIR="$DIR/godot"
 
-# Measure clean build times for debug and release builds (in milliseconds).
-# WARNING: Any untracked files included in the repository will be removed!
-BEGIN="$(date +%s%3N)"
-git clean -dfX
-scons platform=linuxbsd target=template_debug -j$(nproc)
-END="$(date +%s%3N)"
-TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
+if [[ "$ARG1" != "--skip-build" ]]; then
+  pushd "$GODOT_REPO_DIR"
 
-BEGIN="$(date +%s%3N)"
-git clean -dfX
-scons platform=linuxbsd target=template_release optimize=speed use_lto=yes -j$(nproc)
-END="$(date +%s%3N)"
-TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
+  # Measure clean build times for debug and release builds (in milliseconds).
+  # Also create a `.gdignore` file to prevent Godot from importing resources
+  # within the Godot Git clone.
+  # WARNING: Any untracked and ignored files included in the repository will be removed!
+  BEGIN="$(date +%s%3N)"
+  git clean -qdfx --exclude bin
+  if command -v ccache &> /dev/null; then
+    # Clear ccache to avoid skewing the build time results.
+    ccache --clear
+  fi
+  touch .gdignore
+  scons platform=linuxbsd target=template_debug progress=no -j$(nproc)
+  END="$(date +%s%3N)"
+  TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
-popd
+  BEGIN="$(date +%s%3N)"
+  git clean -qdfx --exclude bin
+  if command -v ccache &> /dev/null; then
+    # Clear ccache to avoid skewing the build time results.
+    ccache --clear
+  fi
+  touch .gdignore
+  scons platform=linuxbsd target=template_release optimize=speed use_lto=yes progress=no -j$(nproc)
+  END="$(date +%s%3N)"
+  TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
+
+  popd
+else
+  echo "run-benchmarks: Skipping engine build as requested on the command line."
+fi
 
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
 GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_debug.x86_64"
@@ -46,7 +63,7 @@ GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_debug.x86_64"
 # Path to the Godot release binary to run. Used for CPU release and GPU benchmarks.
 # The release binary is assumed to be the same commit as the debug build.
 # Things will break if this is not the case.
-GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64"
+GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64"
 
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
@@ -69,7 +86,7 @@ OUTPUT_PATH="web/content/${DATE}_${COMMIT_HASH}.md"
 TOTAL=0
 for _ in {0..9}; do
 	BEGIN="$(date +%s%3N)"
-	$GODOT_DEBUG --quit
+	$GODOT_DEBUG --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
@@ -78,7 +95,7 @@ TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 10))"
 TOTAL=0
 for _ in {0..9}; do
 	BEGIN="$(date +%s%3N)"
-	$GODOT_RELEASE --quit
+	$GODOT_RELEASE --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
