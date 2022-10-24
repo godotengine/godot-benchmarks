@@ -15,7 +15,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	time_accum += delta * 4.0
-	
+
 	for i in light_instances.size():
 		var xf = light_instance_xforms[i]
 		var angle = i * PI * 2.0 / light_instances.size()

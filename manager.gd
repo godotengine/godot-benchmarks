@@ -44,8 +44,8 @@ var time_limit := true
 ## Returns file paths ending with `.tscn` within a folder, recursively.
 func dir_contents(path: String, contents: PackedStringArray = PackedStringArray()) -> PackedStringArray:
 
-	var dir := Directory.new()
-	if dir.open(path) == OK:
+	var dir := DirAccess.open(path)
+	if dir:
 		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
@@ -207,10 +207,8 @@ func end_test() -> void:
 
 		if not save_json_to_path.is_empty():
 			print("Saving JSON output to: %s" % save_json_to_path)
-			var file := File.new()
-			file.open(save_json_to_path, File.WRITE)
+			var file := FileAccess.open(save_json_to_path, FileAccess.WRITE)
 			file.store_string(JSON.stringify(get_results_dict()))
-			file.close()
 
 		if run_from_cli:
 			# Automatically exit after running benchmarks for automation purposes.
@@ -225,11 +223,17 @@ func get_results_dict() -> Dictionary:
 	else:
 		version_string = "v%d.%d.%s.%s" % [version_info.major, version_info.minor, version_info.status, version_info.build]
 
+	var engine_binary := FileAccess.open(OS.get_executable_path(), FileAccess.READ)
 	var dict := {
 		engine = {
 			version = version_string,
 			version_hash = version_info.hash,
-			build_type = "debug" if OS.is_debug_build() else "release",
+			build_type = (
+					"editor" if OS.has_feature("editor")
+					else "template_debug" if OS.is_debug_build()
+					else "template_release"
+			),
+			binary_size = engine_binary.get_length(),
 		},
 		system = {
 			os = OS.get_name(),
