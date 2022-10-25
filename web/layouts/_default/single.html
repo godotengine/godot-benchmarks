@@ -1,22 +1,20 @@
 {{ define "main" }}
 
-{{ with .Resources.GetMatch "cpu_debug.md" }}
-
 <h1>{{ index (split (path.BaseName .Permalink) "_") 0 }}
-  <a href="https://github.com/godotengine/godot/commit/{{ .Params.engine.version_hash }}"><code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></h1>
+  <a href="https://github.com/godotengine/godot/commit/{{ .Params.cpu_debug.engine.version_hash }}"><code>{{ slicestr .Params.cpu_debug.engine.version_hash 0 9 }}</code></a></h1>
 
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
   {{/* Order is inverted for this site. */}}
   <div>
     {{with .Site.RegularPages.Next . }}
     <a href="{{ .RelPermalink }}">« Previous: {{ index (split (path.BaseName .Permalink) "_") 0 }}
-      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a>
+      <code>{{ slicestr .Params.cpu_debug.engine.version_hash 0 9 }}</code></a>
     {{end}}
   </div>
   <div style="text-align: right">
     {{with .Site.RegularPages.Prev . }}
     <a href="{{ .RelPermalink }}">Next: {{ index (split (path.BaseName .Permalink) "_") 0 }}
-      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code> »</a>
+      <code>{{ slicestr .Params.cpu_debug.engine.version_hash 0 9 }}</code> »</a>
     {{end}}
   </div>
 </div>
@@ -25,90 +23,140 @@
 <table class="table-first-column-align-right">
   <tr>
     <td>CPU</td>
-    <td>{{ .Params.system.cpu_name }} ({{ .Params.system.cpu_count }} threads)</td>
+    <td>{{ .Params.cpu_debug.system.cpu_name }} ({{ .Params.cpu_debug.system.cpu_count }} threads)</td>
   </tr>
   <tr>
-    <td>GPU</td>
+    <td>GPUs</td>
     <td>
-      {{ if in .Params.system.gpu_name "AMD" }}
-      🔴
-      {{ else if in .Params.system.gpu_name "Intel" }}
-      🔵
-      {{ else if in .Params.system.gpu_name "NVIDIA" }}
-      🟢
-      {{ end }}
-      {{ .Params.system.gpu_name }}</td>
+      🔵 {{ .Params.gpu_intel.system.gpu_name }}<br>
+      🔴 {{ .Params.gpu_amd.system.gpu_name }}<br>
+      🟢 {{ .Params.gpu_nvidia.system.gpu_name }}
+    </td>
   </tr>
   <tr>
     <td>Operating system</td>
-    <td>{{ .Params.system.os }}</td>
+    <td>{{ .Params.cpu_debug.system.os }}</td>
   </tr>
 </table>
 
 <h2>Engine information</h2>
-<table class="table-first-column-align-right">
-  <tr>
-    <td>Build type</td>
-    <td>{{ .Params.engine.build_type }}</td>
-  </tr>
-  <tr>
-    <td>Version</td>
-    <td>{{ .Params.engine.version }}
-      <code><a href="https://github.com/godotengine/godot/commit/{{ .Params.engine.version_hash }}">{{ slicestr .Params.engine.version_hash 0 9}}</a></code>
-    </td>
-  </tr>
-  <tr>
-    <td>Binary size</td>
-    <td>{{ mul .Params.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB</td>
-  </tr>
-</table>
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
+  <table class="table-first-column-align-right">
+    <tr>
+      <td>Build type</td>
+      <td>{{ .Params.cpu_debug.engine.build_type }}</td>
+    </tr>
+    <tr>
+      <td><abbr title="Using GCC compiler">Time to build</abbr></td>
+      <td>{{ .Params.build_times.debug }} seconds</td>
+    </tr>
+    <tr>
+      <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
+      <td>{{ .Params.startup_shutdown_times.debug }} ms</td>
+    </tr>
+    <tr>
+      <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
+      <td>{{ mul .Params.cpu_debug.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB</td>
+    </tr>
+  </table>
+
+  <table class="table-first-column-align-right">
+    <tr>
+      <td>Build type</td>
+      <td>{{ .Params.cpu_release.engine.build_type }}</td>
+    </tr>
+    <tr>
+      <td><abbr title="Using GCC compiler">Time to build</abbr></td>
+      <td>{{ .Params.build_times.release }} seconds</td>
+    </tr>
+    <tr>
+      <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
+      <td>{{ .Params.startup_shutdown_times.debug }} ms</td>
+    </tr>
+    <tr>
+      <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
+      <td>{{ mul .Params.cpu_release.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB</td>
+    </tr>
+  </table>
+</div>
 
 <h2>Benchmark results</h2>
+<em>Lower is better.</em>
+<h3>CPU</h3>
 <table class="table-first-column-align-right">
   <thead>
     <tr>
       <td>Name</td>
       <td>Idle</td>
       <td>Physics</td>
-      <td>Render CPU</td>
-      <td>Render GPU</td>
       <td>Wall Clock Time</td>
     </tr>
   </thead>
   <tbody>
-    {{ range .Params.benchmarks }}
+    {{/* Loop over CPU debug only, but also get data from release CPU runs. */}}
+    {{/* These runs are expected to have the same number of results available. */}}
+    {{ $idx := 0 }}
+    {{ range .Params.cpu_debug.benchmarks }}
     <tr>
       <td><sub>{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
       <td>
         {{ if gt .results.idle 0 }}
-        {{ .results.idle }} <sub>mspf</sub>
+        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.idle }} <sub>mspf</sub><br></span>
+        <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.idle }} <sub>mspf</sub>
         {{ end }}
       </td>
       <td>
         {{ if gt .results.physics 0 }}
-        {{ .results.physics }} <sub>mspf</sub>
-        {{ end }}
-      </td>
-      <td>
-        {{ if gt .results.render_cpu 0 }}
-        {{ .results.render_cpu }} <sub>mspf</sub>
-        {{ end }}
-      </td>
-      <td>
-        {{ if gt .results.render_gpu 0 }}
-        {{ .results.render_gpu }} <sub>mspf</sub>
+        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.physics }} <sub>mspf</sub><br></span>
+        <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.physics }} <sub>mspf</sub>
         {{ end }}
       </td>
       <td>
         {{ if gt .results.time 0 }}
-        {{ .results.time }} <sub>ms</sub>
+        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.time }} <sub>ms</sub><br></span>
+        <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.time }} <sub>ms</sub>
         {{ end }}
       </td>
     </tr>
+    {{ $idx = add $idx 1}}
     {{ end }}
   </tbody>
 </table>
 
-{{end}}
+<h3>GPU</h3>
+<table class="table-first-column-align-right">
+  <thead>
+    <tr>
+      <td>Name</td>
+      <td>Render CPU</td>
+      <td>Render GPU</td>
+    </tr>
+  </thead>
+  <tbody>
+    {{/* Loop over GPU AMD only, but also get data from Intel and NVIDIA GPU runs. */}}
+    {{/* These runs are expected to have the same number of results available. */}}
+    {{ $idx := 0 }}
+    {{ range .Params.gpu_amd.benchmarks }}
+    <tr>
+      <td><sub>{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+      <td>
+        {{ if gt .results.render_cpu 0 }}
+        🔵 {{ (index $.Params.gpu_intel.benchmarks $idx).results.render_cpu }} <sub>mspf</sub><br>
+        🔴 {{ .results.render_cpu }} <sub>mspf</sub><br>
+        🟢 {{ (index $.Params.gpu_nvidia.benchmarks $idx).results.render_cpu }} <sub>mspf</sub>
+        {{ end }}
+      </td>
+      <td>
+        {{ if gt .results.render_gpu 0 }}
+        🔵 {{ (index $.Params.gpu_intel.benchmarks $idx).results.render_gpu }} <sub>mspf</sub><br>
+        🔴 {{ .results.render_gpu }} <sub>mspf</sub><br>
+        🟢 {{ (index $.Params.gpu_nvidia.benchmarks $idx).results.render_gpu }} <sub>mspf</sub>
+        {{ end }}
+      </td>
+    </tr>
+    {{ $idx = add $idx 1}}
+    {{ end }}
+  </tbody>
+</table>
 
 {{ end }}

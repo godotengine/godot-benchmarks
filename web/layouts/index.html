@@ -8,28 +8,46 @@
     regressions over time.
   </p>
 
-  <h2>Performance over time</h2>
-  <div id="benchmarks">
-    <template id="benchmark-template">
-      <h4 id="benchmark-header" style="margin-top: -0.25rem; margin-bottom: -0.75rem"></h4>
-      <div id="benchmark-graph"></div>
-      <hr>
-    </template>
-  </div>
 
-  <h2>Engine binary size over time</h2>
-  <div id="benchmark-graph-engine-binary-size"></div>
+  <h2>
+    <details open>
+      <summary>Performance over time</summary>
+      <div id="benchmarks">
+        <template id="benchmark-template">
+          <h4 id="benchmark-header" style="margin-top: -0.25rem; margin-bottom: -0.75rem"></h4>
+          <div id="benchmark-graph"></div>
+          <hr>
+        </template>
+      </div>
+    </details>
+  </h2>
+
+  <h2>
+    <details open>
+      <summary><abbr title="Measured on an empty project">Engine startup + shutdown time over time</abbr></summary>
+      <div id="benchmark-graph-engine-startup-shutdown-times"></div>
+  </h2>
+
+
+  <h2>
+    <details open>
+      <summary><abbr title="Using GCC compiler">Engine build times over time</abbr></summary>
+      <div id="benchmark-graph-engine-build-times"></div>
+    </details>
+  </h2>
+
+  <h2>
+    <details open>
+      <summary><abbr title="Measured after stripping debug symbols">Engine binary size over time</abbr></summary>
+      <div id="benchmark-graph-engine-binary-size"></div>
+    </details>
+  </h2>
 
   <h2>Latest benchmark runs</h2>
   <ul>
     {{ range first 100 .Pages.Reverse }}
-    <li>
-        <a href="{{ .Permalink }}">{{ index (split (path.BaseName .Permalink) "_") 0 }}
-        {{/* Engine version hash is the same in all benchmark runs for a given series of benchmarks. */}}
-        {{ with .Resources.GetMatch "cpu_debug.md" }}
-        <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a>
-        {{ end }}
-    </li>
+    <li><a href="{{ .Permalink }}">{{ index (split (path.BaseName .Permalink) "_") 0 }}
+        <code>{{ slicestr .Params.cpu_debug.engine.version_hash 0 9 }}</code></a></li>
     {{ end }}
   </ul>
 
@@ -74,7 +92,7 @@
   <p>
     All core and memory clocks are kept at stock frequencies. The OS is kept in
     a default configuration as closely as posible. The machine is not running
-    any other tasks in parallel – this page is served from GitHub Pages.
+    any other tasks in parallel – this page is served from GitHub Pages.
   </p>
   <p>
     Benchmarks that make use of the GPU are run 3 times (once on each GPU).
@@ -94,48 +112,12 @@
   }
 
   // Include benchmark data JSON to generate graphs.
-  const benchmarkJSONs = {
-    cpu_debug: [
-      {{ range .Pages }}
-      {{ with .Resources.GetMatch "cpu_debug.md" }}
-      {{ .Params | jsonify | safeJS }},
-      {{ end }}
-      {{ end }}
-    ], cpu_release: [
-      {{ range .Pages }}
-      {{ with .Resources.GetMatch "cpu_release.md" }}
-      {{ .Params | jsonify | safeJS }},
-      {{ end }}
-      {{ end }}
-    ], gpu_amd: [
-      {{ range .Pages }}
-      {{ with .Resources.GetMatch "gpu_amd.md" }}
-      {{ .Params | jsonify | safeJS }},
-      {{ end }}
-      {{ end }}
-    ], gpu_intel: [
-      {{ range .Pages }}
-      {{ with .Resources.GetMatch "gpu_intel.md" }}
-      {{ .Params | jsonify | safeJS }},
-      {{ end }}
-      {{ end }}
-    ], gpu_nvidia: [
-      {{ range .Pages }}
-      {{ with .Resources.GetMatch "gpu_nvidia.md" }}
-      {{ .Params | jsonify | safeJS }},
-      {{ end }}
-      {{ end }}
-    ],
-  };
+  const benchmarkJSONs = [
+    {{ range .Pages }}{{ .Params | jsonify | safeJS }}, {{ end }}
+  ];
 
   const benchmarkList = document.getElementById("benchmarks");
   const template = document.getElementById("benchmark-template");
-  const chartColors = [
-    // https://tailwindcolor.com/ - Brightness 500
-    "#EF4444", "#F97316", "#F59E0B", "#EAB308", "#84CC16", "#22C55E", "#10B981",
-    "#14B8A6", "#06B6D4", "#0EA5E9", "#3B82F6", "#6366F1", "#8B5CF6", "#A855F7",
-    "#D946EF", "#EC4899", "#F43F5E",
-  ];
   const resultStrings = {
     render_cpu: "Render CPU",
     render_gpu: "Render GPU",
@@ -144,12 +126,17 @@
     time: "Wall Clock Time",
   };
 
-  // TODO: Read other benchmark types than `cpu_debug`.
-  // TODO: Draw `cpu_debug` and `cpu_release` on the same graph.
-  // TODO: Draw `gpu_amd`, `gpu_intel` and `gpu_nvidia` on the same graph.
-  benchmarkJSONs.cpu_debug[0].benchmarks.forEach(benchmark => {
+  // Collect benchmark types from distinct runs. CPU release, GPU Intel and GPU
+  // NVIDIA all use the same benchmark types as the CPU debug and GPU AMD runs.
+  const benchmarkTypes = [...benchmarkJSONs[0].cpu_debug.benchmarks, ...benchmarkJSONs[0].gpu_amd.benchmarks];
+
+  // Hacky way to get results for CPU release and GPU NVIDIA to show up in the same graph.
+  // TODO: Add GPU Intel graphs.
+  const benchmarkTypesAlt = [...benchmarkJSONs[0].cpu_release.benchmarks, ...benchmarkJSONs[0].gpu_nvidia.benchmarks];
+
+  benchmarkTypes.forEach(benchmark => {
     ["render_cpu", "render_gpu", "idle", "physics", "time"].forEach(resultType => {
-      if (benchmark.results[resultType] <= 0) {
+      if (benchmark.results[resultType] === undefined) {
         // Benchmark doesn't have data for the specified result type.
         return;
       }
@@ -165,29 +152,50 @@
       // Make ID unique after cloning.
       graph.id += benchmark.category + benchmark.name + resultType;
 
-      const ourResult = benchmarkJSONs.cpu_debug.map(benchmark2 => {
-        const ourBenchmark = benchmark2.benchmarks.filter(benchmark3 => benchmark3.name === benchmark.name);
+      const ourResult = benchmarkJSONs.map(benchmark2 => {
+        const ourBenchmark = benchmarkTypes.filter(benchmark3 => benchmark3.name === benchmark.name);
         return ourBenchmark[0].results[resultType];
       });
 
+      const ourResultAlt = benchmarkJSONs.map(benchmark2 => {
+        const ourBenchmark = benchmarkTypesAlt.filter(benchmark3 => benchmark3.name === benchmark.name);
+        return ourBenchmark[0].results[resultType];
+      });
+
+      // Hacky way to detect whether the benchmark is GPU-related or not.
+      // This is not guaranteed to be 100% correct for all benchmarks, but it should be most of the time.
+      const isGpu = resultType === "render_cpu" || resultType === "render_gpu";
+
       const chartOptions = {
-        series: [{
-          data: ourResult,
-          name: `${benchmark.category} > ${benchmark.name} - ${resultType} (mspf)`,
-        }],
+        series: [
+          {
+            data: ourResult,
+            name: `${isGpu ? 'AMD' : 'Debug'} ${resultStrings[resultType]} (mspf)`,
+          },
+          {
+            data: ourResultAlt,
+            name: `${isGpu ? 'NVIDIA' : 'Release'} ${resultStrings[resultType]} (mspf)`,
+          },
+        ],
+        xaxis: {
+          categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
+        },
         yaxis: {
           min: resultType === "time" ? undefined : 0,
-          max: resultType === "time" ? undefined : 33.33,
+          max: resultType === "time" ? undefined : 33.33,  // 30 FPS
           tickAmount: 2,
         },
         chart: {
           id: graph.id,
           group: "benchmarks",
           type: "line",
-          height: 200,
+          height: 220,
           background: "transparent",
         },
-        colors: [chartColors[Math.abs(hashCode(benchmark.category + benchmark.name)) % chartColors.length]],
+        colors: [
+          isGpu ? '#f44336' : '#909090',
+          isGpu ? '#7cb342' : '#806040',
+        ],
         theme: {
           mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
         },
@@ -197,27 +205,106 @@
     });
   });
 
-  // Binary size chart is handled separately from benchmark results.
-  // TODO: Draw `cpu_debug` and `cpu_release` on the same graph for binary size
-  //       (`cpu_debug` will be an editor build to allow for resource importing).
-  const chartOptions = {
-    series: [{
-      data: benchmarkJSONs.cpu_debug.map(benchmark => Math.round(benchmark.engine.binary_size * 0.001)),
-      name: `Binary size (KB)`,
-    }],
+  // Engine startup/shutdown times chart is handled separately from benchmark results.
+  const chartOptionsStartupShutdownTimes = {
+    series: [
+      {
+        name: "Debug template startup + shutdown time (seconds)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.startup_shutdown_times.debug)),
+      },
+      {
+        name: "Release template startup + shutdown time (seconds)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.startup_shutdown_times.release)),
+      },
+    ],
+    xaxis: {
+      categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
+    },
+    yaxis: {
+      min: 300,
+      max: 1900,
+      tickAmount: 4,
+    },
     chart: {
-      id: "benchmark-graph-engine-binary-size",
+      id: "benchmark-graph-engine-startup-shutdown-times",
       group: "benchmarks",
       type: "line",
-      height: 200,
+      height: 220,
       background: "transparent",
     },
-    colors: ["#909090"],
+    colors: ["#909090", "#806040"],
     theme: {
       mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     },
   };
+  new ApexCharts(document.getElementById("benchmark-graph-engine-startup-shutdown-times"), chartOptionsStartupShutdownTimes).render();
 
-  new ApexCharts(document.getElementById("benchmark-graph-engine-binary-size"), chartOptions).render();
+  // Engine build times chart is handled separately from benchmark results.
+  const chartOptionsBuildTimes = {
+    series: [
+      {
+        name: "Debug template build time (seconds)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_times.debug)),
+      },
+      {
+        name: "Release template build time (seconds)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_times.release)),
+      },
+    ],
+    xaxis: {
+      categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
+    },
+    yaxis: {
+      min: 100,
+      max: 700,
+      tickAmount: 4,
+    },
+    chart: {
+      id: "benchmark-graph-engine-build-times",
+      group: "benchmarks",
+      type: "line",
+      height: 220,
+      background: "transparent",
+    },
+    colors: ["#909090", "#806040"],
+    theme: {
+      mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    },
+  };
+  new ApexCharts(document.getElementById("benchmark-graph-engine-build-times"), chartOptionsBuildTimes).render();
+
+  // Binary size chart is handled separately from benchmark results.
+  const chartOptionsBinarySize = {
+    series: [
+      {
+        name: "Debug template binary size (KB)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.cpu_debug.engine.binary_size * 0.001)),
+      },
+      {
+        name: "Release template binary size (KB)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.cpu_release.engine.binary_size * 0.001)),
+      },
+    ],
+    xaxis: {
+      categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
+    },
+    yaxis: {
+      min: 60_000,
+      max: 80_000,
+      tickAmount: 4,
+    },
+    chart: {
+      id: "benchmark-graph-engine-binary-size",
+      group: "benchmarks",
+      type: "line",
+      height: 220,
+      background: "transparent",
+    },
+    colors: ["#909090", "#806040"],
+    theme: {
+      mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    },
+  };
+  new ApexCharts(document.getElementById("benchmark-graph-engine-binary-size"), chartOptionsBinarySize).render();
 </script>
 {{ end }}

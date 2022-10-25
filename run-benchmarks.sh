@@ -3,6 +3,7 @@
 #
 # NOTE: This script is tailored for the dedicated benchmarking server.
 #       It is not meant for local usage or experimentation.
+#       `sudo` must be able to work non-interactively for the script to succeed.
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -22,6 +23,13 @@ if [[ ! -d "godot" ]]; then
 fi
 
 GODOT_REPO_DIR="$DIR/godot"
+
+# Use `performance` governor, disable turbo mode and hyperthreading to reduce fluctuations in CPU performance.
+for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+  echo performance | sudo tee "$core"
+done
+echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
+echo off | sudo tee /sys/devices/system/cpu/smt/control
 
 if [[ "$ARG1" != "--skip-build" ]]; then
   pushd "$GODOT_REPO_DIR"
@@ -65,6 +73,9 @@ GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_debug.x86_64"
 # Things will break if this is not the case.
 GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64"
 
+# Strip debugging symbols for fair binary size comparison.
+strip "$GODOT_DEBUG" "$GODOT_RELEASE"
+
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
 OUTPUT_PATH="web/content/${DATE}_${COMMIT_HASH}.md"
@@ -82,24 +93,28 @@ OUTPUT_PATH="web/content/${DATE}_${COMMIT_HASH}.md"
 # Figure out if only the `benchmarks` section can be added to each type, with
 # `engine` and `system` being top-level to reduce data duplication (and with all GPUs listed).
 
-# Measure average engine startup + shutdown times over 10 runs (in milliseconds).
+# Measure average engine startup + shutdown times over 20 runs (in milliseconds).
+# Perform a warmup run first.
+$GODOT_DEBUG --quit || true
 TOTAL=0
-for _ in {0..9}; do
+for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
 	$GODOT_DEBUG --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
-TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 10))"
+TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 20))"
 
+# Perform a warmup run first.
+$GODOT_RELEASE --quit || true
 TOTAL=0
-for _ in {0..9}; do
+for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
 	$GODOT_RELEASE --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
-TIME_TO_STARTUP_SHUTDOWN_RELEASE="$((TOTAL / 10))"
+TIME_TO_STARTUP_SHUTDOWN_RELEASE="$((TOTAL / 20))"
 
 # Run CPU benchmarks.
 $GODOT_DEBUG -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md"
@@ -112,7 +127,7 @@ $GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-jso
 #$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_nvidia.md"
 
 mkdir -p "$(dirname "$OUTPUT_PATH")"
-cat > "$OUTPUT_PATH.md" << EOF
+cat > "$OUTPUT_PATH" << EOF
 {
   "cpu_debug": $(cat /tmp/cpu_debug.md),
   "cpu_release": $(cat /tmp/cpu_release.md),
@@ -144,3 +159,10 @@ git commit --amend --no-edit
 git push -f
 
 popd
+
+# Restore original CPU frequency scaling, turbo mode and hypertheading.
+for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+  echo powersave | sudo tee "$core"
+done
+echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
+echo on | sudo tee /sys/devices/system/cpu/smt/control
