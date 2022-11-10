@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://dlmdxgjc64h6r"]
+
+[ext_resource type="Script" path="res://benchmarks/rendering/sprite_2d/50_sprite_2d.gd" id="1_rmwpg"]
+[ext_resource type="Script" path="res://benchmark.gd" id="2_itud2"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_rmwpg")
+
+[node name="Benchmark" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 34.0
+script = ExtResource("2_itud2")
+test_render_cpu = true
+test_render_gpu = true
+
+[node name="Camera2D" type="Camera2D" parent="."]

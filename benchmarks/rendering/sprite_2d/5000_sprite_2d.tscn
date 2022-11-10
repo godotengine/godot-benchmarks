@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://cygi7awmf5lba"]
+
+[ext_resource type="Script" path="res://benchmark.gd" id="1_hf23d"]
+[ext_resource type="Script" path="res://benchmarks/rendering/sprite_2d/5000_sprite_2d.gd" id="1_prwy7"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_prwy7")
+
+[node name="Benchmark" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 34.0
+script = ExtResource("1_hf23d")
+test_render_cpu = true
+test_render_gpu = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
