@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://baaw7jdfbtm21"]
+
+[ext_resource type="Script" path="res://benchmarks/rendering/polygon_2d/100_polygon_2d.gd" id="1_26bs8"]
+[ext_resource type="Script" path="res://benchmark.gd" id="1_64c3n"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_26bs8")
+
+[node name="Benchmark" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 34.0
+script = ExtResource("1_64c3n")
+test_render_cpu = true
+test_render_gpu = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
