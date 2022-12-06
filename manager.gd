@@ -20,17 +20,7 @@ class Test:
 # List of benchmarks populated in `_ready()`.
 var tests: Array[Test] = []
 
-var frames_captured := 0
-var results: Results = null
 var recording := false
-var begin_time := 0.0
-var remaining_time := 5.0
-var tests_queue = []
-## Used to display the number of benchmarks that need to be run in the console output and window title.
-var tests_queue_initial_size := 0
-var test_time := 5.0
-var return_to_scene : = ""
-var skip_first := false
 var run_from_cli := false
 var save_json_to_path := ""
 
@@ -79,32 +69,6 @@ func _ready():
 			tests.push_back(Test.new(benchmark_name, category, benchmark_path))
 
 
-func _process(delta: float) -> void:
-	if not recording:
-		return
-
-	if skip_first:
-		skip_first = false
-		return
-
-	if record_render_cpu:
-		results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
-	if record_render_gpu:
-		results.render_gpu += RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid())
-	if record_idle:
-		results.idle += 0.0
-	if record_physics:
-		results.physics += 0.0
-
-	frames_captured += 1
-
-	if time_limit:
-		# Some benchmarks (such as scripting) may not have a time limit.
-		remaining_time -= delta
-		if remaining_time < 0.0:
-			end_test()
-
-
 func get_test_count() -> int:
 	return tests.size()
 
@@ -125,35 +89,41 @@ func get_test_path(index: int) -> String:
 	return tests[index].path
 
 
-func benchmark(queue: Array, return_path: String) -> void:
-	tests_queue = queue
-	if tests_queue.size() == 0:
-		return
+func benchmark(test_indices: Array, return_path: String) -> void:
+	for i in range(test_indices.size()):
+		DisplayServer.window_set_title("%d/%d - Running - Godot Benchmarks" % [i + 1, test_indices.size()])
+		print("Running benchmark %d of %d: %s" % [
+				i + 1, test_indices.size(),
+				tests[test_indices[i]].path.trim_prefix("res://benchmarks/").trim_suffix(".tscn")
+		])
+		await run_test(test_indices[i])
 
-	if tests_queue_initial_size == 0:
-		tests_queue_initial_size = queue.size()
+	get_tree().change_scene_to_file(return_path)
+	DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % test_indices.size())
+	print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % test_indices.size())
 
-	# Run benchmarks for 5 seconds if they have a time limit.
-	test_time = 5.0
-	return_to_scene = return_path
-	begin_test()
+	print("Results JSON:")
+	print("----------------")
+	print(JSON.stringify(get_results_dict()))
+	print("----------------")
+
+	if not save_json_to_path.is_empty():
+		print("Saving JSON output to: %s" % save_json_to_path)
+		var file := FileAccess.open(save_json_to_path, FileAccess.WRITE)
+		file.store_string(JSON.stringify(get_results_dict()))
+
+	if run_from_cli:
+		# Automatically exit after running benchmarks for automation purposes.
+		get_tree().quit()
 
 
-func begin_test() -> void:
-	DisplayServer.window_set_title("%d/%d - Running - Godot Benchmarks" % [tests_queue_initial_size - tests_queue.size() + 1, tests_queue_initial_size])
-	print("Running benchmark %d of %d: %s" % [
-			tests_queue_initial_size - tests_queue.size() + 1,
-			tests_queue_initial_size,
-			tests[tests_queue[0]].path.trim_prefix("res://benchmarks/").trim_suffix(".tscn")]
-	)
-
-	results = Results.new()
+func run_test(index: int) -> void:
+	var results := Results.new()
+	var begin_time := Time.get_ticks_usec()
 	set_process(true)
-	get_tree().change_scene_to_file(tests[tests_queue[0]].path)
-
 	recording = true
-	begin_time = Time.get_ticks_usec() * 0.001
-	remaining_time = test_time
+
+	get_tree().change_scene_to_file(tests[index].path)
 
 	# Wait for the scene tree to be ready (required for `benchmark_config` group to be available).
 	# This requires waiting for 2 frames to work consistently (1 frame is flaky).
@@ -175,45 +145,39 @@ func begin_test() -> void:
 		record_physics = true
 		time_limit = true
 
-	skip_first = true
-	frames_captured = 0
+	var frames_captured := 0
+	while recording:
+		#Skip first frame
+		await get_tree().process_frame
 
+		if record_render_cpu:
+			results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
+		if record_render_gpu:
+			results.render_gpu += RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid())
+		if record_idle:
+			results.idle += 0.0
+		if record_physics:
+			results.physics += 0.0
 
-func end_test() -> void:
-	recording = false
+		frames_captured += 1
+
+		# Some benchmarks (such as scripting) may not have a time limit.
+		if time_limit:
+			# Time limit of 5 seconds (5 million microseconds).
+			if (Time.get_ticks_usec() - begin_time) > 5e6:
+				break
+
 	results.render_cpu /= float(max(1.0, float(frames_captured)))
 	results.render_gpu /= float(max(1.0, float(frames_captured)))
 	results.idle /= float(max(1.0, float(frames_captured)))
 	results.physics /= float(max(1.0, float(frames_captured)))
-	results.time = Time.get_ticks_usec() * 0.001 - begin_time
+	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
 
-	tests[tests_queue[0]].results = results
-	results = null
-	tests_queue.pop_front()
+	tests[index].results = results
 
-	# If more tests are still pending, go to the next test.
-	if tests_queue.size() > 0:
-		begin_test()
-	else:
-		get_tree().change_scene_to_file(return_to_scene)
-		return_to_scene = ""
-		DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % tests_queue_initial_size)
-		print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % tests_queue_initial_size)
 
-		print("Results JSON:")
-		print("----------------")
-		print(JSON.stringify(get_results_dict()))
-		print("----------------")
-
-		if not save_json_to_path.is_empty():
-			print("Saving JSON output to: %s" % save_json_to_path)
-			var file := FileAccess.open(save_json_to_path, FileAccess.WRITE)
-			file.store_string(JSON.stringify(get_results_dict()))
-
-		if run_from_cli:
-			# Automatically exit after running benchmarks for automation purposes.
-			get_tree().quit()
-
+func end_test() -> void:
+	recording = false
 
 func get_results_dict() -> Dictionary:
 	var version_info := Engine.get_version_info()
