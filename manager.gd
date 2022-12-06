@@ -24,12 +24,6 @@ var recording := false
 var run_from_cli := false
 var save_json_to_path := ""
 
-var record_render_gpu := false
-var record_render_cpu := false
-var record_idle := false
-var record_physics := false
-var time_limit := true
-
 
 ## Returns file paths ending with `.tscn` within a folder, recursively.
 func dir_contents(path: String, contents: PackedStringArray = PackedStringArray()) -> PackedStringArray:
@@ -132,18 +126,18 @@ func run_test(index: int) -> void:
 
 	var benchmark_node := get_tree().get_first_node_in_group("benchmark_config")
 
+	var record_render_cpu := true
+	var record_render_gpu := true
+	var record_idle := true
+	var record_physics := true
+	var time_limit := true
+
 	if benchmark_node:
 		record_render_cpu = benchmark_node.test_render_cpu
 		record_render_gpu = benchmark_node.test_render_gpu
 		record_idle = benchmark_node.test_idle
 		record_physics = benchmark_node.test_physics
 		time_limit = benchmark_node.time_limit
-	else:
-		record_render_cpu = true
-		record_render_gpu = true
-		record_idle = true
-		record_physics = true
-		time_limit = true
 
 	var frames_captured := 0
 	while recording:
