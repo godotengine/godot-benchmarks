@@ -1,8 +1,12 @@
 extends Panel
 
 var items := []
-var include_benchmarks_glob := ""
-var exclude_benchmarks_glob := ""
+
+# Prefix variables with `arg_` to have them automatically be parsed from command line arguments
+var arg_include_benchmarks := ""
+var arg_exclude_benchmarks := ""
+var arg_save_json := ""
+var arg_run_benchmarks := false
 
 @onready var tree := $Tree as Tree
 
@@ -65,32 +69,31 @@ func _ready() -> void:
 	# Select all benchmarks since the user most likely wants to run all of them by default.
 	_on_SelectAll_pressed()
 
-	# Parse valid command-line arguments of the form `--key=value` into a dictionary.
+	# Parse valid command-line arguments of the form `--key=value` into member variables.
 	for argument in OS.get_cmdline_user_args():
-		if argument.begins_with("--include-benchmarks="):
-			var key_value := argument.split("=")
-			# Remove quotes around the argument's value, so that `"rendering/culling/*"`
-			# becomes `rendering/culling/*` for globbing.
-			include_benchmarks_glob = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
-			print("Using benchmark include glob specified on command line: %s" % include_benchmarks_glob)
+		if not argument.begins_with("--"):
+			print("Invalid argument: %s" % argument)
+			continue
 
-		if argument.begins_with("--exclude-benchmarks="):
-			var key_value := argument.split("=")
-			# Remove quotes around the argument's value, so that `"rendering/culling/*"`
-			# becomes `rendering/culling/*` for globbing.
-			exclude_benchmarks_glob = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
-			print("Using benchmark exclude glob specified on command line: %s" % exclude_benchmarks_glob)
+		var key_value := argument.substr(2).split("=", true, 1)
+		var var_name := "arg_" + key_value[0].replace("-", "_")
 
-		if argument.begins_with("--save-json="):
-			var key_value := argument.split("=")
-			# Remove quotes around the argument's value, so that `"example.json"`
-			# becomes `example.json`.
-			Manager.save_json_to_path = key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'")
-			print("Will save results JSON to: %s" % Manager.save_json_to_path)
+		if var_name not in self:
+			print("Invalid argument: %s" % argument)
+			continue
 
-	if "--run-benchmarks" in OS.get_cmdline_user_args():
+		if key_value.size() == 1:
+			self.set(var_name, true)
+		else:
+			# Remove quotes around the argument's value, so that `"example.json"` becomes `example.json`.
+			self.set(var_name, key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'"))
+
+		print("Variable %s set by command line to %s" % [var_name, self.get(var_name)])
+
+	if arg_save_json:
+		Manager.save_json_to_path = arg_save_json
+	if arg_run_benchmarks:
 		Manager.run_from_cli = true
-		print("Running benchmarks as specified on command line.\n")
 		_on_Run_pressed()
 
 
@@ -118,12 +121,12 @@ func _on_Run_pressed() -> void:
 	for item in items:
 		var path: String = item.get_meta("path").trim_prefix("res://benchmarks/").trim_suffix(".tscn")
 
-		if not include_benchmarks_glob.is_empty():
-			if not path.match(include_benchmarks_glob):
+		if arg_include_benchmarks:
+			if not path.match(arg_include_benchmarks):
 				item.set_checked(0, false)
 
-		if not exclude_benchmarks_glob.is_empty():
-			if path.match(exclude_benchmarks_glob):
+		if arg_exclude_benchmarks:
+			if path.match(arg_exclude_benchmarks):
 				item.set_checked(0, false)
 
 		if item.is_checked(0):
