@@ -92,7 +92,6 @@ func _ready() -> void:
 	if arg_save_json:
 		Manager.save_json_to_path = arg_save_json
 	if arg_run_benchmarks:
-		Manager.run_from_cli = true
 		_on_Run_pressed()
 
 
@@ -132,10 +131,14 @@ func _on_Run_pressed() -> void:
 
 	if test_ids:
 		print_rich("[b]Running %d benchmarks:[/b]\n\t%s\n" % [test_ids.size(), "\n\t".join(test_ids)])
-		Manager.benchmark(test_ids, "res://main.tscn")
+		var return_path := ""
+		# Automatically exit after running benchmarks for automation purposes.
+		if not arg_run_benchmarks:
+			return_path = get_tree().current_scene.scene_file_path
+		Manager.benchmark(test_ids, return_path)
 	else:
 		print_rich("[color=red][b]ERROR:[/b] No benchmarks to run.[/color]")
-		if Manager.run_from_cli:
+		if arg_run_benchmarks:
 			print("       Double-check the syntax of the benchmarks include/exclude glob (quotes are required).")
 			print_rich('       Example usage: [code]godot -- --run-benchmarks --include-benchmarks="rendering/culling/*" --exclude-benchmarks="rendering/culling/basic_cull"[/code]')
 			get_tree().quit(1)

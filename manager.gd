@@ -40,7 +40,6 @@ class TestID:
 # List of benchmarks populated in `_ready()`.
 var test_results := {}
 
-var run_from_cli := false
 var save_json_to_path := ""
 
 
@@ -88,7 +87,6 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 		print("Running benchmark %d of %d: %s" % [i + 1, test_ids.size(), test_ids[i]])
 		await run_test(test_ids[i])
 
-	get_tree().change_scene_to_file(return_path)
 	DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % test_ids.size())
 	print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % test_ids.size())
 
@@ -102,8 +100,9 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 		var file := FileAccess.open(save_json_to_path, FileAccess.WRITE)
 		file.store_string(JSON.stringify(get_results_dict()))
 
-	if run_from_cli:
-		# Automatically exit after running benchmarks for automation purposes.
+	if return_path:
+		get_tree().change_scene_to_file(return_path)
+	else:
 		get_tree().quit()
 
 
