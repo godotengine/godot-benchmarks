@@ -15,59 +15,6 @@ func _ready() -> void:
 	# Use a fixed random seed to improve reproducibility of results.
 	seed(0x60d07)
 
-	# No point in copying JSON without any results yet.
-	$CopyJSON.visible = false
-
-	tree.columns = 6
-	tree.set_column_titles_visible(true)
-	tree.set_column_title(0, "Test Name")
-	tree.set_column_title(1, "Render CPU")
-	tree.set_column_title(2, "Render GPU")
-	tree.set_column_title(3, "Idle")
-	tree.set_column_title(4, "Physics")
-	tree.set_column_title(5, "Wall Clock Time")
-
-	var root := tree.create_item()
-	var categories := {}
-
-	for test_id in Manager.get_test_ids():
-		var results : Manager.Results = Manager.test_results[test_id]
-		var test_name := test_id.pretty_name()
-		var category := test_id.pretty_category()
-
-		if category not in categories:
-			var c := tree.create_item(root)
-			c.set_text(0, category)
-			categories[category] = c
-
-		var item := tree.create_item(categories[category])
-		item.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-		item.set_text(0, test_name)
-		item.set_editable(0, true)
-		# Store the full scene path each TreeItem points towards (for include/exclude glob checking).
-		item.set_meta("test_id", test_id)
-
-		if results:
-			$CopyJSON.visible = true
-
-			if results.render_cpu:
-				item.set_text(1, "%s ms" % str(results.render_cpu).pad_decimals(2))
-			if results.render_gpu:
-				item.set_text(2, "%s ms" % str(results.render_gpu).pad_decimals(2))
-			if results.idle:
-				item.set_text(3, "%s ms" % str(results.idle).pad_decimals(2))
-			if results.physics:
-				item.set_text(4, "%s ms" % str(results.physics).pad_decimals(2))
-			if results.time:
-				# Wall clock time is a much larger value, and therefore doesn't need
-				# to be displayed very accurately.
-				item.set_text(5, "%d ms" % results.time)
-
-		items.append(item)
-
-	# Select all benchmarks since the user most likely wants to run all of them by default.
-	_on_SelectAll_pressed()
-
 	# Parse valid command-line arguments of the form `--key=value` into member variables.
 	for argument in OS.get_cmdline_user_args():
 		if not argument.begins_with("--"):
@@ -88,6 +35,71 @@ func _ready() -> void:
 			self.set(var_name, key_value[1].trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'"))
 
 		print("Variable %s set by command line to %s" % [var_name, self.get(var_name)])
+
+	# No point in copying JSON without any results yet.
+	$CopyJSON.visible = false
+
+	tree.columns = 6
+	tree.set_column_titles_visible(true)
+	tree.set_column_title(0, "Test Name")
+	tree.set_column_title(1, "Render CPU")
+	tree.set_column_title(2, "Render GPU")
+	tree.set_column_title(3, "Idle")
+	tree.set_column_title(4, "Physics")
+	tree.set_column_title(5, "Wall Clock Time")
+
+	var root := tree.create_item()
+	var categories := {}
+
+	for test_id in Manager.get_test_ids():
+		var results : Manager.Results = Manager.test_results[test_id]
+		var test_name := test_id.pretty_name()
+		var category := test_id.pretty_category()
+		var path := test_id.to_string()
+
+		if category not in categories:
+			var c := tree.create_item(root)
+			c.set_text(0, category)
+			categories[category] = c
+
+		var item := tree.create_item(categories[category])
+		item.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
+		item.set_text(0, test_name)
+		item.set_editable(0, true)
+		# Store the full scene path each TreeItem points towards (for include/exclude glob checking).
+		item.set_meta("test_id", test_id)
+
+		# Default to selecting the benchmarks specified by command line arguments,
+		# or all of them if none were given. If `--run-benchmarks` was not passed,
+		# then the user gets the opportunity to override command line arguments
+		# from the interface after the fact.
+		item.set_checked(0, true)
+		if arg_include_benchmarks:
+			if not path.match(arg_include_benchmarks):
+				item.set_checked(0, false)
+		if arg_exclude_benchmarks:
+			if path.match(arg_exclude_benchmarks):
+				item.set_checked(0, false)
+
+		if results:
+			$CopyJSON.visible = true
+
+			if results.render_cpu:
+				item.set_text(1, "%s ms" % str(results.render_cpu).pad_decimals(2))
+			if results.render_gpu:
+				item.set_text(2, "%s ms" % str(results.render_gpu).pad_decimals(2))
+			if results.idle:
+				item.set_text(3, "%s ms" % str(results.idle).pad_decimals(2))
+			if results.physics:
+				item.set_text(4, "%s ms" % str(results.physics).pad_decimals(2))
+			if results.time:
+				# Wall clock time is a much larger value, and therefore doesn't need
+				# to be displayed very accurately.
+				item.set_text(5, "%d ms" % results.time)
+
+		items.append(item)
+
+	_on_Tree_item_edited()
 
 	if arg_save_json:
 		Manager.save_json_to_path = arg_save_json
@@ -115,19 +127,8 @@ func _on_CopyJSON_pressed() -> void:
 func _on_Run_pressed() -> void:
 	var test_ids : Array[Manager.TestID] = []
 	for item in items:
-		var test_id : Manager.TestID = item.get_meta("test_id")
-		var path := test_id.to_string()
-
-		if arg_include_benchmarks:
-			if not path.match(arg_include_benchmarks):
-				item.set_checked(0, false)
-
-		if arg_exclude_benchmarks:
-			if path.match(arg_exclude_benchmarks):
-				item.set_checked(0, false)
-
 		if item.is_checked(0):
-			test_ids.push_back(test_id)
+			test_ids.push_back(item.get_meta("test_id"))
 
 	if test_ids:
 		print_rich("[b]Running %d benchmarks:[/b]\n\t%s\n" % [test_ids.size(), "\n\t".join(test_ids)])
