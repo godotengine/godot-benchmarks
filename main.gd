@@ -52,7 +52,6 @@ func _ready() -> void:
 	var categories := {}
 
 	for test_id in Manager.get_test_ids():
-		var results : Manager.Results = Manager.test_results[test_id]
 		var test_name := test_id.pretty_name()
 		var category := test_id.pretty_category()
 		var path := test_id.to_string()
@@ -81,21 +80,13 @@ func _ready() -> void:
 			if path.match(arg_exclude_benchmarks):
 				item.set_checked(0, false)
 
-		if results:
-			$CopyJSON.visible = true
-
-			if results.render_cpu:
-				item.set_text(1, "%s ms" % str(results.render_cpu).pad_decimals(2))
-			if results.render_gpu:
-				item.set_text(2, "%s ms" % str(results.render_gpu).pad_decimals(2))
-			if results.idle:
-				item.set_text(3, "%s ms" % str(results.idle).pad_decimals(2))
-			if results.physics:
-				item.set_text(4, "%s ms" % str(results.physics).pad_decimals(2))
-			if results.time:
-				# Wall clock time is a much larger value, and therefore doesn't need
-				# to be displayed very accurately.
-				item.set_text(5, "%d ms" % results.time)
+		var results := Manager.get_test_result_as_dict(test_id)
+		var metric_names := ["render_cpu", "render_gpu", "idle", "physics", "time"]
+		for i in metric_names.size():
+			var metric = results.get(metric_names[i])
+			if metric:
+				item.set_text(i+1, "%s ms" % str(metric))
+				$CopyJSON.visible = true
 
 		items.append(item)
 

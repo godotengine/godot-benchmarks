@@ -160,6 +160,19 @@ func run_test(test_id: TestID) -> void:
 
 	test_results[test_id] = results
 
+func get_test_result_as_dict(test_id: TestID) -> Dictionary:
+	var result : Results = test_results[test_id]
+	var rv := {}
+	if not result:
+		return rv
+
+	for metric in result.get_property_list():
+		if metric.type == TYPE_FLOAT:
+			var m : float = result.get(metric.name)
+			const sig_figs = 4
+			rv[metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
+
+	return rv
 
 func get_results_dict() -> Dictionary:
 	var version_info := Engine.get_version_info()
@@ -199,24 +212,11 @@ func get_results_dict() -> Dictionary:
 
 	var benchmarks := []
 	for test_id in get_test_ids():
-		var test := {
+		benchmarks.push_back({
 			category = test_id.pretty_category(),
 			name = test_id.pretty_name(),
-		}
-
-		var result: Results = test_results[test_id]
-		if result:
-			test.results = {
-				render_cpu = snapped(result.render_cpu, 0.01),
-				render_gpu = snapped(result.render_gpu, 0.01),
-				idle = snapped(result.idle, 0.01),
-				physics = snapped(result.physics, 0.01),
-				time = round(result.time),
-			}
-		else:
-			test.results = {}
-
-		benchmarks.push_back(test)
+			results = get_test_result_as_dict(test_id),
+		})
 
 	dict.benchmarks = benchmarks
 
