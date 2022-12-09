@@ -140,14 +140,10 @@ func run_test(test_id: TestID) -> void:
 		while (Time.get_ticks_usec() - begin_time) < 5e6:
 			await get_tree().process_frame
 
-			if benchmark_script.test_render_cpu:
-				results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
-			if benchmark_script.test_render_gpu:
-				results.render_gpu += RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid())
-			if benchmark_script.test_idle:
-				results.idle += 0.0
-			if benchmark_script.test_physics:
-				results.physics += 0.0
+			results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
+			results.render_gpu += RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid())
+			results.idle += 0.0
+			results.physics += 0.0
 
 			frames_captured += 1
 
@@ -157,6 +153,10 @@ func run_test(test_id: TestID) -> void:
 	results.idle /= float(max(1.0, float(frames_captured)))
 	results.physics /= float(max(1.0, float(frames_captured)))
 	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
+
+	for metric in results.get_property_list():
+		if benchmark_script.get("test_" + metric.name) == false: # account for null
+			results.set(metric.name, 0.0)
 
 	test_results[test_id] = results
 
