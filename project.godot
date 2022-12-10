@@ -38,3 +38,7 @@ window/stretch/mode="viewport"
 [gui]
 
 theme/default_theme_scale=1.5
+
+[rendering]
+
+occlusion_culling/use_occlusion_culling=true
