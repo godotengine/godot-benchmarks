@@ -46,7 +46,7 @@ func _ready() -> void:
 	tree.set_column_title(2, "Render GPU")
 	tree.set_column_title(3, "Idle")
 	tree.set_column_title(4, "Physics")
-	tree.set_column_title(5, "Wall Clock Time")
+	tree.set_column_title(5, "Main Thread Time")
 
 	var root := tree.create_item()
 	var categories := {}

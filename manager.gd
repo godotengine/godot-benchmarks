@@ -124,8 +124,9 @@ func run_test(test_id: TestID) -> void:
 
 	var results := Results.new()
 	var begin_time := Time.get_ticks_usec()
-
 	var bench_node = benchmark_script.call("benchmark_" + test_id.name)
+	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
+
 	var frames_captured := 0
 	if bench_node:
 		get_tree().current_scene.add_child(bench_node)
@@ -152,7 +153,6 @@ func run_test(test_id: TestID) -> void:
 	results.render_gpu /= float(max(1.0, float(frames_captured)))
 	results.idle /= float(max(1.0, float(frames_captured)))
 	results.physics /= float(max(1.0, float(frames_captured)))
-	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
 
 	for metric in results.get_property_list():
 		if benchmark_script.get("test_" + metric.name) == false: # account for null

@@ -72,6 +72,22 @@ Use glob syntax (with `*` acting as a wildcard) to run a category of benchmarks:
 You can exclude specific benchmarks using the `--exclude-benchmarks` command line argument.
 This argument also supports globbing and can be used at the same time as `--include-benchmarks`.
 
+#### Results
+
+For each benchmark, the project will track how long the main thread spent setting up the scene,
+then run the scene for five seconds and log the average per-frame statistics.
+(All times given are in milliseconds.)
+
+- **Render CPU:** Average CPU time spent per frame
+- **Render GPU:** Average GPU time spent per frame
+- **Idle:** Currently unimplemented
+- **Physics:** Currently unimplemented
+- **Main Thread Time:** Time spent setting up the scene on the main thread
+
+Note that not all benchmarks involve running a scene (for example, GDScript benchmarks).
+In those cases, per-frame statistics will not be recorded,
+and **Main Thread Time** will reflect the runtime of the entire benchmark.
+
 ## Tips and tricks
 
 ### Comparing results between runs
