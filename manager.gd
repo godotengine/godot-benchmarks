@@ -83,13 +83,15 @@ func get_test_ids() -> Array[TestID]:
 	return rv
 
 
-func benchmark(test_ids: Array[TestID], return_path: String) -> void:
+func benchmark(test_ids: Array[TestID], return_path: String, run_while_expr: Expression) -> void:
 	await get_tree().process_frame
 
 	for i in range(test_ids.size()):
 		DisplayServer.window_set_title("%d/%d - Running %s" % [i + 1, test_ids.size(), test_ids[i].pretty()])
 		print("Running benchmark %d of %d: %s" % [i + 1, test_ids.size(), test_ids[i]])
-		await run_test(test_ids[i])
+		# Small optimization for --run-while=false
+		if run_while_expr.execute([0, 0]):
+			await run_test(test_ids[i], run_while_expr)
 
 	DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % test_ids.size())
 	print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % test_ids.size())
@@ -110,7 +112,7 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 		get_tree().quit()
 
 
-func run_test(test_id: TestID) -> void:
+func run_test(test_id: TestID, run_while_expr: Expression) -> void:
 	set_process(true)
 
 	var new_scene := PackedScene.new()
@@ -141,8 +143,9 @@ func run_test(test_id: TestID) -> void:
 
 		begin_time = Time.get_ticks_usec()
 
-		# Time limit of 5 seconds (5 million microseconds).
-		while (Time.get_ticks_usec() - begin_time) < 5e6:
+		# inputs=[time (in seconds), frame]
+		# Passes frame+3 to account for the above shader compilation wait
+		while run_while_expr.execute([(Time.get_ticks_usec() - begin_time)/1e6, frames_captured + 3]):
 			await get_tree().process_frame
 
 			results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
