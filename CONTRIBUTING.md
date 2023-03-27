@@ -13,50 +13,44 @@ You can add new test cases by following these steps:
 
 ### Create new benchmark
 
-1. Open the Godot editor and import this project.
-2. Create a new scene with `snake_case` naming with a root node suited to the
-   benchmark[^1], then save it in one of the existing folders depending on its
-   category. If your benchmark does not suit any existing category or
-   subcategory, you can also create a new folder in the repository's root folder.
-   The root node's name does not have any bearing on functionality, but it's
-   recommended to use a PascalCase version of the scene name. For example, if
-   your scene file name is `typed_int_array.tscn`, the root node name should be
-   `TypedIntArray`.
+Create a new script with `snake_case` naming that `extends Benchmark`,
+then save it in one of the existing folders depending on its category.
+If your benchmark does not suit any existing category or subcategory,
+you can also create a new folder in the repository's root folder.
 
-Instanced scenes that are used in other benchmark scenes **must** have their file
-name start with an underscore (e.g. `_particles.tscn`).
-This will exclude the scene from benchmark registration.
+### Configure the benchmark
+
+In the `_init()` function of your script, configure your benchmark by
+initializing any desired `Benchmark` variables to true:
+
+- **test_render_cpu:** Enable this for rendering benchmarks.
+  Leave it disabled for other benchmarks.
+- **test_render_gpu:** Enable this for rendering benchmarks.
+  Leave it disabled for other benchmarks.
+- **test_idle:** Enable this for non-rendering CPU-intensive benchmarks.
+  Leave it disabled for other benchmarks.
+- **test_physics:** Enable this for physics benchmarks.
+  Leave it disabled for other benchmarks.
+
+### Implement the benchmark
+
+The runtime will scan your script for functions beginning with `benchmark_`.
+For basic benchmarks, writing your code inside such a function is sufficient for it
+to be automatically registered and become available for benchmarking by the user.
+The runtime will end the benchmark once your function returns
+and report the amount of time spent running inside it.
+
+For more advanced benchmarks, the runtime expects the function to return a `Node`.
+Return the appropriate node for your benchmark[^1] to signal to the runtime
+that it should continue measuring system resource usage even after your function returns.
+The runtime will add your node to the scene as a root node,
+leave it running for a fixed amount of time (currently 5 seconds),
+and then end the benchmark and report the various metrics configured above.
 
 [^1]: For 3D rendering benchmarks, the root node should be Node3D. For 2D
 rendering benchmarks, the root node should be Node2D. For UI benchmarks, the
 root node should be Control. For scripting or miscellaneous benchmarks, the root
 node should be Node.
-
-### Configure the benchmark
-
-1. Create a Label node, rename it to `Benchmark` (case-sensitive) and attach
-   `benchmark.gd` as a script. Select the Benchmark node to configure its
-   properties. There are 5 properties available which control the *metrics* that
-   will be displayed in the results table:
-   - **Test Render Cpu:** Enable this for rendering benchmarks. Leave it disabled
-     for other benchmarks.
-   - **Test Render Gpu:** Enable this for rendering benchmarks. Leave it disabled
-     for other benchmarks.
-   - **Test Idle:** Enable this for non-rendering CPU-intensive benchmarks. Leave
-     it disabled for other benchmarks.
-   - **Test Physics:** Enable this for physics benchmarks. Leave it disabled for
-     other benchmarks.
-   - **Time Limit:** Enable this for rendering or physics benchmarks (which
-     measure the time spent processing things every frame instead of a total time
-     to process a set amount of items). For other benchmarks such as scripting,
-     disable this.
-2. Attach a script to the scene's root node, with the same name as the scene file
-   (except the file extension will be `.gd` instead of `.tscn`). In the script's
-   `_ready()` function, perform the benchmark tasks. You don't need to surround
-   the benchmarked code with time measurement functions, as time is measured
-   automatically.
-3. For benchmarks that do not have a fixed time limit (such as scripting benchmarks),
-   call `Manager.end_test()` at the end of the `_ready()` function.
 
 Remember to follow the
 [GDScript style guide](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_styleguide.html)

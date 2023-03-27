@@ -30,11 +30,10 @@ func _ready() -> void:
 	var root := tree.create_item()
 	var categories := {}
 
-	for i in Manager.get_test_count():
-		var test_name := Manager.get_test_name(i)
-		var category := Manager.get_test_category(i)
-		var results := Manager.get_test_result(i)
-		var path := Manager.get_test_path(i)
+	for test_id in Manager.get_test_ids():
+		var results : Manager.Results = Manager.test_results[test_id]
+		var test_name := test_id.pretty_name()
+		var category := test_id.pretty_category()
 
 		if category not in categories:
 			var c := tree.create_item(root)
@@ -46,7 +45,7 @@ func _ready() -> void:
 		item.set_text(0, test_name)
 		item.set_editable(0, true)
 		# Store the full scene path each TreeItem points towards (for include/exclude glob checking).
-		item.set_meta("path", path)
+		item.set_meta("test_id", test_id)
 
 		if results:
 			$CopyJSON.visible = true
@@ -115,11 +114,10 @@ func _on_CopyJSON_pressed() -> void:
 
 
 func _on_Run_pressed() -> void:
-	var queue := []
-	var index := 0
-	var paths := []
+	var test_ids : Array[Manager.TestID] = []
 	for item in items:
-		var path: String = item.get_meta("path").trim_prefix("res://benchmarks/").trim_suffix(".tscn")
+		var test_id : Manager.TestID = item.get_meta("test_id")
+		var path := test_id.to_string()
 
 		if arg_include_benchmarks:
 			if not path.match(arg_include_benchmarks):
@@ -130,14 +128,11 @@ func _on_Run_pressed() -> void:
 				item.set_checked(0, false)
 
 		if item.is_checked(0):
-			queue.push_back(index)
-			paths.push_back(path)
+			test_ids.push_back(test_id)
 
-		index += 1
-
-	if index >= 1:
-		print_rich("[b]Running %d benchmarks:[/b] %s " % [queue.size(), ", ".join(paths)])
-		Manager.benchmark(queue, "res://main.tscn")
+	if test_ids:
+		print_rich("[b]Running %d benchmarks:[/b]\n\t%s\n" % [test_ids.size(), "\n\t".join(test_ids)])
+		Manager.benchmark(test_ids, "res://main.tscn")
 	else:
 		print_rich("[color=red][b]ERROR:[/b] No benchmarks to run.[/color]")
 		if Manager.run_from_cli:
