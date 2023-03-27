@@ -71,3 +71,51 @@ Use glob syntax (with `*` acting as a wildcard) to run a category of benchmarks:
 
 You can exclude specific benchmarks using the `--exclude-benchmarks` command line argument.
 This argument also supports globbing and can be used at the same time as `--include-benchmarks`.
+
+## Tips and tricks
+
+### Comparing results between runs
+
+[`jq`](https://github.com/stedolan/jq) is a command line tool that greatly simplifies
+the task of processing JSON files. You can use the following command as a starting point
+for creating benchmark comparisons:
+
+```bash
+jq -n --tab '
+	[inputs.benchmarks] | transpose[] | select(all(.results != {})) |
+	.[0].results = (
+		[[.[].results | to_entries] | transpose[] | select(all(.value != 0)) |
+		{key: .[0].key, value: {
+			a: .[0].value,
+			b: .[1].value,
+			a_div_b: (.[0].value / .[1].value)
+		}}] | from_entries
+	) | .[0]
+' a.json b.json
+```
+
+Sample output (truncated to a single benchmark for brevity):
+
+```json
+{
+	"category": "Rendering > Lights And Meshes",
+	"name": "Sphere 1000",
+	"results": {
+		"render_cpu": {
+			"a": 3.952,
+			"b": 4.031,
+			"a_div_b": 0.9804018853882412
+		},
+		"render_gpu": {
+			"a": 45.36,
+			"b": 45.44,
+			"a_div_b": 0.9982394366197184
+		},
+		"time": {
+			"a": 38.95,
+			"b": 35.04,
+			"a_div_b": 1.1115867579908676
+		}
+	}
+}
+```
