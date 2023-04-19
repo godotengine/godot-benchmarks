@@ -40,7 +40,6 @@ class TestID:
 # List of benchmarks populated in `_ready()`.
 var test_results := {}
 
-var run_from_cli := false
 var save_json_to_path := ""
 
 
@@ -88,7 +87,6 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 		print("Running benchmark %d of %d: %s" % [i + 1, test_ids.size(), test_ids[i]])
 		await run_test(test_ids[i])
 
-	get_tree().change_scene_to_file(return_path)
 	DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % test_ids.size())
 	print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % test_ids.size())
 
@@ -102,8 +100,9 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 		var file := FileAccess.open(save_json_to_path, FileAccess.WRITE)
 		file.store_string(JSON.stringify(get_results_dict()))
 
-	if run_from_cli:
-		# Automatically exit after running benchmarks for automation purposes.
+	if return_path:
+		get_tree().change_scene_to_file(return_path)
+	else:
 		get_tree().quit()
 
 
@@ -125,8 +124,9 @@ func run_test(test_id: TestID) -> void:
 
 	var results := Results.new()
 	var begin_time := Time.get_ticks_usec()
-
 	var bench_node = benchmark_script.call("benchmark_" + test_id.name)
+	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
+
 	var frames_captured := 0
 	if bench_node:
 		get_tree().current_scene.add_child(bench_node)
@@ -141,14 +141,10 @@ func run_test(test_id: TestID) -> void:
 		while (Time.get_ticks_usec() - begin_time) < 5e6:
 			await get_tree().process_frame
 
-			if benchmark_script.test_render_cpu:
-				results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
-			if benchmark_script.test_render_gpu:
-				results.render_gpu += RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid())
-			if benchmark_script.test_idle:
-				results.idle += 0.0
-			if benchmark_script.test_physics:
-				results.physics += 0.0
+			results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
+			results.render_gpu += RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid())
+			results.idle += 0.0
+			results.physics += 0.0
 
 			frames_captured += 1
 
@@ -157,10 +153,26 @@ func run_test(test_id: TestID) -> void:
 	results.render_gpu /= float(max(1.0, float(frames_captured)))
 	results.idle /= float(max(1.0, float(frames_captured)))
 	results.physics /= float(max(1.0, float(frames_captured)))
-	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
+
+	for metric in results.get_property_list():
+		if benchmark_script.get("test_" + metric.name) == false: # account for null
+			results.set(metric.name, 0.0)
 
 	test_results[test_id] = results
 
+func get_test_result_as_dict(test_id: TestID) -> Dictionary:
+	var result : Results = test_results[test_id]
+	var rv := {}
+	if not result:
+		return rv
+
+	for metric in result.get_property_list():
+		if metric.type == TYPE_FLOAT:
+			var m : float = result.get(metric.name)
+			const sig_figs = 4
+			rv[metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
+
+	return rv
 
 func get_results_dict() -> Dictionary:
 	var version_info := Engine.get_version_info()
@@ -200,24 +212,11 @@ func get_results_dict() -> Dictionary:
 
 	var benchmarks := []
 	for test_id in get_test_ids():
-		var test := {
+		benchmarks.push_back({
 			category = test_id.pretty_category(),
 			name = test_id.pretty_name(),
-		}
-
-		var result: Results = test_results[test_id]
-		if result:
-			test.results = {
-				render_cpu = snapped(result.render_cpu, 0.01),
-				render_gpu = snapped(result.render_gpu, 0.01),
-				idle = snapped(result.idle, 0.01),
-				physics = snapped(result.physics, 0.01),
-				time = round(result.time),
-			}
-		else:
-			test.results = {}
-
-		benchmarks.push_back(test)
+			results = get_test_result_as_dict(test_id),
+		})
 
 	dict.benchmarks = benchmarks
 
