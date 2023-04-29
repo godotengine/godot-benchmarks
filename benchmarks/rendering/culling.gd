@@ -64,7 +64,7 @@ class TestScene extends Node3D:
 
 		var zn := 2
 		var zextent := cam.far - zn
-		var ss := get_tree().root.size
+		var ss := get_tree().root.get_visible_rect().size
 		var from := cam.project_position(Vector2(0, ss.y), zextent)
 		var extents := cam.project_position(Vector2(ss.x, 0), zextent) - from
 
@@ -82,7 +82,7 @@ class TestScene extends Node3D:
 	func do_fill_with_omni_lights() -> void:
 		var zn := 2
 		var zextent := cam.far - zn
-		var ss := get_tree().root.size
+		var ss := get_tree().root.get_visible_rect().size
 		var from := cam.project_position(Vector2(0,ss.y),zextent)
 		var extents := cam.project_position(Vector2(ss.x,0),zextent) - from
 
