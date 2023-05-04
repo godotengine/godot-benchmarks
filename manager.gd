@@ -143,16 +143,19 @@ func run_test(test_id: TestID) -> void:
 
 			results.render_cpu += RenderingServer.viewport_get_measured_render_time_cpu(get_tree().root.get_viewport_rid())  + RenderingServer.get_frame_setup_time_cpu()
 			results.render_gpu += RenderingServer.viewport_get_measured_render_time_gpu(get_tree().root.get_viewport_rid())
-			results.idle += 0.0
-			results.physics += 0.0
+			# Godot updates idle and physics performance monitors only once per second,
+			# with the value representing the average time spent processing idle/physics process in the last second.
+			# The value is in seconds, not milliseconds.
+			# Keep the highest reported value throughout the run.
+			results.idle = maxf(results.idle, Performance.get_monitor(Performance.TIME_PROCESS) * 1000)
+			results.physics = maxf(results.physics, Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000)
 
 			frames_captured += 1
 
-
 	results.render_cpu /= float(max(1.0, float(frames_captured)))
 	results.render_gpu /= float(max(1.0, float(frames_captured)))
-	results.idle /= float(max(1.0, float(frames_captured)))
-	results.physics /= float(max(1.0, float(frames_captured)))
+	# Don't divide `results.idle` and `results.physics` since these are already
+	# metrics calculated on a per-second basis.
 
 	for metric in results.get_property_list():
 		if benchmark_script.get("test_" + metric.name) == false: # account for null

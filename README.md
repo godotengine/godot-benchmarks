@@ -76,13 +76,15 @@ This argument also supports globbing and can be used at the same time as `--incl
 
 For each benchmark, the project will track how long the main thread spent setting up the scene,
 then run the scene for five seconds and log the average per-frame statistics.
-(All times given are in milliseconds.)
+(All times given are in milliseconds. Lower values are better.)
 
-- **Render CPU:** Average CPU time spent per frame
-- **Render GPU:** Average GPU time spent per frame
-- **Idle:** Currently unimplemented
-- **Physics:** Currently unimplemented
-- **Main Thread Time:** Time spent setting up the scene on the main thread
+- **Render CPU:** Average CPU time spent rendering each frame (such as setting up draw calls).
+  This metric does *not* take process/physics process functions into account.
+- **Render GPU:** Average GPU time spent per frame.
+- **Idle:** Average CPU time spent in C++ and GDScript process functions per second.
+- **Physics:** Average CPU time spent in C++ and GDScript physics process functions per second.
+- **Main Thread Time:** Time spent setting up the scene on the main thread.
+  For rendering benchmarks, this acts as a loading time measurement.
 
 Note that not all benchmarks involve running a scene (for example, GDScript benchmarks).
 In those cases, per-frame statistics will not be recorded,

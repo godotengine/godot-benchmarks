@@ -1,5 +1,7 @@
 extends Panel
 
+const RANDOM_SEED = 0x60d07
+
 var items := []
 
 # Prefix variables with `arg_` to have them automatically be parsed from command line arguments
@@ -10,10 +12,9 @@ var arg_run_benchmarks := false
 
 @onready var tree := $Tree as Tree
 
-
 func _ready() -> void:
 	# Use a fixed random seed to improve reproducibility of results.
-	seed(0x60d07)
+	seed(RANDOM_SEED)
 
 	# Parse valid command-line arguments of the form `--key=value` into member variables.
 	for argument in OS.get_cmdline_user_args():
@@ -111,8 +112,7 @@ func _on_SelectNone_pressed() -> void:
 
 
 func _on_CopyJSON_pressed() -> void:
-	var json := JSON.new()
-	DisplayServer.clipboard_set(json.stringify(Manager.get_results_dict(), "\t"))
+	DisplayServer.clipboard_set(JSON.stringify(Manager.get_results_dict(), "\t"))
 
 
 func _on_Run_pressed() -> void:
