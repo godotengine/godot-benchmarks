@@ -90,9 +90,11 @@
     </tr>
   </table>
   <p>
-    All core and memory clocks are kept at stock frequencies. The OS is kept in
-    a default configuration as closely as posible. The machine is not running
-    any other tasks in parallel – this page is served from GitHub Pages.
+    All core and memory clocks are kept at stock frequencies. Turbo Boost and
+    HyperThreading are disabled on the CPU, and the CPU governor is set to
+    <code>performance</code> to maximize result consistency. The OS is kept in a
+    default configuration as closely as posible. The machine is not running any
+    other tasks in parallel – this page is served from GitHub Pages.
   </p>
   <p>
     Benchmarks that make use of the GPU are run 3 times (once on each GPU).
@@ -108,7 +110,7 @@
    */
   function hashCode(str) {
     return str.split('').reduce((prevHash, currVal) =>
-      (((prevHash << 5) - prevHash) + currVal.charCodeAt(0))|0, 0);
+      (((prevHash << 5) - prevHash) + currVal.charCodeAt(0)) | 0, 0);
   }
 
   // Include benchmark data JSON to generate graphs.
@@ -123,7 +125,7 @@
     render_gpu: "Render GPU",
     idle: "Idle",
     physics: "Physics",
-    time: "Wall Clock Time",
+    time: "Main Thread Time",
   };
 
   // Collect benchmark types from distinct runs. CPU release, GPU Intel and GPU

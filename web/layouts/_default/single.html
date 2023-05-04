@@ -42,10 +42,10 @@
 <h2>Engine information</h2>
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
   <table class="table-first-column-align-right">
-    <tr>
+    <thead>
       <td>Build type</td>
       <td>{{ .Params.cpu_debug.engine.build_type }}</td>
-    </tr>
+    </thead>
     <tr>
       <td><abbr title="Using GCC compiler">Time to build</abbr></td>
       <td>{{ .Params.build_times.debug }} seconds</td>
@@ -61,10 +61,10 @@
   </table>
 
   <table class="table-first-column-align-right">
-    <tr>
+    <thead>
       <td>Build type</td>
       <td>{{ .Params.cpu_release.engine.build_type }}</td>
-    </tr>
+    </thead>
     <tr>
       <td><abbr title="Using GCC compiler">Time to build</abbr></td>
       <td>{{ .Params.build_times.release }} seconds</td>
@@ -81,7 +81,7 @@
 </div>
 
 <h2>Benchmark results</h2>
-<em>Lower is better.</em>
+<em>For all values, lower is better.</em>
 <h3>CPU</h3>
 <table class="table-first-column-align-right">
   <thead>
@@ -89,7 +89,7 @@
       <td>Name</td>
       <td>Idle</td>
       <td>Physics</td>
-      <td>Wall Clock Time</td>
+      <td><abbr title="Time spent setting up the scene or executing the script">Main Thread Time</abbr></td>
     </tr>
   </thead>
   <tbody>
