@@ -16,11 +16,10 @@ class TestScene extends Node2D:
 		add_child(cam)
 
 	func _ready() -> void:
-		var ss := get_tree().root.size
-		var center := cam.get_screen_center_position()
+		var ss := get_tree().root.get_visible_rect().size
 		for i in instance_amount:
 			var xf := Transform2D()
-			xf.origin = Vector2(center.x + randf() * ss.x, center.y + randf() * ss.y)
+			xf.origin = Vector2(randf_range(-ss.x, ss.x), randf_range(-ss.y, ss.y)) / 2.0
 
 			var new_instance := create_instance()
 
