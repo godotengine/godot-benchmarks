@@ -11,21 +11,6 @@ class TestID:
 	var name : String
 	var category : String
 
-	static func from_path(path: String) -> Array[TestID]:
-		var rv : Array[TestID] = []
-		if not path.ends_with(".gd"):
-			return rv
-
-		var bench_script : Benchmark = load(path).new()
-		for method in bench_script.get_method_list():
-			if not method.name.begins_with("benchmark_"):
-				continue
-			var test_id := TestID.new()
-			test_id.name = method.name.trim_prefix("benchmark_")
-			test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".gd")
-			rv.push_back(test_id)
-		return rv
-
 	func pretty_name() -> String:
 		return name.capitalize()
 	func pretty_category() -> String:
@@ -35,6 +20,23 @@ class TestID:
 
 	func _to_string() -> String:
 		return "%s/%s" % [category, name]
+
+
+func test_ids_from_path(path: String) -> Array[TestID]:
+	var rv : Array[TestID] = []
+	if not path.ends_with(".gd"):
+		return rv
+
+	var bench_script : Benchmark = load(path).new()
+	for method in bench_script.get_method_list():
+		if not method.name.begins_with("benchmark_"):
+			continue
+
+		var test_id := TestID.new()
+		test_id.name = method.name.trim_prefix("benchmark_")
+		test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".gd")
+		rv.push_back(test_id)
+	return rv
 
 
 # List of benchmarks populated in `_ready()`.
@@ -68,7 +70,7 @@ func _ready():
 
 	# Register contents of `benchmarks/` folder automatically.
 	for benchmark_path in dir_contents("res://benchmarks/"):
-		for test_id in TestID.from_path(benchmark_path):
+		for test_id in test_ids_from_path(benchmark_path):
 			test_results[test_id] = null
 
 
@@ -82,6 +84,8 @@ func get_test_ids() -> Array[TestID]:
 
 
 func benchmark(test_ids: Array[TestID], return_path: String) -> void:
+	await get_tree().process_frame
+
 	for i in range(test_ids.size()):
 		DisplayServer.window_set_title("%d/%d - Running %s" % [i + 1, test_ids.size(), test_ids[i].pretty()])
 		print("Running benchmark %d of %d: %s" % [i + 1, test_ids.size(), test_ids[i]])
@@ -114,7 +118,7 @@ func run_test(test_id: TestID) -> void:
 	get_tree().change_scene_to_packed(new_scene)
 
 	# Wait for the scene tree to be ready
-	while get_tree().current_scene.get_child_count() != 0:
+	while not (get_tree().current_scene and get_tree().current_scene.get_child_count() == 0):
 		#print("Waiting for scene change...")
 		await get_tree().process_frame
 	# Add a dummy child so that the above check works for subsequent reloads
