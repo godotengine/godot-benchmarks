@@ -19,11 +19,13 @@ ARG1="${1:-''}"
 
 restore_cpu_frequency() {
   # Restore original CPU frequency scaling, turbo mode and hypertheading.
+  echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
+  echo on | sudo tee /sys/devices/system/cpu/smt/control
+  # Wait for CPU cores to be back online before changing the governor.
+  sleep 1
   for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
     echo powersave | sudo tee "$core"
   done
-  echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
-  echo on | sudo tee /sys/devices/system/cpu/smt/control
 }
 
 if [[ "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
@@ -169,7 +171,7 @@ cat > "$OUTPUT_PATH" << EOF
   },
   "build_peak_memory_usage": {
     "debug": $PEAK_MEMORY_BUILD_DEBUG,
-    "debug": $PEAK_MEMORY_BUILD_RELEASE
+    "release": $PEAK_MEMORY_BUILD_RELEASE
   },
   "empty_project_startup_shutdown_time": {
     "debug": $TIME_TO_STARTUP_SHUTDOWN_DEBUG,
@@ -182,17 +184,18 @@ cat > "$OUTPUT_PATH" << EOF
 }
 EOF
 
-rm -rf /tmp/godot-benchmarks-results/
+rm -rf /tmp/godot-benchmarks/
 # TODO: Change to godotengine organization URL.
-git clone --depth=1 git@github.com:Calinou/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
+# Clone a second copy of the repository so we can push the built files to it.
+git clone --branch=gh-pages git@github.com:Calinou/godot-benchmarks.git /tmp/godot-benchmarks/
 
-pushd /tmp/godot-benchmarks-results/
+pushd /tmp/godot-benchmarks/
 
 # Build website files in `web/` after running all benchmarks, so that benchmarks
 # appear on the web interface.
-hugo --source="$DIR/web/" --destination=/tmp/godot-benchmarks-results/ --minify
+hugo --source="$DIR/web/" --destination=/tmp/godot-benchmarks/ --minify
 git add .
-git commit --amend --no-edit --no-gpg-sign
+git commit --amend --no-edit --no-gpg-sign --message "Deploy to GitHub Pages"
 git push -f
 
 popd

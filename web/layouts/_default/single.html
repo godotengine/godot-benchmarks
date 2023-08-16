@@ -44,8 +44,8 @@
   <thead>
     <td>Build type</td>
     <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.cpu_debug.engine.build_type }}<br></span>
-      <sub>Release</sub> {{ .Params.cpu_release.engine.build_type }}
+      <span style="opacity: 0.65"><sub><abbr title="SCons flags: target=editor optimize=debug">Debug</abbr></sub> {{ .Params.cpu_debug.engine.build_type }}<br></span>
+      <sub><abbr title="SCons flags: target=template_release optimize=speed lto=full">Release</abbr></sub> {{ .Params.cpu_release.engine.build_type }}
     </td>
   </thead>
   <tr>
