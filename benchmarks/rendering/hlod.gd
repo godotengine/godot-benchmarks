@@ -134,7 +134,6 @@ func benchmark_cull_fast() -> Node3D:
 # Smoke test
 func benchmark_aaa_setup():
 	for i in 20:
-		print("Iteration ", i)
 		var tmp := Node3D.new()
 		attach_model_recursive(tmp, NUMBER_OF_OBJECTS)
 		tmp.free()

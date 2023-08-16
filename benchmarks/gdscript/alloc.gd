@@ -3,7 +3,7 @@ extends Benchmark
 const ITERATIONS = 100_000
 
 
-func benchmark_deep_tree():
+func benchmark_deep_tree() -> void:
 	var rt := Node.new()
 	for i in ITERATIONS:
 		var n := Node.new()
@@ -18,13 +18,13 @@ func benchmark_deep_tree():
 		rt = n
 	rt.free()
 
-func benchmark_wide_tree():
+func benchmark_wide_tree() -> void:
 	var rt := Node.new()
 	for i in ITERATIONS:
 		rt.add_child(Node.new())
 	rt.free()
 
-func benchmark_fragmentation():
+func benchmark_fragmentation() -> void:
 	var top := Node.new()
 	for i in 5:
 		top.add_child(Node.new())
@@ -45,7 +45,7 @@ func benchmark_fragmentation():
 
 	top.free()
 
-func benchmark_duplicate():
+func benchmark_duplicate() -> void:
 	var rt := Node.new()
 	for i in 16:
 		var n := Node.new()
