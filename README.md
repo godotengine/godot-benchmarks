@@ -72,10 +72,26 @@ Use glob syntax (with `*` acting as a wildcard) to run a category of benchmarks:
 You can exclude specific benchmarks using the `--exclude-benchmarks` command line argument.
 This argument also supports globbing and can be used at the same time as `--include-benchmarks`.
 
+#### Benchmark runtime
+
+You can use the `--run-while` argument to manage the runtime of benchmarks where this is relevant.
+Benchmarks that involve a scene will run continuously until the provided
+[Expression](https://docs.godotengine.org/en/stable/classes/class_expression.html)
+returns false.
+
+Usage examples:
+
+- `--run-while="time < 1.0"`: Run each benchmark for 1 second
+- `--run-while="frame < 10"`: Run each benchmark for 10 frames
+- `--run-while="frame < 100 and time < 5.0"`: Run each benchmark for 100 frames with a 5 second timeout
+- `--run-while=false`: Do nothing (dry run)
+
+If unspecified, the default value is `--run-while="time < 5.0"`.
+
 #### Results
 
 For each benchmark, the project will track how long the main thread spent setting up the scene,
-then run the scene for five seconds and log the average per-frame statistics.
+then run the scene for the duration given above and log the average per-frame statistics.
 (All times given are in milliseconds. Lower values are better.)
 
 - **Render CPU:** Average CPU time spent rendering each frame (such as setting up draw calls).

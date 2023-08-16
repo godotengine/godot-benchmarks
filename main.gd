@@ -9,6 +9,7 @@ var arg_include_benchmarks := ""
 var arg_exclude_benchmarks := ""
 var arg_save_json := ""
 var arg_run_benchmarks := false
+var arg_run_while := "time < 5.0"
 
 @onready var tree := $Tree as Tree
 
@@ -127,7 +128,14 @@ func _on_Run_pressed() -> void:
 		# Automatically exit after running benchmarks for automation purposes.
 		if not arg_run_benchmarks:
 			return_path = get_tree().current_scene.scene_file_path
-		Manager.benchmark(test_ids, return_path)
+		var run_while_expr := Expression.new()
+		var err := run_while_expr.parse(arg_run_while, ["time", "frame"])
+		if err == OK:
+			Manager.benchmark(test_ids, return_path, run_while_expr)
+		else:
+			print("Error in expression: " + arg_run_while)
+			print(run_while_expr.get_error_text())
+			get_tree().quit(1)
 	else:
 		print_rich("[color=red][b]ERROR:[/b] No benchmarks to run.[/color]")
 		if arg_run_benchmarks:

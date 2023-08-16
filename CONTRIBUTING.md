@@ -44,7 +44,7 @@ For more advanced benchmarks, the runtime expects the function to return a `Node
 Return the appropriate node for your benchmark[^1] to signal to the runtime
 that it should continue measuring system resource usage even after your function returns.
 The runtime will add your node to the scene as a root node,
-leave it running for a fixed amount of time (currently 5 seconds),
+leave it running for the given duration (default 5 seconds),
 and then end the benchmark and report the various metrics configured above.
 
 [^1]: For 3D rendering benchmarks, the root node should be Node3D. For 2D
