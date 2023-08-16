@@ -40,123 +40,132 @@
 </table>
 
 <h2>Engine information</h2>
-<div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
-  <table class="table-first-column-align-right">
-    <thead>
-      <td>Build type</td>
-      <td>{{ .Params.cpu_debug.engine.build_type }}</td>
-    </thead>
-    <tr>
-      <td><abbr title="Using GCC compiler">Time to build</abbr></td>
-      <td>{{ .Params.build_times.debug }} seconds</td>
-    </tr>
-    <tr>
-      <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
-      <td>{{ .Params.startup_shutdown_times.debug }} ms</td>
-    </tr>
-    <tr>
-      <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
-      <td>{{ mul .Params.cpu_debug.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB</td>
-    </tr>
-  </table>
-
-  <table class="table-first-column-align-right">
-    <thead>
-      <td>Build type</td>
-      <td>{{ .Params.cpu_release.engine.build_type }}</td>
-    </thead>
-    <tr>
-      <td><abbr title="Using GCC compiler">Time to build</abbr></td>
-      <td>{{ .Params.build_times.release }} seconds</td>
-    </tr>
-    <tr>
-      <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
-      <td>{{ .Params.startup_shutdown_times.debug }} ms</td>
-    </tr>
-    <tr>
-      <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
-      <td>{{ mul .Params.cpu_release.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB</td>
-    </tr>
-  </table>
-</div>
+<table class="table-first-column-align-right">
+  <thead>
+    <td>Build type</td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.cpu_debug.engine.build_type }}<br></span>
+      <sub>Release</sub> {{ .Params.cpu_release.engine.build_type }}
+    </td>
+  </thead>
+  <tr>
+    <td><abbr title="Using GCC compiler">Time to build</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.build_time.debug }} seconds<br></span>
+      <sub>Release</sub> {{ .Params.build_time.release }} seconds
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Using GCC compiler">Build peak memory usage</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.build_peak_memory_usage.debug }} KB<br></span>
+      <sub>Release</sub> {{ .Params.build_peak_memory_usage.release }} KB
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.empty_project_startup_shutdown_time.debug }} ms<br></span>
+      <sub>Release</sub> {{ .Params.empty_project_startup_shutdown_time.release }} ms
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Measured on an empty project">Startup + shutdown peak memory usage</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.empty_project_startup_shutdown_peak_memory_usage.debug }} KB<br></span>
+      <sub>Release</sub> {{ .Params.empty_project_startup_shutdown_peak_memory_usage.release }} KB
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.cpu_debug.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB<br></span>
+      <sub>Release</sub> {{ mul .Params.cpu_release.engine.binary_size 0.001 | lang.FormatNumber 0 }} KB
+    </td>
+  </tr>
+</table>
 
 <h2>Benchmark results</h2>
 <em>For all values, lower is better.</em>
-<h3>CPU</h3>
-<table class="table-first-column-align-right">
-  <thead>
-    <tr>
-      <td>Name</td>
-      <td>Idle</td>
-      <td>Physics</td>
-      <td><abbr title="Time spent setting up the scene or executing the script">Main Thread Time</abbr></td>
-    </tr>
-  </thead>
-  <tbody>
-    {{/* Loop over CPU debug only, but also get data from release CPU runs. */}}
-    {{/* These runs are expected to have the same number of results available. */}}
-    {{ $idx := 0 }}
-    {{ range .Params.cpu_debug.benchmarks }}
-    <tr>
-      <td><sub>{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
-      <td>
-        {{ if gt .results.idle 0 }}
-        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.idle }} <sub>mspf</sub><br></span>
-        <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.idle }} <sub>mspf</sub>
-        {{ end }}
-      </td>
-      <td>
-        {{ if gt .results.physics 0 }}
-        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.physics }} <sub>mspf</sub><br></span>
-        <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.physics }} <sub>mspf</sub>
-        {{ end }}
-      </td>
-      <td>
-        {{ if gt .results.time 0 }}
-        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.time }} <sub>ms</sub><br></span>
-        <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.time }} <sub>ms</sub>
-        {{ end }}
-      </td>
-    </tr>
-    {{ $idx = add $idx 1}}
-    {{ end }}
-  </tbody>
-</table>
+<details open>
+  <summary><strong>CPU</strong></summary>
+  <table class="table-first-column-align-right">
+    <thead>
+      <tr>
+        <td>Name</td>
+        <td>Idle</td>
+        <td>Physics</td>
+        <td><abbr title="Time spent setting up the scene or executing the script">Main Thread Time</abbr></td>
+      </tr>
+    </thead>
+    <tbody>
+      {{/* Loop over CPU debug only, but also get data from release CPU runs. */}}
+      {{/* These runs are expected to have the same number of results available. */}}
+      {{ $idx := 0 }}
+      {{ range .Params.cpu_debug.benchmarks }}
+      <tr>
+        <td><sub style="opacity: 0.65">{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+        <td>
+          {{ if gt .results.idle 0 }}
+          <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.idle }} <sub>mspf</sub><br></span>
+          <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.idle }} <sub>mspf</sub>
+          {{ end }}
+        </td>
+        <td>
+          {{ if gt .results.physics 0 }}
+          <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.physics }} <sub>mspf</sub><br></span>
+          <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.physics }} <sub>mspf</sub>
+          {{ end }}
+        </td>
+        <td>
+          {{ if gt .results.time 0 }}
+          <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.time }} <sub>ms</sub><br></span>
+          <sub>Release</sub> {{ (index $.Params.cpu_release.benchmarks $idx).results.time }} <sub>ms</sub>
+          {{ end }}
+        </td>
+      </tr>
+      {{ $idx = add $idx 1}}
+      {{ end }}
+    </tbody>
+  </table>
+</details>
 
-<h3>GPU</h3>
-<table class="table-first-column-align-right">
-  <thead>
-    <tr>
-      <td>Name</td>
-      <td>Render CPU</td>
-      <td>Render GPU</td>
-    </tr>
-  </thead>
-  <tbody>
-    {{/* Loop over GPU AMD only, but also get data from Intel and NVIDIA GPU runs. */}}
-    {{/* These runs are expected to have the same number of results available. */}}
-    {{ $idx := 0 }}
-    {{ range .Params.gpu_amd.benchmarks }}
-    <tr>
-      <td><sub>{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
-      <td>
-        {{ if gt .results.render_cpu 0 }}
-        🔵 {{ (index $.Params.gpu_intel.benchmarks $idx).results.render_cpu }} <sub>mspf</sub><br>
-        🔴 {{ .results.render_cpu }} <sub>mspf</sub><br>
-        🟢 {{ (index $.Params.gpu_nvidia.benchmarks $idx).results.render_cpu }} <sub>mspf</sub>
-        {{ end }}
-      </td>
-      <td>
-        {{ if gt .results.render_gpu 0 }}
-        🔵 {{ (index $.Params.gpu_intel.benchmarks $idx).results.render_gpu }} <sub>mspf</sub><br>
-        🔴 {{ .results.render_gpu }} <sub>mspf</sub><br>
-        🟢 {{ (index $.Params.gpu_nvidia.benchmarks $idx).results.render_gpu }} <sub>mspf</sub>
-        {{ end }}
-      </td>
-    </tr>
-    {{ $idx = add $idx 1}}
-    {{ end }}
-  </tbody>
-</table>
+<details open>
+  <summary><strong>GPU</strong></summary>
+  <table class="table-first-column-align-right">
+    <thead>
+      <tr>
+        <td>Name</td>
+        <td>Render CPU</td>
+        <td>Render GPU</td>
+      </tr>
+    </thead>
+    <tbody>
+      {{/* Loop over GPU AMD only, but also get data from Intel and NVIDIA GPU runs. */}}
+      {{/* These runs are expected to have the same number of results available. */}}
+      {{ $idx := 0 }}
+      {{ range .Params.gpu_amd.benchmarks }}
+      <tr>
+        <td><sub style="opacity: 0.65">{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+        <td>
+          {{ if gt .results.render_cpu 0 }}
+          🔵 {{ (index $.Params.gpu_intel.benchmarks $idx).results.render_cpu }} <sub>mspf</sub><br>
+          🔴 {{ .results.render_cpu }} <sub>mspf</sub><br>
+          🟢 {{ (index $.Params.gpu_nvidia.benchmarks $idx).results.render_cpu }} <sub>mspf</sub>
+          {{ end }}
+        </td>
+        <td>
+          {{ if gt .results.render_gpu 0 }}
+          🔵 {{ (index $.Params.gpu_intel.benchmarks $idx).results.render_gpu }} <sub>mspf</sub><br>
+          🔴 {{ .results.render_gpu }} <sub>mspf</sub><br>
+          🟢 {{ (index $.Params.gpu_nvidia.benchmarks $idx).results.render_gpu }} <sub>mspf</sub>
+          {{ end }}
+        </td>
+      </tr>
+      {{ $idx = add $idx 1}}
+      {{ end }}
+    </tbody>
+  </table>
+</details>
 
 {{ end }}

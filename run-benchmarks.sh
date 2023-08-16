@@ -10,8 +10,21 @@ IFS=$'\n\t'
 export DIR
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Reduce log spam and avoid issues with self-compiled builds crashing:
+# https://github.com/godotengine/godot/issues/75409
+export MANGOHUD=0
+
 # Make the command line argument optional without tripping up `set -u`.
 ARG1="${1:-''}"
+
+restore_cpu_frequency() {
+  # Restore original CPU frequency scaling, turbo mode and hypertheading.
+  for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+    echo powersave | sudo tee "$core"
+  done
+  echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
+  echo on | sudo tee /sys/devices/system/cpu/smt/control
+}
 
 if [[ "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
   echo "Usage: $0 [--skip-build]"
@@ -23,6 +36,7 @@ if [[ ! -d "godot" ]]; then
 fi
 
 GODOT_REPO_DIR="$DIR/godot"
+GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
 # Use `performance` governor, disable turbo mode and hyperthreading to reduce fluctuations in CPU performance.
 for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
@@ -30,6 +44,8 @@ for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
 done
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo off | sudo tee /sys/devices/system/cpu/smt/control
+
+trap restore_cpu_frequency SIGINT
 
 if [[ "$ARG1" != "--skip-build" ]]; then
   pushd "$GODOT_REPO_DIR"
@@ -45,7 +61,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
     ccache --clear
   fi
   touch .gdignore
-  scons platform=linuxbsd target=template_debug progress=no -j$(nproc)
+  PEAK_MEMORY_BUILD_DEBUG=$(/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug progress=no -j$(nproc) 2>&1 | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
@@ -56,7 +72,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
     ccache --clear
   fi
   touch .gdignore
-  scons platform=linuxbsd target=template_release optimize=speed use_lto=yes progress=no -j$(nproc)
+  PEAK_MEMORY_BUILD_RELEASE=$(/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full progress=no -j$(nproc) 2>&1 | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
 
@@ -66,7 +82,7 @@ else
 fi
 
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
-GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_debug.x86_64"
+GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64"
 
 # Path to the Godot release binary to run. Used for CPU release and GPU benchmarks.
 # The release binary is assumed to be the same commit as the debug build.
@@ -87,46 +103,59 @@ OUTPUT_PATH="web/content/${DATE}_${COMMIT_HASH}.md"
 #  "gpu_amd": {...},
 #  "gpu_intel": {...},
 #  "gpu_nvidia": {...},
-#  "build_times": {"debug": 12345, "release": 12345},
-#  "startup_shutdown_times": {"debug": 12345, "release": 12345}
+#  "build_time": { "debug": 12345, "release": 12345 },
+#  "empty_project_startup_shutdown_time": { "debug": 12345, "release": 12345 }
 # }
 # Figure out if only the `benchmarks` section can be added to each type, with
 # `engine` and `system` being top-level to reduce data duplication (and with all GPUs listed).
 
-# Measure average engine startup + shutdown times over 20 runs (in milliseconds).
+# Measure average engine startup + shutdown times over 20 runs (in milliseconds),
+# as well as peak memory usage.
+
 # Perform a warmup run first.
-$GODOT_DEBUG --quit || true
+$GODOT_DEBUG --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
-	$GODOT_DEBUG --quit || true
+	$GODOT_DEBUG --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
 TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 20))"
 
+# Run for 100 frames to ensure the metric is for the fully ready project.
+PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG=$(/usr/bin/time -f "%M" "$GODOT_DEBUG" --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
+
 # Perform a warmup run first.
-$GODOT_RELEASE --quit || true
+$GODOT_RELEASE --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
-	$GODOT_RELEASE --quit || true
+	$GODOT_RELEASE --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
 TIME_TO_STARTUP_SHUTDOWN_RELEASE="$((TOTAL / 20))"
 
+# Run for 100 frames to ensure the metric is for the fully ready project.
+PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
+
+# Import resources in the project (required to run it).
+$GODOT_DEBUG --editor --quit-after 100
+
 # Run CPU benchmarks.
+
 $GODOT_DEBUG -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md"
 $GODOT_RELEASE -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md"
 
 # Run GPU benchmarks.
+# TODO: Run on different GPUs.
 $GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_amd.md"
-# TODO: Uncomment for production use.
-#$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_intel.md"
-#$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_nvidia.md"
+$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_intel.md"
+$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_nvidia.md"
 
 mkdir -p "$(dirname "$OUTPUT_PATH")"
+rm -f "$OUTPUT_PATH"
 cat > "$OUTPUT_PATH" << EOF
 {
   "cpu_debug": $(cat /tmp/cpu_debug.md),
@@ -134,13 +163,21 @@ cat > "$OUTPUT_PATH" << EOF
   "gpu_amd": $(cat /tmp/gpu_amd.md),
   "gpu_intel": $(cat /tmp/gpu_intel.md),
   "gpu_nvidia": $(cat /tmp/gpu_nvidia.md),
-  "build_times": {
+  "build_time": {
     "debug": $TIME_TO_BUILD_DEBUG,
     "release": $TIME_TO_BUILD_RELEASE
   },
-  "startup_shutdown_times": {
+  "build_peak_memory_usage": {
+    "debug": $PEAK_MEMORY_BUILD_DEBUG,
+    "debug": $PEAK_MEMORY_BUILD_RELEASE
+  },
+  "empty_project_startup_shutdown_time": {
     "debug": $TIME_TO_STARTUP_SHUTDOWN_DEBUG,
     "release": $TIME_TO_STARTUP_SHUTDOWN_RELEASE
+  },
+  "empty_project_startup_shutdown_peak_memory_usage": {
+    "debug": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG,
+    "release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
   }
 }
 EOF
@@ -155,14 +192,9 @@ pushd /tmp/godot-benchmarks-results/
 # appear on the web interface.
 hugo --source="$DIR/web/" --destination=/tmp/godot-benchmarks-results/ --minify
 git add .
-git commit --amend --no-edit
+git commit --amend --no-edit --no-gpg-sign
 git push -f
 
 popd
 
-# Restore original CPU frequency scaling, turbo mode and hypertheading.
-for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-  echo powersave | sudo tee "$core"
-done
-echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
-echo on | sudo tee /sys/devices/system/cpu/smt/control
+restore_cpu_frequency

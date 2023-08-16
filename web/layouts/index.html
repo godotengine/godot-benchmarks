@@ -14,7 +14,7 @@
       <summary>Performance over time</summary>
       <div id="benchmarks">
         <template id="benchmark-template">
-          <h4 id="benchmark-header" style="margin-top: -0.25rem; margin-bottom: -0.75rem"></h4>
+          <h6 id="benchmark-header" style="margin-left: 1rem; margin-top: 0.75rem; margin-bottom: 0"></h6>
           <div id="benchmark-graph"></div>
           <hr>
         </template>
@@ -24,15 +24,29 @@
 
   <h2>
     <details open>
-      <summary><abbr title="Measured on an empty project">Engine startup + shutdown time over time</abbr></summary>
-      <div id="benchmark-graph-engine-startup-shutdown-times"></div>
+      <summary><abbr title="Using GCC compiler on Linux">Engine build time over time</abbr></summary>
+      <div id="benchmark-graph-engine-build-time"></div>
+    </details>
   </h2>
-
 
   <h2>
     <details open>
-      <summary><abbr title="Using GCC compiler">Engine build times over time</abbr></summary>
-      <div id="benchmark-graph-engine-build-times"></div>
+      <summary><abbr title="Using GCC compiler on Linux">Engine build peak memory usage over time</abbr></summary>
+      <div id="benchmark-graph-engine-build-peak-memory-usage"></div>
+    </details>
+  </h2>
+
+  <h2>
+    <details open>
+      <summary><abbr title="Measured on an empty project">Engine startup + shutdown time over time</abbr></summary>
+      <div id="benchmark-graph-engine-startup-shutdown-time"></div>
+    </details>
+  </h2>
+
+  <h2>
+    <details open>
+      <summary><abbr title="Measured on an empty project">Engine startup + shutdown peak memory usage over time</abbr></summary>
+      <div id="benchmark-graph-engine-startup-shutdown-peak-memory-usage"></div>
     </details>
   </h2>
 
@@ -97,8 +111,8 @@
     other tasks in parallel – this page is served from GitHub Pages.
   </p>
   <p>
-    Benchmarks that make use of the GPU are run 3 times (once on each GPU).
-    Benchmarks that don't make use of the GPU are run only once.
+    Benchmarks that make use of the GPU are run 3 times (once on each GPU with a release build).
+    Benchmarks that don't make use of the GPU are run twice (once with a debug build, once with a release build).
   </p>
 </main>
 {{ end }}
@@ -127,6 +141,13 @@
     physics: "Physics",
     time: "Main Thread Time",
   };
+  const chartColors = {
+    amd: "#b91c1c",
+    intel: "#2074d9",
+    nvidia: "#65a30d",
+    cpu_debug: "#a855f7",
+    cpu_release: "#ca8a04",
+  };
 
   // Collect benchmark types from distinct runs. CPU release, GPU Intel and GPU
   // NVIDIA all use the same benchmark types as the CPU debug and GPU AMD runs.
@@ -148,7 +169,7 @@
       const header = document.getElementById("benchmark-header");
       // Make ID unique after cloning.
       header.id += benchmark.category + benchmark.name + resultType;
-      header.innerText = `${benchmark.category} > ${benchmark.name} - ${resultStrings[resultType]}`;
+      header.innerText = `${benchmark.category} > ${benchmark.name}: ${resultStrings[resultType]}`;
 
       const graph = document.getElementById("benchmark-graph");
       // Make ID unique after cloning.
@@ -193,10 +214,11 @@
           type: "line",
           height: 220,
           background: "transparent",
+          animations: { enabled: false },
         },
         colors: [
-          isGpu ? '#f44336' : '#909090',
-          isGpu ? '#7cb342' : '#806040',
+          isGpu ? chartColors.amd : chartColors.cpu_debug,
+          isGpu ? chartColors.nvidia : chartColors.cpu_release,
         ],
         theme: {
           mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
@@ -207,50 +229,16 @@
     });
   });
 
-  // Engine startup/shutdown times chart is handled separately from benchmark results.
-  const chartOptionsStartupShutdownTimes = {
-    series: [
-      {
-        name: "Debug template startup + shutdown time (seconds)",
-        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.startup_shutdown_times.debug)),
-      },
-      {
-        name: "Release template startup + shutdown time (seconds)",
-        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.startup_shutdown_times.release)),
-      },
-    ],
-    xaxis: {
-      categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
-    },
-    yaxis: {
-      min: 300,
-      max: 1900,
-      tickAmount: 4,
-    },
-    chart: {
-      id: "benchmark-graph-engine-startup-shutdown-times",
-      group: "benchmarks",
-      type: "line",
-      height: 220,
-      background: "transparent",
-    },
-    colors: ["#909090", "#806040"],
-    theme: {
-      mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-    },
-  };
-  new ApexCharts(document.getElementById("benchmark-graph-engine-startup-shutdown-times"), chartOptionsStartupShutdownTimes).render();
-
-  // Engine build times chart is handled separately from benchmark results.
-  const chartOptionsBuildTimes = {
+  // Engine build time chart is handled separately from benchmark results.
+  const chartOptionsBuildTime = {
     series: [
       {
         name: "Debug template build time (seconds)",
-        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_times.debug)),
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_time.debug)),
       },
       {
         name: "Release template build time (seconds)",
-        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_times.release)),
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_time.release)),
       },
     ],
     xaxis: {
@@ -262,18 +250,124 @@
       tickAmount: 4,
     },
     chart: {
-      id: "benchmark-graph-engine-build-times",
+      id: "benchmark-graph-engine-build-time",
       group: "benchmarks",
       type: "line",
       height: 220,
       background: "transparent",
+      animations: { enabled: false },
     },
-    colors: ["#909090", "#806040"],
+    colors: [chartColors.cpu_debug, chartColors.cpu_release],
     theme: {
       mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     },
   };
-  new ApexCharts(document.getElementById("benchmark-graph-engine-build-times"), chartOptionsBuildTimes).render();
+  new ApexCharts(document.getElementById("benchmark-graph-engine-build-time"), chartOptionsBuildTime).render();
+
+  // Engine build peak memory usage chart is handled separately from benchmark results.
+  const chartOptionsBuildPeakMemoryUsage = {
+    series: [
+      {
+        name: "Debug template build peak memory usage (KB)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_peak_memory_usage.debug)),
+      },
+      {
+        name: "Release template build peak memory usage (KB)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.build_peak_memory_usage.release)),
+      },
+    ],
+    xaxis: {
+      categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
+    },
+    yaxis: {
+      min: 500,
+      max: 5000,
+      tickAmount: 4,
+    },
+    chart: {
+      id: "benchmark-graph-engine-build-peak-memory-usage",
+      group: "benchmarks",
+      type: "line",
+      height: 220,
+      background: "transparent",
+      animations: { enabled: false },
+    },
+    colors: [chartColors.cpu_debug, chartColors.cpu_release],
+    theme: {
+      mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    },
+  };
+  new ApexCharts(document.getElementById("benchmark-graph-engine-build-peak-memory-usage"), chartOptionsBuildPeakMemoryUsage).render();
+
+  // Engine startup/shutdown time chart is handled separately from benchmark results.
+  const chartOptionsStartupShutdownTime = {
+    series: [
+      {
+        name: "Debug template startup + shutdown time (seconds)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.empty_project_startup_shutdown_time.debug)),
+      },
+      {
+        name: "Release template startup + shutdown time (seconds)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.empty_project_startup_shutdown_time.release)),
+      },
+    ],
+    xaxis: {
+      categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
+    },
+    yaxis: {
+      min: 300,
+      max: 1900,
+      tickAmount: 4,
+    },
+    chart: {
+      id: "benchmark-graph-engine-startup-shutdown-time",
+      group: "benchmarks",
+      type: "line",
+      height: 220,
+      background: "transparent",
+      animations: { enabled: false },
+    },
+    colors: [chartColors.cpu_debug, chartColors.cpu_release],
+    theme: {
+      mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    },
+  };
+  new ApexCharts(document.getElementById("benchmark-graph-engine-startup-shutdown-time"), chartOptionsStartupShutdownTime).render();
+
+  // Engine startup/shutdown peak memory usage chart is handled separately from benchmark results.
+  const chartOptionsStartupShutdownPeakMemoryUsage = {
+    series: [
+      {
+        name: "Debug template startup + shutdown peak memory usage (KB)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.empty_project_startup_shutdown_peak_memory_usage.debug)),
+      },
+      {
+        name: "Release template startup + shutdown peak memory usage (KB)",
+        data: benchmarkJSONs.map(benchmark => Math.round(benchmark.empty_project_startup_shutdown_peak_memory_usage.release)),
+      },
+    ],
+    xaxis: {
+      categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
+    },
+    yaxis: {
+      min: 200,
+      max: 400,
+      tickAmount: 4,
+    },
+    chart: {
+      id: "benchmark-graph-engine-startup-shutdown-peak-memory-usage",
+      group: "benchmarks",
+      type: "line",
+      height: 220,
+      background: "transparent",
+      animations: { enabled: false },
+    },
+    colors: [chartColors.cpu_debug, chartColors.cpu_release],
+    theme: {
+      mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    },
+  };
+  new ApexCharts(document.getElementById("benchmark-graph-engine-startup-shutdown-peak-memory-usage"), chartOptionsStartupShutdownPeakMemoryUsage).render();
 
   // Binary size chart is handled separately from benchmark results.
   const chartOptionsBinarySize = {
@@ -291,8 +385,8 @@
       categories: benchmarkJSONs.map(benchmark => benchmark.cpu_debug.engine.version_hash.substring(0, 9)),
     },
     yaxis: {
-      min: 60_000,
-      max: 80_000,
+      min: 80_000,
+      max: 100_000,
       tickAmount: 4,
     },
     chart: {
@@ -301,8 +395,9 @@
       type: "line",
       height: 220,
       background: "transparent",
+      animations: { enabled: false },
     },
-    colors: ["#909090", "#806040"],
+    colors: [chartColors.cpu_debug, chartColors.cpu_release],
     theme: {
       mode: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     },
