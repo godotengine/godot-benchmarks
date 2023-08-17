@@ -28,6 +28,11 @@ restore_cpu_frequency() {
   done
 }
 
+if ! command -v hugo &> /dev/null; then
+  echo "ERROR: hugo (standard or extended) must be installed and in PATH: https://gohugo.io"
+  exit 1
+fi
+
 if [[ "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
   echo "Usage: $0 [--skip-build]"
   exit
@@ -47,33 +52,40 @@ done
 echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
 echo off | sudo tee /sys/devices/system/cpu/smt/control
 
+# Restore CPU frequency scaling if the script is canceled with Ctrl + C before it's done running.
+# TODO: Run on errors as well.
 trap restore_cpu_frequency SIGINT
 
 if [[ "$ARG1" != "--skip-build" ]]; then
   pushd "$GODOT_REPO_DIR"
+
+  git reset --hard
+  git clean -qdfx --exclude bin
+  git pull
+
+  if command -v ccache &> /dev/null; then
+    # Clear ccache to avoid skewing the build time results.
+    ccache --clear
+  fi
+  touch .gdignore
 
   # Measure clean build times for debug and release builds (in milliseconds).
   # Also create a `.gdignore` file to prevent Godot from importing resources
   # within the Godot Git clone.
   # WARNING: Any untracked and ignored files included in the repository will be removed!
   BEGIN="$(date +%s%3N)"
-  git clean -qdfx --exclude bin
-  if command -v ccache &> /dev/null; then
-    # Clear ccache to avoid skewing the build time results.
-    ccache --clear
-  fi
-  touch .gdignore
   PEAK_MEMORY_BUILD_DEBUG=$(/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug progress=no -j$(nproc) 2>&1 | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
-  BEGIN="$(date +%s%3N)"
   git clean -qdfx --exclude bin
   if command -v ccache &> /dev/null; then
     # Clear ccache to avoid skewing the build time results.
     ccache --clear
   fi
   touch .gdignore
+
+  BEGIN="$(date +%s%3N)"
   PEAK_MEMORY_BUILD_RELEASE=$(/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full progress=no -j$(nproc) 2>&1 | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
@@ -81,6 +93,10 @@ if [[ "$ARG1" != "--skip-build" ]]; then
   popd
 else
   echo "run-benchmarks: Skipping engine build as requested on the command line."
+  TIME_TO_BUILD_DEBUG=1
+  TIME_TO_BUILD_RELEASE=1
+  PEAK_MEMORY_BUILD_DEBUG=1
+  PEAK_MEMORY_BUILD_RELEASE=1
 fi
 
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
@@ -96,7 +112,6 @@ strip "$GODOT_DEBUG" "$GODOT_RELEASE"
 
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
-OUTPUT_PATH="web/content/${DATE}_${COMMIT_HASH}.md"
 
 # TODO: Concatenate JSONs into a single JSON file as follows:
 # {
@@ -156,7 +171,16 @@ $GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-jso
 $GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_intel.md"
 $GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_nvidia.md"
 
-mkdir -p "$(dirname "$OUTPUT_PATH")"
+rm -rf /tmp/godot-benchmarks-results/
+# TODO: Change to godotengine organization URL.
+# Clone a copy of the repository so we can push the new JSON files to it.
+# The website build is performed by GitHub Actions on the `main` branch of the repository below,
+# so we only push files to it and do nothing else.
+git clone git@github.com:Calinou/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
+
+pushd /tmp/godot-benchmarks-results/
+
+OUTPUT_PATH="/tmp/godot-benchmarks-results/${DATE}_${COMMIT_HASH}.md"
 rm -f "$OUTPUT_PATH"
 cat > "$OUTPUT_PATH" << EOF
 {
@@ -184,19 +208,15 @@ cat > "$OUTPUT_PATH" << EOF
 }
 EOF
 
-rm -rf /tmp/godot-benchmarks/
-# TODO: Change to godotengine organization URL.
-# Clone a second copy of the repository so we can push the built files to it.
-git clone --branch=gh-pages git@github.com:Calinou/godot-benchmarks.git /tmp/godot-benchmarks/
-
-pushd /tmp/godot-benchmarks/
-
-# Build website files in `web/` after running all benchmarks, so that benchmarks
+# Build website files after running all benchmarks, so that benchmarks
 # appear on the web interface.
-hugo --source="$DIR/web/" --destination=/tmp/godot-benchmarks/ --minify
 git add .
-git commit --amend --no-edit --no-gpg-sign --message "Deploy to GitHub Pages"
-git push -f
+git config --local user.name "Godot Benchmarks"
+git config --local user.email "godot-benchmarks@example.com"
+git commit --no-gpg-sign --message "Deploy benchmark results of $COMMIT_HASH (master at $DATE)
+
+https://github.com/godotengine/godot/commit/$COMMIT_HASH"
+git push
 
 popd
 

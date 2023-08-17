@@ -1,4 +1,5 @@
-baseURL = 'https://godotengine.github.io/godot-benchmarks/'
+# TODO: Change to godotengine organization URL.
+baseURL = 'https://calinou.github.io/godot-benchmarks-results/'
 languageCode = 'en-us'
 title = 'Godot Benchmarks'
 
