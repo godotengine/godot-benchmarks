@@ -42,19 +42,17 @@ if [[ ! -d "godot" ]]; then
   git clone https://github.com/godotengine/godot.git
 fi
 
-GODOT_REPO_DIR="$DIR/godot"
-GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
-
-# Use `performance` governor, disable turbo mode and hyperthreading to reduce fluctuations in CPU performance.
+# Use `performance` governor for a slight boost in building times.
 for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
   echo performance | sudo tee "$core"
 done
-echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
-echo off | sudo tee /sys/devices/system/cpu/smt/control
 
 # Restore CPU frequency scaling if the script is canceled with Ctrl + C before it's done running.
 # TODO: Run on errors as well.
 trap restore_cpu_frequency SIGINT
+
+GODOT_REPO_DIR="$DIR/godot"
+GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
 if [[ "$ARG1" != "--skip-build" ]]; then
   pushd "$GODOT_REPO_DIR"
@@ -113,18 +111,9 @@ strip "$GODOT_DEBUG" "$GODOT_RELEASE"
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
 
-# TODO: Concatenate JSONs into a single JSON file as follows:
-# {
-#  "cpu_debug": {...},
-#  "cpu_release": {...},
-#  "gpu_amd": {...},
-#  "gpu_intel": {...},
-#  "gpu_nvidia": {...},
-#  "build_time": { "debug": 12345, "release": 12345 },
-#  "empty_project_startup_shutdown_time": { "debug": 12345, "release": 12345 }
-# }
-# Figure out if only the `benchmarks` section can be added to each type, with
-# `engine` and `system` being top-level to reduce data duplication (and with all GPUs listed).
+# Disable turbo mode and hyperthreading to reduce fluctuations in CPU performance.
+echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
+echo off | sudo tee /sys/devices/system/cpu/smt/control
 
 # Measure average engine startup + shutdown times over 20 runs (in milliseconds),
 # as well as peak memory usage.
