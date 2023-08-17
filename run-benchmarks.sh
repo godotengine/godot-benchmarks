@@ -14,10 +14,14 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # https://github.com/godotengine/godot/issues/75409
 export MANGOHUD=0
 
+# Set X11 display for headless usage (with a X server running separately).
+export DISPLAY=":0"
+
 # Make the command line argument optional without tripping up `set -u`.
 ARG1="${1:-''}"
 
 restore_cpu_frequency() {
+  echo "run-benchmarks: Restoring original CPU frequency scaling."
   # Restore original CPU frequency scaling, turbo mode and hypertheading.
   echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
   echo on | sudo tee /sys/devices/system/cpu/smt/control
@@ -38,9 +42,13 @@ if [[ "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
   exit
 fi
 
-if [[ ! -d "godot" ]]; then
-  git clone https://github.com/godotengine/godot.git
+GODOT_REPO_DIR="$DIR/godot"
+
+if [[ ! -d "$GODOT_REPO_DIR/.git" ]]; then
+  git clone https://github.com/godotengine/godot.git "$GODOT_REPO_DIR"
 fi
+
+echo "run-benchmarks: Applying CPU frequency scaling optimized for stable benchmarking results."
 
 # Use `performance` governor for a slight boost in building times.
 for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
@@ -51,7 +59,6 @@ done
 # TODO: Run on errors as well.
 trap restore_cpu_frequency SIGINT
 
-GODOT_REPO_DIR="$DIR/godot"
 GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
 if [[ "$ARG1" != "--skip-build" ]]; then
@@ -108,6 +115,9 @@ GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64"
 # Strip debugging symbols for fair binary size comparison.
 strip "$GODOT_DEBUG" "$GODOT_RELEASE"
 
+BINARY_SIZE_DEBUG="$(stat --printf="%s" "$GODOT_DEBUG")"
+BINARY_SIZE_RELEASE="$(stat --printf="%s" "$GODOT_RELEASE")"
+
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
 
@@ -119,46 +129,46 @@ echo off | sudo tee /sys/devices/system/cpu/smt/control
 # as well as peak memory usage.
 
 # Perform a warmup run first.
-$GODOT_DEBUG --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+$GODOT_DEBUG --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
-	$GODOT_DEBUG --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+	$GODOT_DEBUG --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
 TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 20))"
 
 # Run for 100 frames to ensure the metric is for the fully ready project.
-PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG=$(/usr/bin/time -f "%M" "$GODOT_DEBUG" --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
+PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG=$(/usr/bin/time -f "%M" "$GODOT_DEBUG" --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
 
 # Perform a warmup run first.
-$GODOT_RELEASE --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+$GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
-	$GODOT_RELEASE --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+	$GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
 TIME_TO_STARTUP_SHUTDOWN_RELEASE="$((TOTAL / 20))"
 
 # Run for 100 frames to ensure the metric is for the fully ready project.
-PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
+PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
 
 # Import resources in the project (required to run it).
 $GODOT_DEBUG --editor --quit-after 100
 
 # Run CPU benchmarks.
 
-$GODOT_DEBUG -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md"
-$GODOT_RELEASE -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md"
+$GODOT_DEBUG --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md" --json-results-prefix="cpu_debug"
+$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md" --json-results-prefix="cpu_release"
 
 # Run GPU benchmarks.
 # TODO: Run on different GPUs.
-$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_amd.md"
-$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_intel.md"
-$GODOT_RELEASE -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/gpu_nvidia.md"
+$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/amd.md" --json-results-prefix="amd"
+$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/intel.md" --json-results-prefix="intel"
+$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
 
 rm -rf /tmp/godot-benchmarks-results/
 # TODO: Change to godotengine organization URL.
@@ -170,14 +180,13 @@ git clone git@github.com:Calinou/godot-benchmarks-results.git /tmp/godot-benchma
 pushd /tmp/godot-benchmarks-results/
 
 OUTPUT_PATH="/tmp/godot-benchmarks-results/${DATE}_${COMMIT_HASH}.md"
-rm -f "$OUTPUT_PATH"
-cat > "$OUTPUT_PATH" << EOF
+rm -f "$OUTPUT_PATH" /tmp/extra.md
+cat > /tmp/extra.md << EOF
 {
-  "cpu_debug": $(cat /tmp/cpu_debug.md),
-  "cpu_release": $(cat /tmp/cpu_release.md),
-  "gpu_amd": $(cat /tmp/gpu_amd.md),
-  "gpu_intel": $(cat /tmp/gpu_intel.md),
-  "gpu_nvidia": $(cat /tmp/gpu_nvidia.md),
+  "binary_size": {
+    "debug": $BINARY_SIZE_DEBUG,
+    "release": $BINARY_SIZE_RELEASE
+  },
   "build_time": {
     "debug": $TIME_TO_BUILD_DEBUG,
     "release": $TIME_TO_BUILD_RELEASE
@@ -196,6 +205,16 @@ cat > "$OUTPUT_PATH" << EOF
   }
 }
 EOF
+# TODO: Include extra.md
+jq \
+    --slurpfile cpu_debug /tmp/cpu_debug.md \
+    --slurpfile cpu_release /tmp/cpu_release.md \
+    --slurpfile amd /tmp/amd.md \
+    --slurpfile intel /tmp/intel.md \
+    --slurpfile nvidia /tmp/nvidia.md \
+    --null-input '{ benchmarks: [ $cpu_debug[0].benchmarks[] * $cpu_release[0].benchmarks[] * $amd[0].benchmarks[] * $intel[0].benchmarks[] * $nvidia[0].benchmarks[] ] }' \
+    > "$OUTPUT_PATH"
+#jq '{value} * (input | {value})' /tmp/{cpu_debug,cpu_release,amd,intel,nvidia,extra}.md > "$OUTPUT_PATH"
 
 # Build website files after running all benchmarks, so that benchmarks
 # appear on the web interface.
