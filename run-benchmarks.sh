@@ -32,8 +32,13 @@ restore_cpu_frequency() {
   done
 }
 
-if ! command -v hugo &> /dev/null; then
-  echo "ERROR: hugo (standard or extended) must be installed and in PATH: https://gohugo.io"
+if ! command -v git &> /dev/null; then
+  echo "ERROR: git must be installed and in PATH."
+  exit 1
+fi
+
+if ! command -v jq &> /dev/null; then
+  echo "ERROR: jq must be installed and in PATH."
   exit 1
 fi
 
@@ -62,7 +67,7 @@ trap restore_cpu_frequency SIGINT
 GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
 if [[ "$ARG1" != "--skip-build" ]]; then
-  pushd "$GODOT_REPO_DIR"
+  cd "$GODOT_REPO_DIR"
 
   git reset --hard
   git clean -qdfx --exclude bin
@@ -95,7 +100,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
   END="$(date +%s%3N)"
   TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
 
-  popd
+  cd "$DIR"
 else
   echo "run-benchmarks: Skipping engine build as requested on the command line."
   TIME_TO_BUILD_DEBUG=1
@@ -129,10 +134,12 @@ echo off | sudo tee /sys/devices/system/cpu/smt/control
 # as well as peak memory usage.
 
 # Perform a warmup run first.
+echo "Performing debug warmup run."
 $GODOT_DEBUG --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
+  echo "Performing benchmark debug startup/shutdown run."
 	$GODOT_DEBUG --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
@@ -140,13 +147,16 @@ done
 TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 20))"
 
 # Run for 100 frames to ensure the metric is for the fully ready project.
+echo "Performing benchmark debug peak memory usage run."
 PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG=$(/usr/bin/time -f "%M" "$GODOT_DEBUG" --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
 
 # Perform a warmup run first.
+echo "Performing release warmup run."
 $GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
+  echo "Performing benchmark release startup/shutdown run."
 	$GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
@@ -154,13 +164,17 @@ done
 TIME_TO_STARTUP_SHUTDOWN_RELEASE="$((TOTAL / 20))"
 
 # Run for 100 frames to ensure the metric is for the fully ready project.
+echo "Performing benchmark release peak memory usage run."
 PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
 
 # Import resources in the project (required to run it).
+echo "Performing resource importing."
 $GODOT_DEBUG --editor --quit-after 100
 
 # Run CPU benchmarks.
 
+echo "Running CPU benchmarks."
+pwd
 $GODOT_DEBUG --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md" --json-results-prefix="cpu_debug"
 $GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md" --json-results-prefix="cpu_release"
 
@@ -177,7 +191,7 @@ rm -rf /tmp/godot-benchmarks-results/
 # so we only push files to it and do nothing else.
 git clone git@github.com:Calinou/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
 
-pushd /tmp/godot-benchmarks-results/
+cd /tmp/godot-benchmarks-results/
 
 OUTPUT_PATH="/tmp/godot-benchmarks-results/${DATE}_${COMMIT_HASH}.md"
 rm -f "$OUTPUT_PATH" /tmp/extra.md
@@ -205,15 +219,37 @@ cat > /tmp/extra.md << EOF
   }
 }
 EOF
+# Perform JSON merging iteratively to avoid running out of memory (combinational explosion).
+# NOTE: Don't write to a file while reading it.
 # TODO: Include extra.md
 jq \
     --slurpfile cpu_debug /tmp/cpu_debug.md \
     --slurpfile cpu_release /tmp/cpu_release.md \
+    --null-input '{ benchmarks: [$cpu_debug[0].benchmarks[] * $cpu_release[0].benchmarks[]] }' \
+    > "$OUTPUT_PATH.cpu"
+jq \
+    --slurpfile previous "$OUTPUT_PATH.cpu" \
     --slurpfile amd /tmp/amd.md \
+    --null-input '{ benchmarks: [$previous[0].benchmarks[] * $amd[0].benchmarks[]] }' \
+    > "$OUTPUT_PATH.amd"
+jq \
+    --slurpfile previous "$OUTPUT_PATH.amd" \
     --slurpfile intel /tmp/intel.md \
+    --null-input '{ benchmarks: [$previous[0].benchmarks[] * $intel[0].benchmarks[]] }' \
+    > "$OUTPUT_PATH.intel"
+jq \
+    --slurpfile previous "$OUTPUT_PATH.intel" \
     --slurpfile nvidia /tmp/nvidia.md \
-    --null-input '{ benchmarks: [ $cpu_debug[0].benchmarks[] * $cpu_release[0].benchmarks[] * $amd[0].benchmarks[] * $intel[0].benchmarks[] * $nvidia[0].benchmarks[] ] }' \
+    --null-input '{ benchmarks: [$previous[0].benchmarks[] * $nvidia[0].benchmarks[]] }' \
     > "$OUTPUT_PATH"
+# jq \
+#     --slurpfile cpu_debug /tmp/cpu_debug.md \
+#     --slurpfile cpu_release /tmp/cpu_release.md \
+#     --slurpfile amd /tmp/amd.md \
+#     --slurpfile intel /tmp/intel.md \
+#     --slurpfile nvidia /tmp/nvidia.md \
+#     --null-input '{ benchmarks: [ $cpu_debug[0].benchmarks[] * $cpu_release[0].benchmarks[] * $amd[0].benchmarks[] * $intel[0].benchmarks[] * $nvidia[0].benchmarks[] ] }' \
+#     > "$OUTPUT_PATH"
 #jq '{value} * (input | {value})' /tmp/{cpu_debug,cpu_release,amd,intel,nvidia,extra}.md > "$OUTPUT_PATH"
 
 # Build website files after running all benchmarks, so that benchmarks
@@ -226,6 +262,6 @@ git commit --no-gpg-sign --message "Deploy benchmark results of $COMMIT_HASH (ma
 https://github.com/godotengine/godot/commit/$COMMIT_HASH"
 git push
 
-popd
+cd "$DIR"
 
 restore_cpu_frequency
