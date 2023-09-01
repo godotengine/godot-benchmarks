@@ -253,11 +253,20 @@ func get_results_dict(results_prefix: String = "") -> Dictionary:
 
 	var benchmarks := []
 	for test_id in get_test_ids():
-		benchmarks.push_back({
-			category = test_id.pretty_category(),
-			name = test_id.pretty_name(),
-			results = get_test_result_as_dict(test_id, results_prefix),
-		})
+		var result_dict := get_test_result_as_dict(test_id, results_prefix)
+		# Only write a dictionary if a benchmark was run for it.
+		var should_write_dict := false
+		if results_prefix.is_empty():
+			should_write_dict = not result_dict.is_empty()
+		else:
+			should_write_dict = not result_dict[results_prefix].is_empty()
+
+		if should_write_dict:
+			benchmarks.push_back({
+				category = test_id.pretty_category(),
+				name = test_id.pretty_name(),
+				results = result_dict,
+			})
 
 	dict.benchmarks = benchmarks
 
