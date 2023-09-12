@@ -214,10 +214,12 @@ func get_test_result_as_dict(test_id: TestID, results_prefix: String = "") -> Di
 		if metric.type == TYPE_FLOAT:
 			var m : float = result.get(metric.name)
 			const sig_figs = 4
-			if not results_prefix.is_empty():
-				rv[results_prefix][metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
-			else:
-				rv[metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
+			if not is_zero_approx(m):
+				# Only store metrics if not 0 to reduce JSON size.
+				if not results_prefix.is_empty():
+					rv[results_prefix][metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
+				else:
+					rv[metric.name] = snapped(m, pow(10,floor(log(m)/log(10))-sig_figs+1))
 
 	return rv
 
