@@ -37,11 +37,6 @@ if ! command -v git &> /dev/null; then
   exit 1
 fi
 
-if ! command -v jq &> /dev/null; then
-  echo "ERROR: jq must be installed and in PATH."
-  exit 1
-fi
-
 if [[ "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
   echo "Usage: $0 [--skip-build]"
   exit
@@ -193,64 +188,40 @@ git clone git@github.com:Calinou/godot-benchmarks-results.git /tmp/godot-benchma
 
 cd /tmp/godot-benchmarks-results/
 
+# Merge benchmark run JSONs together.
+# Use editor build as release build errors due to missing PCK file.
+$GODOT_DEBUG --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md --output-path /tmp/merged.md
+
 OUTPUT_PATH="/tmp/godot-benchmarks-results/${DATE}_${COMMIT_HASH}.md"
-rm -f "$OUTPUT_PATH" /tmp/extra.md
-cat > /tmp/extra.md << EOF
-{
-  "binary_size": {
-    "debug": $BINARY_SIZE_DEBUG,
-    "release": $BINARY_SIZE_RELEASE
-  },
-  "build_time": {
-    "debug": $TIME_TO_BUILD_DEBUG,
-    "release": $TIME_TO_BUILD_RELEASE
-  },
-  "build_peak_memory_usage": {
-    "debug": $PEAK_MEMORY_BUILD_DEBUG,
-    "release": $PEAK_MEMORY_BUILD_RELEASE
-  },
-  "empty_project_startup_shutdown_time": {
-    "debug": $TIME_TO_STARTUP_SHUTDOWN_DEBUG,
-    "release": $TIME_TO_STARTUP_SHUTDOWN_RELEASE
-  },
-  "empty_project_startup_shutdown_peak_memory_usage": {
-    "debug": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG,
-    "release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
-  }
+rm -f "$OUTPUT_PATH"
+
+# Add extra JSON at the end of the merged JSON. We assume the merged JSON has no
+# newline at the end of file, as Godot writes it. To append more data to the
+# JSON dictionary, we remove the last `}` character and add a `,` instead.
+EXTRA_JSON=$(cat << EOF
+"binary_size": {
+  "debug": $BINARY_SIZE_DEBUG,
+  "release": $BINARY_SIZE_RELEASE
+},
+"build_time": {
+  "debug": $TIME_TO_BUILD_DEBUG,
+  "release": $TIME_TO_BUILD_RELEASE
+},
+"build_peak_memory_usage": {
+  "debug": $PEAK_MEMORY_BUILD_DEBUG,
+  "release": $PEAK_MEMORY_BUILD_RELEASE
+},
+"empty_project_startup_shutdown_time": {
+  "debug": $TIME_TO_STARTUP_SHUTDOWN_DEBUG,
+  "release": $TIME_TO_STARTUP_SHUTDOWN_RELEASE
+},
+"empty_project_startup_shutdown_peak_memory_usage": {
+  "debug": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG,
+  "release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
 }
 EOF
-# Perform JSON merging iteratively to avoid running out of memory (combinational explosion).
-# NOTE: Don't write to a file while reading it.
-# TODO: Include extra.md
-jq \
-    --slurpfile cpu_debug /tmp/cpu_debug.md \
-    --slurpfile cpu_release /tmp/cpu_release.md \
-    --null-input '{ benchmarks: [$cpu_debug[0].benchmarks[] * $cpu_release[0].benchmarks[]] }' \
-    > "$OUTPUT_PATH.cpu"
-jq \
-    --slurpfile previous "$OUTPUT_PATH.cpu" \
-    --slurpfile amd /tmp/amd.md \
-    --null-input '{ benchmarks: [$previous[0].benchmarks[] * $amd[0].benchmarks[]] }' \
-    > "$OUTPUT_PATH.amd"
-jq \
-    --slurpfile previous "$OUTPUT_PATH.amd" \
-    --slurpfile intel /tmp/intel.md \
-    --null-input '{ benchmarks: [$previous[0].benchmarks[] * $intel[0].benchmarks[]] }' \
-    > "$OUTPUT_PATH.intel"
-jq \
-    --slurpfile previous "$OUTPUT_PATH.intel" \
-    --slurpfile nvidia /tmp/nvidia.md \
-    --null-input '{ benchmarks: [$previous[0].benchmarks[] * $nvidia[0].benchmarks[]] }' \
-    > "$OUTPUT_PATH"
-# jq \
-#     --slurpfile cpu_debug /tmp/cpu_debug.md \
-#     --slurpfile cpu_release /tmp/cpu_release.md \
-#     --slurpfile amd /tmp/amd.md \
-#     --slurpfile intel /tmp/intel.md \
-#     --slurpfile nvidia /tmp/nvidia.md \
-#     --null-input '{ benchmarks: [ $cpu_debug[0].benchmarks[] * $cpu_release[0].benchmarks[] * $amd[0].benchmarks[] * $intel[0].benchmarks[] * $nvidia[0].benchmarks[] ] }' \
-#     > "$OUTPUT_PATH"
-#jq '{value} * (input | {value})' /tmp/{cpu_debug,cpu_release,amd,intel,nvidia,extra}.md > "$OUTPUT_PATH"
+)
+echo "$(head -c -1 /tmp/merged.md),$EXTRA_JSON}" > "$OUTPUT_PATH"
 
 # Build website files after running all benchmarks, so that benchmarks
 # appear on the web interface.
