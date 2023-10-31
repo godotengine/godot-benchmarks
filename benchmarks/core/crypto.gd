@@ -1,27 +1,31 @@
 extends Benchmark
 
-const ITERATIONS = 100_000
+const BYTES_SMALL = 100_000_000
+const BYTES = 1_000_000_000
 
 var crypto := Crypto.new()
 
-
-func benchmark_generate_10_random_bytes() -> void:
-	for i in ITERATIONS:
+func benchmark_generate_1m_random_bytes_10_at_a_time() -> void:
+	var iterations = BYTES_SMALL / 10
+	for i in iterations:
 		crypto.generate_random_bytes(10)
 
 
-func benchmark_generate_1k_random_bytes() -> void:
-	for i in ITERATIONS:
+func benchmark_generate_1g_random_bytes_1k_at_a_time() -> void:
+	var iterations = BYTES / 1000
+	for i in iterations:
 		crypto.generate_random_bytes(1000)
 
 
-func benchmark_generate_1m_random_bytes() -> void:
-	for i in ITERATIONS:
+func benchmark_generate_1g_random_bytes_1m_at_a_time() -> void:
+	var iterations = BYTES / 1_000_000
+	for i in iterations:
 		crypto.generate_random_bytes(1_000_000)
 
 
-func benchmark_generate_1g_random_bytes() -> void:
-	for i in ITERATIONS:
+func benchmark_generate_1g_random_bytes_at_once() -> void:
+	var iterations = BYTES / 1_000_000_000
+	for i in iterations:
 		crypto.generate_random_bytes(1_000_000_000)
 
 
