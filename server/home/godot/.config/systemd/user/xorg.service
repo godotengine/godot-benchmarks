@@ -1,0 +1,5 @@
+[Service]
+ExecStart=xinit
+
+[Install]
+WantedBy=multi-user.target

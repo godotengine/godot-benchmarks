@@ -1,0 +1,5 @@
+[Service]
+ExecStart=/home/godot/godot-benchmarks/run-benchmarks.sh
+
+[Install]
+WantedBy=multi-user.target
