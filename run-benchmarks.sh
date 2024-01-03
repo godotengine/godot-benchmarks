@@ -56,8 +56,8 @@ for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
 done
 
 # Restore CPU frequency scaling if the script is canceled with Ctrl + C before it's done running.
-# TODO: Run on errors as well.
 trap restore_cpu_frequency SIGINT
+trap restore_cpu_frequency ERR
 
 GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
