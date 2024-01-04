@@ -22,11 +22,7 @@ ARG1="${1:-''}"
 
 restore_cpu_frequency() {
   echo "run-benchmarks: Restoring original CPU frequency scaling."
-  # Restore original CPU frequency scaling, turbo mode and hypertheading.
-  echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
-  echo on | sudo tee /sys/devices/system/cpu/smt/control
-  # Wait for CPU cores to be back online before changing the governor.
-  sleep 1
+  # Restore original CPU frequency scaling.
   for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
     echo powersave | sudo tee "$core"
   done
@@ -50,14 +46,13 @@ fi
 
 echo "run-benchmarks: Applying CPU frequency scaling optimized for stable benchmarking results."
 
-# Use `performance` governor for a slight boost in building times.
+# Use `performance` governor for a slight boost in building times and more consistent performance.
 for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
   echo performance | sudo tee "$core"
 done
 
 # Restore CPU frequency scaling if the script is canceled with Ctrl + C before it's done running.
-trap restore_cpu_frequency SIGINT
-trap restore_cpu_frequency ERR
+trap restore_cpu_frequency SIGINT ERR
 
 GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
@@ -120,10 +115,6 @@ BINARY_SIZE_RELEASE="$(stat --printf="%s" "$GODOT_RELEASE")"
 
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
-
-# Disable turbo mode and hyperthreading to reduce fluctuations in CPU performance.
-echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo
-echo off | sudo tee /sys/devices/system/cpu/smt/control
 
 # Measure average engine startup + shutdown times over 20 runs (in milliseconds),
 # as well as peak memory usage.
