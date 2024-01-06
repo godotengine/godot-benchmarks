@@ -20,14 +20,6 @@ export DISPLAY=":0"
 # Make the command line argument optional without tripping up `set -u`.
 ARG1="${1:-''}"
 
-restore_cpu_frequency() {
-  echo "run-benchmarks: Restoring original CPU frequency scaling."
-  # Restore original CPU frequency scaling.
-  for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-    echo powersave | sudo tee "$core"
-  done
-}
-
 if ! command -v git &> /dev/null; then
   echo "ERROR: git must be installed and in PATH."
   exit 1
@@ -43,16 +35,6 @@ GODOT_REPO_DIR="$DIR/godot"
 if [[ ! -d "$GODOT_REPO_DIR/.git" ]]; then
   git clone https://github.com/godotengine/godot.git "$GODOT_REPO_DIR"
 fi
-
-echo "run-benchmarks: Applying CPU frequency scaling optimized for stable benchmarking results."
-
-# Use `performance` governor for a slight boost in building times and more consistent performance.
-for core in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-  echo performance | sudo tee "$core"
-done
-
-# Restore CPU frequency scaling if the script is canceled with Ctrl + C before it's done running.
-trap restore_cpu_frequency SIGINT ERR
 
 GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
@@ -226,5 +208,3 @@ https://github.com/godotengine/godot/commit/$COMMIT_HASH"
 git push
 
 cd "$DIR"
-
-restore_cpu_frequency
