@@ -56,7 +56,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
   # within the Godot Git clone.
   # WARNING: Any untracked and ignored files included in the repository will be removed!
   BEGIN="$(date +%s%3N)"
-  PEAK_MEMORY_BUILD_DEBUG=$(/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug progress=no -j$(nproc) 2>&1 | tail -1)
+  PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug progress=no -j$(nproc) 2>&1 || true) | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
@@ -68,7 +68,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
   touch .gdignore
 
   BEGIN="$(date +%s%3N)"
-  PEAK_MEMORY_BUILD_RELEASE=$(/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full progress=no -j$(nproc) 2>&1 | tail -1)
+  PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full progress=no -j$(nproc) 2>&1 || true) | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
 
