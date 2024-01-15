@@ -90,6 +90,7 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 		DisplayServer.window_set_title("%d/%d - Running %s" % [i + 1, test_ids.size(), test_ids[i].pretty()])
 		print("Running benchmark %d of %d: %s" % [i + 1, test_ids.size(), test_ids[i]])
 		await run_test(test_ids[i])
+		print("Result: %s\n" % get_result_as_string(test_ids[i]))
 
 	DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % test_ids.size())
 	print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % test_ids.size())
@@ -166,6 +167,16 @@ func run_test(test_id: TestID) -> void:
 			results.set(metric.name, 0.0)
 
 	test_results[test_id] = results
+
+func get_result_as_string(test_id: TestID) -> String:
+	# Returns all non-zero metrics formatted as a string
+	var rd := get_test_result_as_dict(test_id)
+
+	for key in rd.keys():
+		if rd[key] == 0.0:
+			rd.erase(key)
+
+	return JSON.stringify(rd)
 
 func get_test_result_as_dict(test_id: TestID) -> Dictionary:
 	var result : Results = test_results[test_id]
