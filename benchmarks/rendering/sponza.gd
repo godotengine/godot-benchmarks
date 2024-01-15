@@ -11,6 +11,7 @@ class TestScene extends Node3D:
 	var sponza
 	
 	var using_directional_light: bool
+	var using_omni_lights: bool
 	
 	func _init():
 		sponza = sponza_scene.instantiate()
@@ -20,8 +21,13 @@ class TestScene extends Node3D:
 		using_directional_light = true
 		return self
 		
+	func with_omni_lights():
+		using_omni_lights = true
+		return self
+		
 	func _ready():
 		$"Sponza/DirectionalLight3D".visible = using_directional_light
+		$"Sponza/OmniLights".visible = using_omni_lights
 
 	func _process(delta):
 		pass
@@ -35,4 +41,7 @@ func benchmark_sponza_ambient():
 	
 func benchmark_sponza_directional():
 	return TestScene.new().with_directional_light()
+	
+func benchmark_sponza_omni():
+	return TestScene.new().with_omni_lights()
 
