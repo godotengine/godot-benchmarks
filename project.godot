@@ -29,6 +29,10 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="viewport"
 
+[dotnet]
+
+project/assembly_name="Godot Benchmarks"
+
 [gui]
 
 theme/default_theme_scale=1.5
