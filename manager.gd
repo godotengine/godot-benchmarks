@@ -10,6 +10,7 @@ class Results:
 class TestID:
 	var name : String
 	var category : String
+	var language : String
 
 	func pretty_name() -> String:
 		return name.capitalize()
@@ -24,18 +25,31 @@ class TestID:
 
 func test_ids_from_path(path: String) -> Array[TestID]:
 	var rv : Array[TestID] = []
-	if not path.ends_with(".gd"):
-		return rv
 
-	var bench_script : Benchmark = load(path).new()
-	for method in bench_script.get_method_list():
-		if not method.name.begins_with("benchmark_"):
-			continue
+	if path.ends_with(".gd"):
+		var bench_script : Benchmark = load(path).new()
+		for method in bench_script.get_method_list():
+			if not method.name.begins_with("benchmark_"):
+				continue
 
-		var test_id := TestID.new()
-		test_id.name = method.name.trim_prefix("benchmark_")
-		test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".gd")
-		rv.push_back(test_id)
+			var test_id := TestID.new()
+			test_id.name = method.name.trim_prefix("benchmark_")
+			test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".gd")
+			test_id.language = "gd"
+			rv.push_back(test_id)
+
+	elif Engine.has_singleton("GodotSharp") and path.ends_with(".cs"):
+		var bench_script_cs = load(path).new()
+		for method in bench_script_cs.get_method_list():
+			if not method.name.begins_with("Benchmark"):
+				continue
+
+			var test_id := TestID.new()
+			test_id.name = method.name.trim_prefix("Benchmark")
+			test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".cs")
+			test_id.language = "cs"
+			rv.push_back(test_id)
+
 	return rv
 
 
@@ -125,11 +139,19 @@ func run_test(test_id: TestID) -> void:
 	# Add a dummy child so that the above check works for subsequent reloads
 	get_tree().current_scene.add_child(Node.new())
 
-	var benchmark_script : Benchmark = load("res://benchmarks/%s.gd" % test_id.category).new()
-
+	var bench_script = load("res://benchmarks/%s.%s" % [test_id.category, test_id.language]).new()
 	var results := Results.new()
+	var bench_prefix
+
+	# Language dependent style
+	if test_id.language == "gd":
+		bench_prefix = "benchmark_"
+	elif test_id.language == "cs":
+		bench_prefix = "Benchmark"
+
+	# Call and time the function to be tested
 	var begin_time := Time.get_ticks_usec()
-	var bench_node = benchmark_script.call("benchmark_" + test_id.name)
+	var bench_node = bench_script.call(bench_prefix + test_id.name)
 	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
 
 	var frames_captured := 0
@@ -163,7 +185,7 @@ func run_test(test_id: TestID) -> void:
 	# metrics calculated on a per-second basis.
 
 	for metric in results.get_property_list():
-		if benchmark_script.get("test_" + metric.name) == false: # account for null
+		if bench_script.get("test_" + metric.name) == false: # account for null
 			results.set(metric.name, 0.0)
 
 	test_results[test_id] = results
