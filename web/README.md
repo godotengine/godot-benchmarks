@@ -11,8 +11,10 @@ which runs benchmarks on a dedicated server with various GPU models.
   - CPU (debug template)
   - CPU (release template)
   - GPU (AMD, release template)
+<!--
   - GPU (Intel, release template)
   - GPU (NVIDIA, release template)
+-->
 - [Hugo](https://gohugo.io/) is used to create a homepage listing recent
   benchmarked commits, plus a single page per engine commit. This allows linking
   to individual benchmarked commit in a future-proof way.

@@ -85,18 +85,22 @@
       <td>SSD</td>
       <td>Samsung 980 500 GB (M.2)</td>
     </tr>
+<!--
     <tr>
       <td>GPU 1 (integrated)</td>
       <td>🔵 Intel UHD Graphics 730</td>
     </tr>
+-->
     <tr>
-      <td>GPU 2 (dedicated)</td>
+      <td>GPU (dedicated)</td>
       <td>🔴 AMD Radeon RX 550</td>
     </tr>
+<!--
     <tr>
       <td>GPU 3 (dedicated)</td>
       <td>🟢 NVIDIA GeForce GT 1030</td>
     </tr>
+-->
     <tr>
       <td>Operating system</td>
       <td>Fedora 39 x86_64</td>
@@ -141,11 +145,11 @@
     physics: "Physics",
     time: "Main Thread Time",
   };
-  const benchmarkTypes = ["cpu_debug", "cpu_release", "amd", "intel", "nvidia"];
+  const benchmarkTypes = ["cpu_debug", "cpu_release", "amd", /* "intel", "nvidia" */];
   const chartColors = {
     amd: "#b91c1c",
-    intel: "#2074d9",
-    nvidia: "#65a30d",
+    // intel: "#2074d9",
+    // nvidia: "#65a30d",
     cpu_debug: "#a855f7",
     cpu_release: "#ca8a04",
   };
