@@ -1,4 +1,4 @@
-public partial class ForLoopCS : BenchmarkCS
+public partial class ForLoop : BenchmarkCS
 {
     const int ITERATIONS = 1_000_000;
 
