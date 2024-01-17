@@ -26,32 +26,26 @@ class TestID:
 func test_ids_from_path(path: String) -> Array[TestID]:
 	var rv : Array[TestID] = []
 
-	if path.ends_with(".gd"):
-		var bench_script : Benchmark = load(path).new()
-		for method in bench_script.get_method_list():
-			if not method.name.begins_with("benchmark_"):
-				continue
+	# Check for runnable tests.
+	for extension in prefixes.keys():
+		if path.ends_with(extension):
+			var bench_script = load(path).new()
+			for method in bench_script.get_method_list():
+				if not method.name.begins_with(prefixes[extension]):
+					continue
 
-			var test_id := TestID.new()
-			test_id.name = method.name.trim_prefix("benchmark_")
-			test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".gd")
-			test_id.language = "gd"
-			rv.push_back(test_id)
+				# This method is a runnable test. Push it onto the result
+				var test_id := TestID.new()
+				test_id.name = method.name.trim_prefix(prefixes[extension])
+				test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(extension)
+				test_id.language = extension
+				rv.push_back(test_id)
 
-	elif Engine.has_singleton("GodotSharp") and path.ends_with(".cs"):
-		var bench_script_cs = load(path).new()
-		for method in bench_script_cs.get_method_list():
-			if not method.name.begins_with("Benchmark"):
-				continue
+	return rv		
 
-			var test_id := TestID.new()
-			test_id.name = method.name.trim_prefix("Benchmark")
-			test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".cs")
-			test_id.language = "cs"
-			rv.push_back(test_id)
 
-	return rv
-
+# List of prefixes for benchmark functions.
+var prefixes := { ".gd": "benchmark_" }
 
 # List of benchmarks populated in `_ready()`.
 var test_results := {}
@@ -81,6 +75,10 @@ func dir_contents(path: String, contents: PackedStringArray = PackedStringArray(
 func _ready():
 	RenderingServer.viewport_set_measure_render_time(get_tree().root.get_viewport_rid(),true)
 	set_process(false)
+
+	# Register script language compatibility
+	if Engine.has_singleton("GodotSharp"):
+		prefixes[".cs"] = "Benchmark"
 
 	# Register contents of `benchmarks/` folder automatically.
 	for benchmark_path in dir_contents("res://benchmarks/"):
@@ -122,6 +120,7 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 	if return_path:
 		get_tree().change_scene_to_file(return_path)
 	else:
+		get_tree().queue_delete(get_tree())
 		get_tree().quit()
 
 
@@ -139,21 +138,15 @@ func run_test(test_id: TestID) -> void:
 	# Add a dummy child so that the above check works for subsequent reloads
 	get_tree().current_scene.add_child(Node.new())
 
-	var bench_script = load("res://benchmarks/%s.%s" % [test_id.category, test_id.language]).new()
+	var bench_script = load("res://benchmarks/%s%s" % [test_id.category, test_id.language]).new()
 	var results := Results.new()
-	var bench_prefix
-
-	# Language dependent style
-	if test_id.language == "gd":
-		bench_prefix = "benchmark_"
-	elif test_id.language == "cs":
-		bench_prefix = "Benchmark"
 
 	# Call and time the function to be tested
 	var begin_time := Time.get_ticks_usec()
-	var bench_node = bench_script.call(bench_prefix + test_id.name)
+	var bench_node = bench_script.call(prefixes[test_id.language] + test_id.name)
 	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
 
+	# Continue benchmarking if the function call has returned a node
 	var frames_captured := 0
 	if bench_node:
 		get_tree().current_scene.add_child(bench_node)
