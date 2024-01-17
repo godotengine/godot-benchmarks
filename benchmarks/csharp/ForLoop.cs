@@ -1,8 +1,10 @@
+// Similar to GDScript for_loop benchmarks, but using C#
+
 public partial class ForLoop : BenchmarkCS
 {
-    const int ITERATIONS = 1_000_000;
+    private const int ITERATIONS = 1_000_000;
 
-    public int number = 0;
+    private int number = 0;
 
     public void BenchmarkLoopAdd()
     {
