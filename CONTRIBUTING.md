@@ -5,7 +5,8 @@ Thank you for your interest in contributing!
 > **Note**
 >
 > This project only supports Godot's `master` branch (4.0's development branch),
-> not Godot 3.x. Attempting to open this project in Godot 3.x will result in errors.
+> not Godot 3.x.  
+> Attempting to open this project in Godot 3.x will result in errors.
 
 ## Adding new benchmarks
 
@@ -23,14 +24,15 @@ you can also create a new folder in the repository's root folder.
 In the `_init()` function of your script, configure your benchmark by
 initializing any desired `Benchmark` variables to true:
 
-- **test_render_cpu:** Enable this for rendering benchmarks.
+- `test_render_cpu`: Enable this for rendering benchmarks.
   Leave it disabled for other benchmarks.
-- **test_render_gpu:** Enable this for rendering benchmarks.
+- `test_render_gpu`: Enable this for rendering benchmarks.
   Leave it disabled for other benchmarks.
-- **test_idle:** Enable this for non-rendering CPU-intensive benchmarks.
+- `test_idle`: Enable this for non-rendering CPU-intensive benchmarks.
   Leave it disabled for other benchmarks.
-- **test_physics:** Enable this for physics benchmarks.
+- `test_physics`: Enable this for physics benchmarks.
   Leave it disabled for other benchmarks.
+- Leaving all of these disabled will only benchmark the function itself.
 
 ### Implement the benchmark
 
@@ -56,6 +58,9 @@ Remember to follow the
 [GDScript style guide](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_styleguide.html)
 when writing new scripts. Adding type hints is recommended whenever possible,
 unless you are specifically benchmarking non-typed scripts.
+
+> C# benchmark functions must begin with `Benchmark`, instead of `benchmark_`.  
+> For C# benchmarks to be available, you must use the .NET version of the engine.
 
 ### Test the benchmark
 
