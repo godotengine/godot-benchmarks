@@ -101,40 +101,40 @@ class TestScene extends Node3D:
 		RenderingServer.free_rid(sponza)
 
 
-func benchmark_sponza_basic_ambient():
+func benchmark_basic_ambient():
 	return TestScene.new()
 
-func benchmark_sponza_basic_directional():
+func benchmark_basic_directional():
 	return TestScene.new().with_directional_light()
 
-func benchmark_sponza_basic_omni():
+func benchmark_basic_omni():
 	return TestScene.new().with_omni_lights()
 
-func benchmark_sponza_dof_box():
+func benchmark_dof_box():
 	return TestScene.new().with_dof(RenderingServer.DOF_BOKEH_BOX)
 
-func benchmark_sponza_dof_hex():
+func benchmark_dof_hex():
 	return TestScene.new().with_dof(RenderingServer.DOF_BOKEH_HEXAGON)
 
-func benchmark_sponza_dof_circle():
+func benchmark_dof_circle():
 	return TestScene.new().with_dof(RenderingServer.DOF_BOKEH_CIRCLE)
 
-func benchmark_sponza_effect_glow():
+func benchmark_effect_glow():
 	return (TestScene.new()
 		.with_directional_light()
 		.with_glow())
 
-func benchmark_sponza_effect_ssao():
+func benchmark_effect_ssao():
 	return (TestScene.new()
 		.with_directional_light()
 		.with_ssao())
 
-func benchmark_sponza_effect_ssr():
+func benchmark_effect_ssr():
 	return (TestScene.new()
 		.with_directional_light()
 		.with_ssr())
 
-func benchmark_sponza_effect_volumetric_fog():
+func benchmark_effect_volumetric_fog():
 	return (TestScene.new()
 		.with_directional_light()
 		.with_volumetric_fog())
