@@ -32,7 +32,7 @@ initializing any desired `Benchmark` variables to true:
   Leave it disabled for other benchmarks.
 - `test_physics`: Enable this for physics benchmarks.
   Leave it disabled for other benchmarks.
-- Leaving all of these disabled will only benchmark the function itself.
+- > Leaving all of these disabled will only time the initial call to your `benchmark_` function. (See Below)
 
 ### Implement the benchmark
 
