@@ -1,4 +1,4 @@
-public partial class Control : BenchmarkCS
+public partial class Control : Benchmark
 {
     public void BenchmarkControl()
     {

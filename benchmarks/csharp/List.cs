@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 // Similar to GDScript Array benchmarks, but using C# List instead
 
-public partial class List : BenchmarkCS
+public partial class List : Benchmark
 {
     private const int ITERATIONS = 2_000_000;
 

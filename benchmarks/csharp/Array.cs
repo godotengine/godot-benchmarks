@@ -1,6 +1,6 @@
 // Similar to GDScript Array benchmarks, but using C# Array instead
 
-public partial class Array : BenchmarkCS
+public partial class Array : Benchmark
 {
     public void BenchmarkFillLoop()
     {

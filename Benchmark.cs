@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class BenchmarkCS : RefCounted
+public partial class Benchmark : RefCounted
 {
     // Kept snake_case for consistency and simplicity,
     // but could use the TestID.Language property to have language-dependent style if desired
