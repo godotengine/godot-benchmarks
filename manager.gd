@@ -28,18 +28,20 @@ func test_ids_from_path(path: String) -> Array[TestID]:
 
 	# Check for runnable tests.
 	for extension in languages.keys():
-		if path.ends_with(extension):
-			var bench_script = load(path).new()
-			for method in bench_script.get_method_list():
-				if not method.name.begins_with(languages[extension]["test_prefix"]):
-					continue
+		if not path.ends_with(extension):
+			continue
 
-				# This method is a runnable test. Push it onto the result
-				var test_id := TestID.new()
-				test_id.name = method.name.trim_prefix(languages[extension]["test_prefix"])
-				test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(extension)
-				test_id.language = extension
-				rv.push_back(test_id)
+		var bench_script = load(path).new()
+		for method in bench_script.get_method_list():
+			if not method.name.begins_with(languages[extension]["test_prefix"]):
+				continue
+				
+			# This method is a runnable test. Push it onto the result
+			var test_id := TestID.new()
+			test_id.name = method.name.trim_prefix(languages[extension]["test_prefix"])
+			test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(extension)
+			test_id.language = extension
+			rv.push_back(test_id)
 
 	return rv		
 
