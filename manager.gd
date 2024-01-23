@@ -27,16 +27,16 @@ func test_ids_from_path(path: String) -> Array[TestID]:
 	var rv : Array[TestID] = []
 
 	# Check for runnable tests.
-	for extension in prefixes.keys():
+	for extension in languages.keys():
 		if path.ends_with(extension):
 			var bench_script = load(path).new()
 			for method in bench_script.get_method_list():
-				if not method.name.begins_with(prefixes[extension]):
+				if not method.name.begins_with(languages[extension]["test_prefix"]):
 					continue
 
 				# This method is a runnable test. Push it onto the result
 				var test_id := TestID.new()
-				test_id.name = method.name.trim_prefix(prefixes[extension])
+				test_id.name = method.name.trim_prefix(languages[extension]["test_prefix"])
 				test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(extension)
 				test_id.language = extension
 				rv.push_back(test_id)
@@ -44,8 +44,8 @@ func test_ids_from_path(path: String) -> Array[TestID]:
 	return rv		
 
 
-# List of prefixes for benchmark functions.
-var prefixes := { ".gd": "benchmark_" }
+# List of supported languages and their styles.
+var languages := {".gd": {"test_prefix": "benchmark_"}}
 
 # List of benchmarks populated in `_ready()`.
 var test_results := {}
@@ -78,7 +78,7 @@ func _ready():
 
 	# Register script language compatibility
 	if Engine.has_singleton("GodotSharp"):
-		prefixes[".cs"] = "Benchmark"
+		languages[".cs"] = {"test_prefix": "Benchmark"}
 
 	# Register contents of `benchmarks/` folder automatically.
 	for benchmark_path in dir_contents("res://benchmarks/"):
@@ -143,7 +143,7 @@ func run_test(test_id: TestID) -> void:
 
 	# Call and time the function to be tested
 	var begin_time := Time.get_ticks_usec()
-	var bench_node = bench_script.call(prefixes[test_id.language] + test_id.name)
+	var bench_node = bench_script.call(languages[test_id.language]["test_prefix"] + test_id.name)
 	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
 
 	# Continue benchmarking if the function call has returned a node
