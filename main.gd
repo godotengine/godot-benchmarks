@@ -75,10 +75,10 @@ func _ready() -> void:
 		# from the interface after the fact.
 		item.set_checked(0, true)
 		if arg_include_benchmarks:
-			if not path.match(arg_include_benchmarks):
+			if not path.matchn(arg_include_benchmarks):
 				item.set_checked(0, false)
 		if arg_exclude_benchmarks:
-			if path.match(arg_exclude_benchmarks):
+			if path.matchn(arg_exclude_benchmarks):
 				item.set_checked(0, false)
 
 		var results := Manager.get_test_result_as_dict(test_id)
