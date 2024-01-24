@@ -1,7 +1,12 @@
 extends Benchmark
 
+const VISUALIZE := true
+
+var boundary_shape := WorldBoundaryShape3D.new()
 var box_shape := BoxShape3D.new()
 var sphere_shape := SphereShape3D.new()
+var box_mesh := BoxMesh.new()
+var sphere_mesh := SphereMesh.new()
 
 func _init() -> void:
 	test_physics = true
@@ -10,25 +15,45 @@ func _init() -> void:
 
 func setup_scene(create_body_func: Callable, unique_shape: bool, num_shapes: int) -> Node3D:
 	var scene_root := Node3D.new()
-	var camera := Camera3D.new()
-	camera.position.y = 0.3
-	camera.position.z = 1.0
-	camera.rotate_x(-0.8)
-	scene_root.add_child(camera)
+
+	if VISUALIZE:
+		var camera := Camera3D.new()
+		camera.position = Vector3(0.0, 20.0, 20.0)
+		camera.rotate_x(-0.8)
+		scene_root.add_child(camera)
+
+	var pit := StaticBody3D.new();
+	pit.add_child(create_wall(Vector3(10.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.4)))
+	pit.add_child(create_wall(Vector3(0.0, 0.0, 10.0), Vector3(-0.4, 0.0, 0.0)))
+	pit.add_child(create_wall(Vector3(-10.0, 0.0, 0.0), Vector3(0.0, 0.0, -0.4)))
+	pit.add_child(create_wall(Vector3(0.0, 0.0, -10.0), Vector3(0.4, 0.0, 0.0)))
+	scene_root.add_child(pit);
 
 	for _i in num_shapes:
 		var box: RigidBody3D = create_body_func.call(unique_shape)
-		box.position.x = randf_range(-50, 50)
-		box.position.z = randf_range(-50, 50)
+		box.position = Vector3(randf_range(-10.0, 10.0), randf_range(-10.0, 10.0), 10.0)
 		scene_root.add_child(box)
 
 	return scene_root
 
 
+func create_wall(position: Vector3, rotation: Vector3) -> CollisionShape3D:
+	var wall := CollisionShape3D.new()
+	wall.shape = boundary_shape
+	wall.position = position
+	wall.rotation = rotation
+	return wall
+
+
 func create_box(unique_shape: bool) -> RigidBody3D:
 	var rigid_body := RigidBody3D.new()
-
 	var collision_shape := CollisionShape3D.new()
+
+	if VISUALIZE:
+		var mesh_instance := MeshInstance3D.new()
+		mesh_instance.mesh = box_mesh
+		rigid_body.add_child(mesh_instance)
+
 	if unique_shape:
 		collision_shape.shape = BoxShape3D.new()
 	else:
@@ -41,8 +66,13 @@ func create_box(unique_shape: bool) -> RigidBody3D:
 
 func create_sphere(unique_shape: bool) -> RigidBody3D:
 	var rigid_body := RigidBody3D.new()
-
 	var collision_shape := CollisionShape3D.new()
+
+	if VISUALIZE:
+		var mesh_instance := MeshInstance3D.new()
+		mesh_instance.mesh = sphere_mesh
+		rigid_body.add_child(mesh_instance)
+
 	if unique_shape:
 		collision_shape.shape = SphereShape3D.new()
 	else:
@@ -53,17 +83,17 @@ func create_sphere(unique_shape: bool) -> RigidBody3D:
 	return rigid_body
 
 
-func benchmark_7500_rigid_body_3d_shared_box_shape() -> Node3D:
-	return setup_scene(create_box, false, 7500)
+func benchmark_1000_rigid_body_3d_shared_box_shape() -> Node3D:
+	return setup_scene(create_box, false, 1000)
 
 
-func benchmark_7500_rigid_body_3d_unique_box_shape() -> Node3D:
-	return setup_scene(create_box, true, 7500)
+func benchmark_1000_rigid_body_3d_unique_box_shape() -> Node3D:
+	return setup_scene(create_box, true, 1000)
 
 
-func benchmark_7500_rigid_body_3d_shared_sphere_shape() -> Node3D:
-	return setup_scene(create_sphere, false, 7500)
+func benchmark_1000_rigid_body_3d_shared_sphere_shape() -> Node3D:
+	return setup_scene(create_sphere, false, 1000)
 
 
-func benchmark_7500_rigid_body_3d_unique_sphere_shape() -> Node3D:
-	return setup_scene(create_sphere, true, 7500)
+func benchmark_1000_rigid_body_3d_unique_sphere_shape() -> Node3D:
+	return setup_scene(create_sphere, true, 1000)
