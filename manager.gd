@@ -1,5 +1,7 @@
 extends Node
 
+const RANDOM_SEED = 0x60d07
+
 class Results:
 	var render_cpu := 0.0
 	var render_gpu := 0.0
@@ -103,6 +105,7 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 	for i in range(test_ids.size()):
 		DisplayServer.window_set_title("%d/%d - Running %s" % [i + 1, test_ids.size(), test_ids[i].pretty()])
 		print("Running benchmark %d of %d: %s" % [i + 1, test_ids.size(), test_ids[i]])
+		seed(RANDOM_SEED)
 		await run_test(test_ids[i])
 		print("Result: %s\n" % get_result_as_string(test_ids[i]))
 
