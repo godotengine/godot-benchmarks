@@ -9,6 +9,7 @@ var arg_save_json := ""
 var arg_run_benchmarks := false
 
 @onready var tree := $Tree as Tree
+var categories := {}
 
 func _ready() -> void:
 	# Parse valid command-line arguments of the form `--key=value` into member variables.
@@ -45,7 +46,6 @@ func _ready() -> void:
 	tree.set_column_title(5, "Main Thread Time")
 
 	var root := tree.create_item()
-	var categories := {}
 
 	for test_id in Manager.get_test_ids():
 		var test_name := test_id.pretty_name()
@@ -95,12 +95,16 @@ func _ready() -> void:
 
 
 func _on_SelectAll_pressed() -> void:
+	for category in categories.values():
+		category.collapsed = false
 	for item in items:
 		item.set_checked(0, true)
 	_on_Tree_item_edited()
 
 
 func _on_SelectNone_pressed() -> void:
+	for category in categories.values():
+		category.collapsed = true
 	for item in items:
 		item.set_checked(0, false)
 	_on_Tree_item_edited()
