@@ -6,6 +6,8 @@ using Godot;
 public partial class RigidBody3D : Benchmark
 {
     const bool VISUALIZE = true; 
+    const double SPREAD_H = 20.0f;
+    const double SPREAD_V = 10.0f;
 
     private WorldBoundaryShape3D boundary_shape = new WorldBoundaryShape3D();
     private BoxShape3D BoxShape = new BoxShape3D();
@@ -19,7 +21,7 @@ public partial class RigidBody3D : Benchmark
         test_idle = true;
     }
 
-    public Node3D SetupScene(Func<bool, Godot.RigidBody3D> create_body_func, bool unique_shape, int num_shapes)
+    public Node3D SetupScene(Func<bool, Godot.RigidBody3D> create_body_func, bool unique_shape, bool boundary, int num_shapes)
     {
         Node3D scene_root = new Node3D();
 
@@ -30,17 +32,20 @@ public partial class RigidBody3D : Benchmark
             scene_root.AddChild(camera);
         }
 
-        StaticBody3D pit = new StaticBody3D();
-        pit.AddChild(CreateWall(new Vector3(10.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 0.4f)));
-        pit.AddChild(CreateWall(new Vector3(0.0f, 0.0f, 10.0f), new Vector3(-0.4f, 0.0f, 0.0f)));
-        pit.AddChild(CreateWall(new Vector3(-10.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, -0.4f)));
-        pit.AddChild(CreateWall(new Vector3(0.0f, 0.0f, -10.0f), new Vector3(0.4f, 0.0f, 0.0f)));
-        scene_root.AddChild(pit);
+        if (boundary)
+        {
+            StaticBody3D pit = new StaticBody3D();
+            pit.AddChild(CreateWall(new Vector3((float)SPREAD_H, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 0.2f)));
+            pit.AddChild(CreateWall(new Vector3(0.0f, 0.0f, (float)SPREAD_H), new Vector3(-0.2f, 0.0f, 0.0f)));
+            pit.AddChild(CreateWall(new Vector3(-(float)SPREAD_H, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, -0.2f)));
+            pit.AddChild(CreateWall(new Vector3(0.0f, 0.0f, -(float)SPREAD_H), new Vector3(0.2f, 0.0f, 0.0f)));
+            scene_root.AddChild(pit);
+        }
 
         for(int i = 0; i < num_shapes; i++)
         {
             Godot.RigidBody3D box = create_body_func(unique_shape);
-            box.Position = new Vector3((float)GD.RandRange(-10.0d, 10.0d), (float)GD.RandRange(-10.0d, 10.0d), 10.0f);
+            box.Position = new Vector3((float)GD.RandRange(-SPREAD_H, SPREAD_H), (float)GD.RandRange(0.0d, SPREAD_V), (float)GD.RandRange(-SPREAD_H, SPREAD_H));
             scene_root.AddChild(box);
         }
 
@@ -80,23 +85,23 @@ public partial class RigidBody3D : Benchmark
         return rigid_body;
     }
 
-    public Node3D Benchmark1000RigidBody3DSharedBoxShape()
+    public Node3D Benchmark2000RigidBody3DSharedBoxShape()
     {
-        return SetupScene(CreateBox, false, 1000);
+        return SetupScene(CreateBox, false, true, 2000);
     }
 
-    public Node3D Benchmark1000RigidBody3DUniqueBoxShape()
+    public Node3D Benchmark2000RigidBody3DUniqueBoxShape()
     {
-        return SetupScene(CreateBox, true, 1000);
+        return SetupScene(CreateBox, true, true, 2000);
     }
 
-    public Node3D Benchmark1000RigidBody3DSharedSphereShape()
+    public Node3D Benchmark2000RigidBody3DSharedSphereShape()
     {
-        return SetupScene(CreateSphere, false, 1000);
+        return SetupScene(CreateSphere, false, true, 2000);
     }
 
-    public Node3D Benchmark1000RigidBody3DUniqueSphereShape()
+    public Node3D Benchmark2000RigidBody3DUniqueSphereShape()
     {
-        return SetupScene(CreateSphere, true, 1000);
+        return SetupScene(CreateSphere, true, true, 2000);
     }
 }
