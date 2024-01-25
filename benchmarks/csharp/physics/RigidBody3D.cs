@@ -21,7 +21,7 @@ public partial class RigidBody3D : Benchmark
         test_idle = true;
     }
 
-    public Node3D SetupScene(Func<bool, Godot.RigidBody3D> create_body_func, bool unique_shape, bool boundary, int num_shapes)
+    public Node3D SetupScene(Func<bool, bool, Godot.RigidBody3D> create_body_func, bool unique_shape, bool ccd_mode, bool boundary, int num_shapes)
     {
         Node3D scene_root = new Node3D();
 
@@ -44,9 +44,9 @@ public partial class RigidBody3D : Benchmark
 
         for(int i = 0; i < num_shapes; i++)
         {
-            Godot.RigidBody3D box = create_body_func(unique_shape);
-            box.Position = new Vector3((float)GD.RandRange(-SPREAD_H, SPREAD_H), (float)GD.RandRange(0.0d, SPREAD_V), (float)GD.RandRange(-SPREAD_H, SPREAD_H));
-            scene_root.AddChild(box);
+            Godot.RigidBody3D body = create_body_func(unique_shape, ccd_mode);
+            body.Position = new Vector3((float)GD.RandRange(-SPREAD_H, SPREAD_H), (float)GD.RandRange(0.0d, SPREAD_V), (float)GD.RandRange(-SPREAD_H, SPREAD_H));
+            scene_root.AddChild(body);
         }
 
         return scene_root;
@@ -57,10 +57,20 @@ public partial class RigidBody3D : Benchmark
         return new CollisionShape3D() {Shape = boundary_shape, Position = position, Rotation = rotation };
     }
 
-    public Godot.RigidBody3D CreateBox(bool unique_shape)
+    public Godot.RigidBody3D CreateRandomShape(bool unique_shape, bool ccd_mode)
+    {
+        switch(GD.RandRange(0,1))
+        {
+            case 0: return CreateBox(unique_shape, ccd_mode);
+            default: return CreateSphere(unique_shape, ccd_mode);
+        }
+    }
+
+    public Godot.RigidBody3D CreateBox(bool unique_shape, bool ccd_mode)
     {
         Godot.RigidBody3D rigid_body = new Godot.RigidBody3D();
         CollisionShape3D collision_shape = new CollisionShape3D();
+        rigid_body.ContinuousCd = ccd_mode;
 
         if(VISUALIZE) { rigid_body.AddChild(new MeshInstance3D(){ Mesh = BoxMesh }); }
 
@@ -71,10 +81,11 @@ public partial class RigidBody3D : Benchmark
         return rigid_body;
     }
 
-    public Godot.RigidBody3D CreateSphere(bool unique_shape)
+    public Godot.RigidBody3D CreateSphere(bool unique_shape, bool ccd_mode)
     {
         Godot.RigidBody3D rigid_body = new Godot.RigidBody3D();
         CollisionShape3D collision_shape = new CollisionShape3D();
+        rigid_body.ContinuousCd = ccd_mode;
 
         if(VISUALIZE) { rigid_body.AddChild(new MeshInstance3D(){ Mesh = SphereMesh }); }
 
@@ -85,23 +96,33 @@ public partial class RigidBody3D : Benchmark
         return rigid_body;
     }
 
-    public Node3D Benchmark2000RigidBody3DSharedBoxShape()
+    public Node3D Benchmark2000RigidBody3DSquares()
     {
-        return SetupScene(CreateBox, false, true, 2000);
+        return SetupScene(CreateBox, false, false, true, 2000);
     }
 
-    public Node3D Benchmark2000RigidBody3DUniqueBoxShape()
+    public Node3D Benchmark2000RigidBody3DCircles()
     {
-        return SetupScene(CreateBox, true, true, 2000);
+        return SetupScene(CreateSphere, false, false, true, 2000);
     }
 
-    public Node3D Benchmark2000RigidBody3DSharedSphereShape()
+    public Node3D Benchmark2000RigidBody3DMixed()
     {
-        return SetupScene(CreateSphere, false, true, 2000);
+        return SetupScene(CreateRandomShape, false, false, true, 2000);
     }
 
-    public Node3D Benchmark2000RigidBody3DUniqueSphereShape()
+    public Node3D Benchmark2000RigidBody3DUnique()
     {
-        return SetupScene(CreateSphere, true, true, 2000);
+        return SetupScene(CreateRandomShape, true, false, true, 2000);
+    }
+
+    public Node3D Benchmark2000RigidBody3DContinuous()
+    {
+        return SetupScene(CreateRandomShape, false, true, true, 2000);
+    }
+
+    public Node3D Benchmark2000RigidBody3DUnbound()
+    {
+        return SetupScene(CreateRandomShape, false, false, false, 2000);
     }
 }
