@@ -1,0 +1,330 @@
+[gd_scene load_steps=6 format=3 uid="uid://33dqw5jcha0h"]
+
+[ext_resource type="Script" path="res://benchmarks/rendering/camera_move.gd" id="1_vqkte"]
+
+[sub_resource type="Environment" id="Environment_itcjv"]
+
+[sub_resource type="Animation" id="Animation_5lvnf"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(7.25, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.9, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:position:z")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(-0.225, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_41l7d"]
+resource_name = "move"
+length = 3.0
+loop_mode = 1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0),
+"points": PackedFloat32Array(7.25, -0.25, 0, 0.25, 0, 7.25, -0.25, 0, 0.25, 0, 7.25, -0.25, 0, 0.25, 0, 7.25, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1, 2, 3)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0),
+"points": PackedFloat32Array(0.9, -0.25, 0, 0.25, 0, 0.9, -0.25, 0, 0.25, 0, 0.9, -0.25, 0, 0.25, 0, 0.9, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1, 2, 3)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:position:z")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0),
+"points": PackedFloat32Array(-0.225, -0.25, 0, 0.25, 0, 53.0862, -0.25, 0, 0.25, 0, -75.5028, -0.25, 0, 0.25, 0, -0.225, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1, 2, 3)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_dtehi"]
+_data = {
+"RESET": SubResource("Animation_5lvnf"),
+"move": SubResource("Animation_41l7d")
+}
+
+[node name="VeryLargeScene" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, 3.48787e-16, 1, 3.48787e-16, 1, -3.48787e-16, -1, 3.48787e-16, -4.37114e-08, 7.25, 0.9, -0.225)
+environment = SubResource("Environment_itcjv")
+current = true
+script = ExtResource("1_vqkte")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
+libraries = {
+"": SubResource("AnimationLibrary_dtehi")
+}
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.5, -0.852869, 0.150384, 6.05662e-17, 0.173648, 0.984808, -0.866025, -0.492404, 0.0868241, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Floor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.77475, -0.498047, -1.71838)
+size = Vector3(300, 0.1, 300)
+
+[node name="CSGTorus3D" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -98.9743, 14.7804, 82.8515)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D2" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -78.0688, 14.7804, 61.7648)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D9" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -78.0688, 14.7804, 24.859)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D10" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -78.0688, 14.7804, -30.4794)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D11" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -78.0688, 14.7804, -64.9281)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D12" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -57.0709, 14.7804, -42.7007)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D13" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -47.502, 14.7804, -8.18826)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D14" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -47.9215, 14.7804, 20.5125)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D15" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -43.1292, 14.7804, 39.7503)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D16" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -28.5341, 14.7804, 4.01332)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D3" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -98.9743, 14.7804, 44.062)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D4" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -98.9743, 14.7804, 12.8093)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D5" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -98.9743, 14.7804, -22.6573)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D6" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -98.9743, 14.7804, -48.9849)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D7" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -98.9743, 14.7804, -79.4212)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D8" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(0.878975, 0.476867, -3.20096e-09, -0.138921, 0.256063, -0.956626, -0.456183, 0.84085, 0.29132, -98.9743, 14.7804, -109.158)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D17" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -142.182, 9.87924, 135.51)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D18" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -111.249, 9.87924, 104.309)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D19" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -111.249, 9.87924, 49.7021)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D20" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -111.249, 9.87924, -32.1785)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D21" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -111.249, 9.87924, -83.1499)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D22" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -80.1799, 9.87924, -50.2615)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D23" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -66.0215, 9.87924, 0.804245)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D24" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -66.6423, 9.87924, 43.2708)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D25" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -59.5513, 9.87924, 71.7357)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D26" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -37.956, 9.87927, 18.8581)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D27" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -142.182, 9.87924, 78.1156)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D28" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -142.182, 9.87924, 31.8729)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D29" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -142.182, 9.87924, -20.6046)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D30" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -142.182, 9.87924, -59.5599)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D31" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -142.182, 9.87924, -104.595)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
+
+[node name="CSGTorus3D32" type="CSGTorus3D" parent="Floor"]
+transform = Transform3D(1.30056, 0.705589, -4.73625e-09, -0.205552, 0.37888, -1.41546, -0.674985, 1.24415, 0.431047, -142.182, 9.87924, -148.595)
+inner_radius = 3.0
+outer_radius = 5.0
+sides = 15
+ring_sides = 10
