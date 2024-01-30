@@ -21,6 +21,15 @@ class TestScene extends Node3D:
 	var using_ssao: bool
 	var using_volumetric_fog: bool
 
+	var using_fsr2_100: bool
+	var using_fsr2_50: bool
+	var using_fxaa: bool
+	var using_msaa4x: bool
+	var using_msaa8x: bool
+	var using_taa: bool
+
+	var viewport_rid: RID
+
 	func _init():
 		sponza = sponza_scene.instantiate()
 		add_child(sponza)
@@ -54,9 +63,35 @@ class TestScene extends Node3D:
 		using_volumetric_fog = true
 		return self
 
+	func with_fsr2_100():
+		using_fsr2_100 = true
+		return self
+
+	func with_fsr2_50():
+		using_fsr2_50 = true
+		return self
+
+	func with_fxaa():
+		using_fxaa = true
+		return self
+
+	func with_msaa4x():
+		using_msaa4x = true
+		return self
+
+	func with_msaa8x():
+		using_msaa8x = true
+		return self
+
+	func with_taa():
+		using_taa = true
+		return self
+
 	func _ready():
 		$"Sponza/DirectionalLight3D".visible = using_directional_light
 		$"Sponza/OmniLights".visible = using_omni_lights
+
+		viewport_rid = get_window().get_viewport_rid()
 
 		if using_dof:
 			var cam_attrs = CameraAttributesPractical.new()
@@ -85,6 +120,20 @@ class TestScene extends Node3D:
 		if using_volumetric_fog:
 			env = Environment.new()
 			env.volumetric_fog_enabled = true
+		if using_fsr2_100:
+			RenderingServer.viewport_set_scaling_3d_mode(viewport_rid, RenderingServer.VIEWPORT_SCALING_3D_MODE_FSR2)
+			RenderingServer.viewport_set_scaling_3d_scale(viewport_rid, 1.0);
+		if using_fsr2_50:
+			RenderingServer.viewport_set_scaling_3d_mode(viewport_rid, RenderingServer.VIEWPORT_SCALING_3D_MODE_FSR2)
+			RenderingServer.viewport_set_scaling_3d_scale(viewport_rid, 0.5);
+		if using_fxaa:
+			RenderingServer.viewport_set_screen_space_aa(viewport_rid, RenderingServer.VIEWPORT_SCREEN_SPACE_AA_FXAA)
+		if using_msaa4x:
+			RenderingServer.viewport_set_msaa_3d(viewport_rid, RenderingServer.VIEWPORT_MSAA_4X)
+		if using_msaa8x:
+			RenderingServer.viewport_set_msaa_3d(viewport_rid, RenderingServer.VIEWPORT_MSAA_8X)
+		if using_taa:
+			RenderingServer.viewport_set_use_taa(viewport_rid, true)
 
 		if env != null:
 			world_env = WorldEnvironment.new()
@@ -99,6 +148,16 @@ class TestScene extends Node3D:
 		if world_env != null:
 			RenderingServer.free_rid(world_env)
 		RenderingServer.free_rid(sponza)
+
+		if using_fsr2_100 or using_fsr2_50:
+			RenderingServer.viewport_set_scaling_3d_mode(viewport_rid, RenderingServer.VIEWPORT_SCALING_3D_MODE_BILINEAR)
+			RenderingServer.viewport_set_scaling_3d_scale(viewport_rid, 1.0);
+		if using_fxaa:
+			RenderingServer.viewport_set_screen_space_aa(viewport_rid, RenderingServer.VIEWPORT_SCREEN_SPACE_AA_DISABLED)
+		if using_msaa4x or using_msaa8x:
+			RenderingServer.viewport_set_msaa_3d(viewport_rid, RenderingServer.VIEWPORT_MSAA_DISABLED)
+		if using_taa:
+			RenderingServer.viewport_set_use_taa(viewport_rid, false)
 
 
 func benchmark_basic_ambient():
@@ -138,3 +197,27 @@ func benchmark_effect_volumetric_fog():
 	return (TestScene.new()
 		.with_directional_light()
 		.with_volumetric_fog())
+
+func benchmark_aa_fsr2_100():
+	return (TestScene.new()
+		.with_fsr2_100())
+
+func benchmark_aa_fsr2_50():
+	return (TestScene.new()
+		.with_fsr2_50())
+
+func benchmark_aa_fxaa():
+	return (TestScene.new()
+		.with_fxaa())
+
+func benchmark_aa_msaa4x():
+	return (TestScene.new()
+		.with_msaa4x())
+
+func benchmark_aa_msaa8x():
+	return (TestScene.new()
+		.with_msaa8x())
+
+func benchmark_aa_taa():
+	return (TestScene.new()
+		.with_taa())
