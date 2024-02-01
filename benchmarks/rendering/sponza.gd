@@ -24,8 +24,8 @@ class TestScene extends Node3D:
 	var using_fsr2_100: bool
 	var using_fsr2_50: bool
 	var using_fxaa: bool
+	var using_msaa2x: bool
 	var using_msaa4x: bool
-	var using_msaa8x: bool
 	var using_taa: bool
 
 	var viewport_rid: RID
@@ -75,12 +75,12 @@ class TestScene extends Node3D:
 		using_fxaa = true
 		return self
 
-	func with_msaa4x():
-		using_msaa4x = true
+	func with_msaa2x():
+		using_msaa2x = true
 		return self
 
-	func with_msaa8x():
-		using_msaa8x = true
+	func with_msaa4x():
+		using_msaa4x = true
 		return self
 
 	func with_taa():
@@ -128,10 +128,10 @@ class TestScene extends Node3D:
 			RenderingServer.viewport_set_scaling_3d_scale(viewport_rid, 0.5);
 		if using_fxaa:
 			RenderingServer.viewport_set_screen_space_aa(viewport_rid, RenderingServer.VIEWPORT_SCREEN_SPACE_AA_FXAA)
+		if using_msaa2x:
+			RenderingServer.viewport_set_msaa_3d(viewport_rid, RenderingServer.VIEWPORT_MSAA_2X)
 		if using_msaa4x:
 			RenderingServer.viewport_set_msaa_3d(viewport_rid, RenderingServer.VIEWPORT_MSAA_4X)
-		if using_msaa8x:
-			RenderingServer.viewport_set_msaa_3d(viewport_rid, RenderingServer.VIEWPORT_MSAA_8X)
 		if using_taa:
 			RenderingServer.viewport_set_use_taa(viewport_rid, true)
 
@@ -154,7 +154,7 @@ class TestScene extends Node3D:
 			RenderingServer.viewport_set_scaling_3d_scale(viewport_rid, 1.0);
 		if using_fxaa:
 			RenderingServer.viewport_set_screen_space_aa(viewport_rid, RenderingServer.VIEWPORT_SCREEN_SPACE_AA_DISABLED)
-		if using_msaa4x or using_msaa8x:
+		if using_msaa2x or using_msaa4x:
 			RenderingServer.viewport_set_msaa_3d(viewport_rid, RenderingServer.VIEWPORT_MSAA_DISABLED)
 		if using_taa:
 			RenderingServer.viewport_set_use_taa(viewport_rid, false)
@@ -210,13 +210,13 @@ func benchmark_aa_fxaa():
 	return (TestScene.new()
 		.with_fxaa())
 
+func benchmark_aa_msaa2x():
+	return (TestScene.new()
+		.with_msaa2x())
+
 func benchmark_aa_msaa4x():
 	return (TestScene.new()
 		.with_msaa4x())
-
-func benchmark_aa_msaa8x():
-	return (TestScene.new()
-		.with_msaa8x())
 
 func benchmark_aa_taa():
 	return (TestScene.new()
