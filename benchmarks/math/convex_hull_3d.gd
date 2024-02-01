@@ -1,7 +1,7 @@
 extends Benchmark
 
 const NUM_ITERATIONS := 10
-const NUM_POINTS := 1002  # should be a multiple of three, triangles will be built with this
+const NUM_POINTS := 1002  # Should be a multiple of three, triangles will be built with this.
 const CLOUD_SIZE := 1.0
 const POSITION := Vector3(0.0, 0.0, 0.0)
 
