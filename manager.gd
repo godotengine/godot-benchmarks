@@ -27,7 +27,11 @@ func test_ids_from_path(path: String) -> Array[TestID]:
 	if not path.ends_with(".gd"):
 		return rv
 
-	var bench_script : Benchmark = load(path).new()
+	var script = load(path).new()
+	if not (script is Benchmark):
+		return rv
+
+	var bench_script : Benchmark = script
 	for method in bench_script.get_method_list():
 		if not method.name.begins_with("benchmark_"):
 			continue
