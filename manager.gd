@@ -1,5 +1,7 @@
 extends Node
 
+const RANDOM_SEED = 0x60d07
+
 class Results:
 	var render_cpu := 0.0
 	var render_gpu := 0.0
@@ -10,6 +12,7 @@ class Results:
 class TestID:
 	var name : String
 	var category : String
+	var language : String
 
 	func pretty_name() -> String:
 		return name.capitalize()
@@ -24,24 +27,29 @@ class TestID:
 
 func test_ids_from_path(path: String) -> Array[TestID]:
 	var rv : Array[TestID] = []
-	if not path.ends_with(".gd"):
-		return rv
 
-	var script = load(path).new()
-	if not (script is Benchmark):
-		return rv
-
-	var bench_script : Benchmark = script
-	for method in bench_script.get_method_list():
-		if not method.name.begins_with("benchmark_"):
+	# Check for runnable tests.
+	for extension in languages.keys():
+		if not path.ends_with(extension):
 			continue
 
-		var test_id := TestID.new()
-		test_id.name = method.name.trim_prefix("benchmark_")
-		test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(".gd")
-		rv.push_back(test_id)
-	return rv
+		var bench_script = load(path).new()
+		for method in bench_script.get_method_list():
+			if not method.name.begins_with(languages[extension]["test_prefix"]):
+				continue
+				
+			# This method is a runnable test. Push it onto the result
+			var test_id := TestID.new()
+			test_id.name = method.name.trim_prefix(languages[extension]["test_prefix"])
+			test_id.category = path.trim_prefix("res://benchmarks/").trim_suffix(extension)
+			test_id.language = extension
+			rv.push_back(test_id)
 
+	return rv		
+
+
+# List of supported languages and their styles.
+var languages := {".gd": {"test_prefix": "benchmark_"}}
 
 # List of benchmarks populated in `_ready()`.
 var test_results := {}
@@ -72,6 +80,10 @@ func _ready():
 	RenderingServer.viewport_set_measure_render_time(get_tree().root.get_viewport_rid(),true)
 	set_process(false)
 
+	# Register script language compatibility
+	if Engine.has_singleton("GodotSharp"):
+		languages[".cs"] = {"test_prefix": "Benchmark"}
+
 	# Register contents of `benchmarks/` folder automatically.
 	for benchmark_path in dir_contents("res://benchmarks/"):
 		for test_id in test_ids_from_path(benchmark_path):
@@ -93,7 +105,9 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 	for i in range(test_ids.size()):
 		DisplayServer.window_set_title("%d/%d - Running %s" % [i + 1, test_ids.size(), test_ids[i].pretty()])
 		print("Running benchmark %d of %d: %s" % [i + 1, test_ids.size(), test_ids[i]])
+		seed(RANDOM_SEED)
 		await run_test(test_ids[i])
+		print("Result: %s\n" % get_result_as_string(test_ids[i]))
 
 	DisplayServer.window_set_title("[DONE] %d benchmarks - Godot Benchmarks" % test_ids.size())
 	print_rich("[color=green][b]Done running %d benchmarks.[/b] Results JSON:[/color]\n" % test_ids.size())
@@ -111,6 +125,7 @@ func benchmark(test_ids: Array[TestID], return_path: String) -> void:
 	if return_path:
 		get_tree().change_scene_to_file(return_path)
 	else:
+		get_tree().queue_delete(get_tree())
 		get_tree().quit()
 
 
@@ -128,13 +143,15 @@ func run_test(test_id: TestID) -> void:
 	# Add a dummy child so that the above check works for subsequent reloads
 	get_tree().current_scene.add_child(Node.new())
 
-	var benchmark_script : Benchmark = load("res://benchmarks/%s.gd" % test_id.category).new()
-
+	var bench_script = load("res://benchmarks/%s%s" % [test_id.category, test_id.language]).new()
 	var results := Results.new()
+
+	# Call and time the function to be tested
 	var begin_time := Time.get_ticks_usec()
-	var bench_node = benchmark_script.call("benchmark_" + test_id.name)
+	var bench_node = bench_script.call(languages[test_id.language]["test_prefix"] + test_id.name)
 	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
 
+	# Continue benchmarking if the function call has returned a node
 	var frames_captured := 0
 	if bench_node:
 		get_tree().current_scene.add_child(bench_node)
@@ -166,10 +183,20 @@ func run_test(test_id: TestID) -> void:
 	# metrics calculated on a per-second basis.
 
 	for metric in results.get_property_list():
-		if benchmark_script.get("test_" + metric.name) == false: # account for null
+		if bench_script.get("test_" + metric.name) == false: # account for null
 			results.set(metric.name, 0.0)
 
 	test_results[test_id] = results
+
+func get_result_as_string(test_id: TestID) -> String:
+	# Returns all non-zero metrics formatted as a string
+	var rd := get_test_result_as_dict(test_id)
+
+	for key in rd.keys():
+		if rd[key] == 0.0:
+			rd.erase(key)
+
+	return JSON.stringify(rd)
 
 func get_test_result_as_dict(test_id: TestID) -> Dictionary:
 	var result : Results = test_results[test_id]

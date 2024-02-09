@@ -1,7 +1,5 @@
 extends Panel
 
-const RANDOM_SEED = 0x60d07
-
 var items := []
 
 # Prefix variables with `arg_` to have them automatically be parsed from command line arguments
@@ -11,11 +9,9 @@ var arg_save_json := ""
 var arg_run_benchmarks := false
 
 @onready var tree := $Tree as Tree
+var categories := {}
 
 func _ready() -> void:
-	# Use a fixed random seed to improve reproducibility of results.
-	seed(RANDOM_SEED)
-
 	# Parse valid command-line arguments of the form `--key=value` into member variables.
 	for argument in OS.get_cmdline_user_args():
 		if not argument.begins_with("--"):
@@ -50,7 +46,6 @@ func _ready() -> void:
 	tree.set_column_title(5, "Main Thread Time")
 
 	var root := tree.create_item()
-	var categories := {}
 
 	for test_id in Manager.get_test_ids():
 		var test_name := test_id.pretty_name()
@@ -75,10 +70,10 @@ func _ready() -> void:
 		# from the interface after the fact.
 		item.set_checked(0, true)
 		if arg_include_benchmarks:
-			if not path.match(arg_include_benchmarks):
+			if not path.matchn(arg_include_benchmarks):
 				item.set_checked(0, false)
 		if arg_exclude_benchmarks:
-			if path.match(arg_exclude_benchmarks):
+			if path.matchn(arg_exclude_benchmarks):
 				item.set_checked(0, false)
 
 		var results := Manager.get_test_result_as_dict(test_id)
@@ -100,12 +95,16 @@ func _ready() -> void:
 
 
 func _on_SelectAll_pressed() -> void:
+	for category in categories.values():
+		category.collapsed = false
 	for item in items:
 		item.set_checked(0, true)
 	_on_Tree_item_edited()
 
 
 func _on_SelectNone_pressed() -> void:
+	for category in categories.values():
+		category.collapsed = true
 	for item in items:
 		item.set_checked(0, false)
 	_on_Tree_item_edited()

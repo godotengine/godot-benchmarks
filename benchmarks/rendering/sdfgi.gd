@@ -7,7 +7,7 @@ func _init():
 
 class TestScene extends Node3D:
 
-	var scene = preload("res://benchmarks/rendering/very_large_scene.tscn")
+	var scene = preload("res://supplemental/very_large_scene.tscn")
 	var instance
 	var world_env: WorldEnvironment = null
 

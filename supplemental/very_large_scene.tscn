@@ -1,6 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://33dqw5jcha0h"]
 
-[ext_resource type="Script" path="res://benchmarks/rendering/camera_move.gd" id="1_vqkte"]
+[ext_resource type="Script" path="res://supplemental/camera_move.gd" id="1_vqkte"]
+
 
 [sub_resource type="Environment" id="Environment_itcjv"]
 

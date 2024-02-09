@@ -7,7 +7,7 @@ func _init():
 
 class TestScene extends Node3D:
 
-	var sponza_scene = preload("res://benchmarks/rendering/sponza.tscn")
+	var sponza_scene = preload("res://supplemental/sponza.tscn")
 	var sponza
 	var world_env: WorldEnvironment = null
 
