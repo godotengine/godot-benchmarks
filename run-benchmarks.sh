@@ -153,11 +153,10 @@ $GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="re
 #$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
 
 rm -rf /tmp/godot-benchmarks-results/
-# TODO: Change to godotengine organization URL.
 # Clone a copy of the repository so we can push the new JSON files to it.
 # The website build is performed by GitHub Actions on the `main` branch of the repository below,
 # so we only push files to it and do nothing else.
-git clone git@github.com:Calinou/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
+git clone git@github.com:godotengine/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
 
 cd /tmp/godot-benchmarks-results/
 
