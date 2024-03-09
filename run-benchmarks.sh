@@ -56,7 +56,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
   # within the Godot Git clone.
   # WARNING: Any untracked and ignored files included in the repository will be removed!
   BEGIN="$(date +%s%3N)"
-  PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug progress=no -j$(nproc) 2>&1 || true) | tail -1)
+  PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug module_mono_enabled=yes progress=no -j$(nproc) 2>&1 || true) | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
@@ -68,9 +68,15 @@ if [[ "$ARG1" != "--skip-build" ]]; then
   touch .gdignore
 
   BEGIN="$(date +%s%3N)"
-  PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full progress=no -j$(nproc) 2>&1 || true) | tail -1)
+  PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=yes progress=no -j$(nproc) 2>&1 || true) | tail -1)
   END="$(date +%s%3N)"
   TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
+
+  # Generate Mono glue for C# build to work.
+  echo "Generating .NET glue."
+  bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
+  echo "Building .NET assemblies."
+  modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin
 
   cd "$DIR"
 else
@@ -82,12 +88,12 @@ else
 fi
 
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
-GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64"
+GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64.mono"
 
 # Path to the Godot release binary to run. Used for CPU release and GPU benchmarks.
 # The release binary is assumed to be the same commit as the debug build.
 # Things will break if this is not the case.
-GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64"
+GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64.mono"
 
 # Strip debugging symbols for fair binary size comparison.
 strip "$GODOT_DEBUG" "$GODOT_RELEASE"
@@ -135,19 +141,19 @@ TIME_TO_STARTUP_SHUTDOWN_RELEASE="$((TOTAL / 20))"
 echo "Performing benchmark release peak memory usage run."
 PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit-after 100 2>&1 | tail -1)
 
-# Import resources in the project (required to run it).
-echo "Performing resource importing."
-$GODOT_DEBUG --editor --quit-after 100
+# Import resources and build C# solutions in the project (required to run it).
+echo "Performing resource importing and C# solution building."
+$GODOT_DEBUG --editor --build-solutions --quit-after 100
 
 # Run CPU benchmarks.
 
 echo "Running CPU benchmarks."
-pwd
 $GODOT_DEBUG --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md" --json-results-prefix="cpu_debug"
 $GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md" --json-results-prefix="cpu_release"
 
 # Run GPU benchmarks.
 # TODO: Run on different GPUs.
+echo "Running GPU benchmarks."
 $GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/amd.md" --json-results-prefix="amd"
 #$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/intel.md" --json-results-prefix="intel"
 #$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
@@ -162,6 +168,7 @@ cd /tmp/godot-benchmarks-results/
 
 # Merge benchmark run JSONs together.
 # Use editor build as release build errors due to missing PCK file.
+echo "Merging JSON files together."
 $GODOT_DEBUG --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md --output-path /tmp/merged.md
 #$GODOT_DEBUG --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md --output-path /tmp/merged.md
 
@@ -171,6 +178,7 @@ rm -f "$OUTPUT_PATH"
 # Add extra JSON at the end of the merged JSON. We assume the merged JSON has no
 # newline at the end of file, as Godot writes it. To append more data to the
 # JSON dictionary, we remove the last `}` character and add a `,` instead.
+echo "Appending extra JSON at the end of the merged JSON."
 EXTRA_JSON=$(cat << EOF
 "binary_size": {
   "debug": $BINARY_SIZE_DEBUG,
@@ -198,6 +206,7 @@ echo "$(head -c -1 /tmp/merged.md),$EXTRA_JSON}" > "$OUTPUT_PATH"
 
 # Build website files after running all benchmarks, so that benchmarks
 # appear on the web interface.
+echo "Pushing results to godot-benchmarks repository."
 git add .
 git config --local user.name "Godot Benchmarks"
 git config --local user.email "godot-benchmarks@example.com"
@@ -207,3 +216,4 @@ https://github.com/godotengine/godot/commit/$COMMIT_HASH"
 git push
 
 cd "$DIR"
+echo "Success."
