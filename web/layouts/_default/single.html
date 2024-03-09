@@ -1,0 +1,170 @@
+{{ define "main" }}
+
+<h1>{{ index (split (path.BaseName .Permalink) "_") 0 }}
+  <a href="https://github.com/godotengine/godot/commit/{{ .Params.engine.version_hash }}"><code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></h1>
+
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
+  {{/* Order is inverted for this site. */}}
+  <div>
+    {{with .Site.RegularPages.Next . }}
+    <a href="{{ .RelPermalink }}">« Previous: {{ index (split (path.BaseName .Permalink) "_") 0 }}
+      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a>
+    {{end}}
+  </div>
+  <div style="text-align: right">
+    {{with .Site.RegularPages.Prev . }}
+    <a href="{{ .RelPermalink }}">Next: {{ index (split (path.BaseName .Permalink) "_") 0 }}
+      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code> »</a>
+    {{end}}
+  </div>
+</div>
+
+<h2>System information</h2>
+<table class="table-first-column-align-right">
+  <tr>
+    <td>CPU</td>
+    <td>Intel Core i5-12400</td>
+  </tr>
+  <tr>
+    <td>GPUs</td>
+    <td>
+      🔴 AMD Radeon RX 550
+      <!-- 🔵 Intel UHD Graphics 730 – 🔴 AMD Radeon RX 550 – 🟢 NVIDIA GeForce GT 1030 -->
+    </td>
+  </tr>
+  <tr>
+    <td>Operating system</td>
+    <td>Fedora 38 64-bit</td>
+  </tr>
+</table>
+
+<h2>Engine information</h2>
+<table class="table-first-column-align-right">
+  <thead>
+    <td>Build type</td>
+    <td>
+      <span style="opacity: 0.65"><sub><abbr title="SCons flags: target=editor optimize=debug">Debug</abbr></sub> Debug editor<br></span>
+      <sub><abbr title="SCons flags: target=template_release optimize=speed lto=full">Release</abbr></sub> Release export template
+    </td>
+  </thead>
+  <tr>
+    <td><abbr title="Using GCC compiler with all caches cleared">Time to build</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.build_time.debug 0.001 | lang.FormatNumber 0 }} seconds<br></span>
+      <sub>Release</sub> {{ mul .Params.build_time.release 0.001 | lang.FormatNumber 0 }} seconds
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Using GCC compiler with all caches cleared">Build peak memory usage</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.build_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
+      <sub>Release</sub> {{ mul .Params.build_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.empty_project_startup_shutdown_time.debug | lang.FormatNumber 0 }} ms<br></span>
+      <sub>Release</sub> {{ .Params.empty_project_startup_shutdown_time.release | lang.FormatNumber 0 }} ms
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Measured on an empty project">Startup + shutdown peak memory usage</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.empty_project_startup_shutdown_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
+      <sub>Release</sub> {{ mul .Params.empty_project_startup_shutdown_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
+    </td>
+  </tr>
+  <tr>
+    <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
+    <td>
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.binary_size.debug 0.001 | lang.FormatNumber 0 }} KB<br></span>
+      <sub>Release</sub> {{ mul .Params.binary_size.release 0.001 | lang.FormatNumber 0 }} KB
+    </td>
+  </tr>
+</table>
+
+<h2>Benchmark results</h2>
+<em>For all values, lower is better.</em>
+<details open>
+  <summary><strong>CPU</strong></summary>
+  <table class="table-first-column-align-right">
+    <thead>
+      <tr>
+        <td>Name</td>
+        <td>Idle</td>
+        <td>Physics</td>
+        <td><abbr title="Time spent setting up the scene or executing the script">Main Thread Time</abbr></td>
+      </tr>
+    </thead>
+    <tbody>
+      {{/* Check CPU debug data only, but also get data from release CPU runs. */}}
+      {{/* These runs are expected to have the same number of results available. */}}
+      {{ range .Params.benchmarks }}
+      {{ if gt .results.cpu_debug.time 0 }}
+      <tr>
+        <td><sub style="opacity: 0.65">{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+        <td>
+          {{ if gt .results.cpu_debug.idle 0 }}
+          <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.cpu_debug.idle }} <sub>mspf</sub><br></span>
+          <sub>Release</sub> {{ .results.cpu_release.idle }} <sub>mspf</sub>
+          {{ end }}
+        </td>
+        <td>
+          {{ if gt .results.cpu_debug.physics 0 }}
+          <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.cpu_debug.physics }} <sub>mspf</sub><br></span>
+          <sub>Release</sub> {{ .results.cpu_debug.physics }} <sub>mspf</sub>
+          {{ end }}
+        </td>
+        <td>
+          {{ if gt .results.cpu_debug.time 0 }}
+          <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.cpu_debug.time }} <sub>ms</sub><br></span>
+          <sub>Release</sub> {{ .results.cpu_release.time }} <sub>ms</sub>
+          {{ end }}
+        </td>
+      </tr>
+      {{ end }}
+      {{ end }}
+    </tbody>
+  </table>
+</details>
+
+<details open>
+  <summary><strong>GPU</strong></summary>
+  <table class="table-first-column-align-right">
+    <thead>
+      <tr>
+        <td>Name</td>
+        <td>Render CPU</td>
+        <td>Render GPU</td>
+      </tr>
+    </thead>
+    <tbody>
+      {{/* Check GPU AMD data only, but also get data from Intel and NVIDIA GPU runs. */}}
+      {{/* These runs are expected to have the same number of results available. */}}
+      {{ range .Params.benchmarks }}
+      {{ if gt .results.amd.render_cpu 0 }}
+      <tr>
+        <td><sub style="opacity: 0.65">{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+        <td>
+          {{ if gt .results.amd.render_cpu 0 }}
+          <!-- <span title="Intel HD Graphics">🔵</span> {{ .results.intel.render_cpu }} <sub>mspf</sub><br> -->
+          <span title="AMD Radeon RX 550">🔴</span> {{ .results.amd.render_cpu }} <sub>mspf</sub><!-- &nbsp; -->
+          <!-- span title="NVIDIA GeForce GT 1030">🟢</span> {{ .results.nvidia.render_cpu }} <sub>mspf</sub> -->
+          {{ end }}
+        </td>
+        <td>
+          {{ if gt .results.amd.render_gpu 0 }}
+          <!-- <span title="Intel HD Graphics">🔵</span> {{ .results.intel.render_gpu }} <sub>mspf</sub><br> -->
+          <span title="AMD Radeon RX 550">🔴</span> {{ .results.amd.render_gpu }} <sub>mspf</sub><!-- &nbsp; -->
+          <!-- <span title="NVIDIA GeForce GT 1030">🟢</span> {{ .results.nvidia.render_gpu }} <sub>mspf</sub> -->
+          {{ end }}
+        </td>
+      </tr>
+      {{ end }}
+      {{ end }}
+    </tbody>
+  </table>
+</details>
+
+{{ end }}

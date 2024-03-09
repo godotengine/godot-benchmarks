@@ -1,0 +1,12 @@
+{
+    "short_name": "Godot Benchmarks",
+    "name": "Godot Benchmarks",
+    "icons": [{
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }],
+    "start_url": "/godot-benchmarks/",
+    "background_color": "#223",
+    "theme_color": "#3d8fcc"
+  }
