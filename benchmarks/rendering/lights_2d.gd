@@ -21,15 +21,7 @@ class TestLights2D extends Node2D:
 		use_shadows = settings.get("shadows", false)
 	
 	func _ready():
-		# add background color rect
-		var ss := get_tree().root.get_visible_rect().size
-		var top_left_pos = Vector2(ss.x / 2, ss.y / 2) * -1
-		
-		var background := ColorRect.new()
-		background.color = Color(0.15,0.15,0.15,1)
-		background.size = ss
-		background.position = top_left_pos
-		add_child(background)
+		create_backgrounds()
 		
 		# add sprites
 		create_sprites()
@@ -43,7 +35,27 @@ class TestLights2D extends Node2D:
 	
 		add_child(cam)
 	
+	func create_backgrounds():
+		var ss = get_viewport_rect().size
+		var top_left_pos = Vector2(ss.x / 2, ss.y / 2) * -1
+		var rows = 5
+		var cols = 3
+		
+		# Calculate the size of each color rect based on the number of rows and columns
+		var rect_width = ss.x / cols
+		var rect_height = ss.y / rows
+
+		# Create color rect objects in a grid
+		for row in range(rows):
+			for col in range(cols):
+				var background := ColorRect.new()
+				background.color = Color(0.15,0.15,0.15,1)
+				background.size = Vector2(rect_width, rect_height)
+				background.position = top_left_pos + Vector2(rect_width * col, rect_height * row)
+				add_child(background)
+	
 	func create_sprites():
+		var center_point = get_viewport_rect().size / 2
 		var count = round(sqrt(sprite_count))
 		var radius = 250
 		var sprite_size = 50
@@ -73,10 +85,10 @@ class TestLights2D extends Node2D:
 			add_child(s)
 	
 	func create_point_light_2d():
+		var center_point = get_viewport_rect().size / 2
 		var radius = 300
-		#var angle_increment = 2 * PI / light_count
-		
 		var angle_increment = 360.0 / light_count
+		
 		for i in range(light_count):
 			var angle_rad = deg_to_rad(i * angle_increment)
 			var x = radius * cos(angle_rad)
@@ -88,19 +100,6 @@ class TestLights2D extends Node2D:
 			light.energy = 5
 			light.position = Vector2(x, y)
 			add_child(light)
-			
-		
-		#var count : float = round(sqrt(light_count))
-		#for y in count:
-			#for x in count:
-				#var light := PointLight2D.new()
-				#light.texture = preload("res://2d_point_light_texture.png")
-				#light.shadow_enabled = use_shadows
-				#light.energy = 5
-				#light.position = Vector2(randf_range(top_left_pos.x, top_left_pos.x + viewport_size.x), randf_range(top_left_pos.y, top_left_pos.y + viewport_size.y))
-				#light.scale.x *= 10/count
-				#light.scale.y *= 10/count
-				#add_child(light)
 		
 	func create_directional_light_2d():
 		var light := DirectionalLight2D.new()
