@@ -12,7 +12,7 @@ class TestScene extends Node3D:
 	var world_env: WorldEnvironment = null
 
 	var using_sdfgi: bool
-	
+
 	func _init():
 		instance = scene.instantiate()
 		add_child(instance)
