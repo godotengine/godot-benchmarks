@@ -116,7 +116,7 @@ class TestLights2D extends Node2D:
 		for row in grid_rows:
 			for col in grid_cols:
 				var light := PointLight2D.new()
-				light.texture = preload("res://2d_point_light_texture.png")
+				light.texture = preload("res://supplemental/2d_point_light_texture.png")
 				light.shadow_enabled = use_shadows
 				light.energy = 5
 
