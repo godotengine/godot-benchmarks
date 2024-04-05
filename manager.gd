@@ -148,7 +148,8 @@ func run_test(test_id: TestID) -> void:
 
 	# Call and time the function to be tested
 	var begin_time := Time.get_ticks_usec()
-	var bench_node = bench_script.call(languages[test_id.language]["test_prefix"] + test_id.name)
+	# redundant awaits don't cause a performance variation afaict
+	var bench_node = await bench_script.call(languages[test_id.language]["test_prefix"] + test_id.name)
 	results.time = (Time.get_ticks_usec() - begin_time) * 0.001
 
 	# Continue benchmarking if the function call has returned a node
