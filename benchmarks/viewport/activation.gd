@@ -1,8 +1,8 @@
 extends Benchmark
 
-# In godot 3.x a lot of the cost of viewport nodes comes during activation
-# IE: when you create it, add it to the tree, set the size and allocate the viewport texture...
-# The point when the underlying RENDER_TARGET is created is a huge weak point in some gpu drivers
+# In Godot, a lot of the cost of Viewport nodes comes during activation.
+# That is, when you create it, add it to the tree, set the size and allocate the viewport texture...
+# The point when the underlying render target is created is a huge weak point in some GPU drivers.
 const allocation = preload("./allocation.gd")
 
 
