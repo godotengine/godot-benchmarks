@@ -1,0 +1,10 @@
+# Output HTML files
+public/
+
+# Temporary lock file while building
+.hugo_build.lock
+
+# Result JSON files
+# (should be committed to https://github.com/godotengine/godot-benchmarks-results instead)
+content/*.md
+!_content/_index.md

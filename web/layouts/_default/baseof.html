@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" con tent="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#3d8fcc">
+    <title>{{ block "title" . }}{{ .Site.Title }}{{ end }}</title>
+    <link rel="canonical" href="{{ .Permalink }}">
+    <link rel="stylesheet" href="{{ .Site.BaseURL }}thirdparty/apexcharts/apexcharts.css">
+    <link rel="stylesheet" href="{{ .Site.BaseURL }}thirdparty/water.css">
+    <link rel="stylesheet" href="{{ .Site.BaseURL }}main.css">
+    <link rel="manifest" href="{{ .Site.BaseURL }}site.webmanifest">
+  </head>
+  <body>
+    <header>
+      <a class="site-title" href="{{ .Site.BaseURL }}">Godot Benchmarks</a>
+    </header>
+
+    {{ block "main" . }}
+    {{ end }}
+
+    <footer>
+    © 2022-present Godot Engine contributors – <a href="https://github.com/godotengine/godot-benchmarks/tree/main/web">Website source code</a>
+    </footer>
+
+    <script src="{{ .Site.BaseURL }}thirdparty/apexcharts/apexcharts.min.js"></script>
+    <script>
+      if (window.location.href.includes("://godotengine.github.io/godot-benchmarks-results/")) {
+        // Perform redirect.
+        window.location.href = window.location.href.replace('://godotengine.github.io/godot-benchmarks-results/','://benchmarks.godotengine.org/');
+      }
+    </script>
+    {{ block "javascript" . }}{{end}}
+  </body>
+</html>

@@ -17,18 +17,6 @@ func benchmark_generate_1g_random_bytes_1k_at_a_time() -> void:
 		crypto.generate_random_bytes(1000)
 
 
-func benchmark_generate_1g_random_bytes_1m_at_a_time() -> void:
-	var iterations = BYTES / 1_000_000
-	for i in iterations:
-		crypto.generate_random_bytes(1_000_000)
-
-
-func benchmark_generate_1g_random_bytes_at_once() -> void:
-	var iterations = BYTES / 1_000_000_000
-	for i in iterations:
-		crypto.generate_random_bytes(1_000_000_000)
-
-
 func benchmark_generate_rsa_2048() -> void:
 	crypto.generate_rsa(2048)
 

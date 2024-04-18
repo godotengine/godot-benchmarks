@@ -1,0 +1,39 @@
+/* See `thirdparty/water.css` for CSS variables that can be used here. */
+
+p, li {
+    line-height: 1.6;
+}
+
+footer {
+    text-align: center;
+}
+
+header {
+    background-color: var(--background);
+    border-radius: 0 0 6px 6px;
+    padding: .75rem 2rem;
+    margin-top: -1.25rem;
+    margin-bottom: 2rem;
+}
+
+
+.site-title {
+    color: var(--text-bright);
+    font-weight: bold;
+    font-size: 1.25rem;
+    border-radius: 6px;
+}
+
+/* Automatically resize the left column to take as little space as required. */
+.table-first-column-align-right {
+    width: auto;
+}
+
+/* Align first column to the right to improve readability in some situations. */
+.table-first-column-align-right tr td:first-of-type {
+    text-align: right;
+    width: 1%;
+    white-space: nowrap;
+    /* Style the first column as headings. */
+    font-weight: bold;
+}

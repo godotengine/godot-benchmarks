@@ -6,6 +6,7 @@ var items := []
 var arg_include_benchmarks := ""
 var arg_exclude_benchmarks := ""
 var arg_save_json := ""
+var arg_json_results_prefix := ""
 var arg_run_benchmarks := false
 
 @onready var tree := $Tree as Tree
@@ -90,6 +91,7 @@ func _ready() -> void:
 
 	if arg_save_json:
 		Manager.save_json_to_path = arg_save_json
+		Manager.json_results_prefix = arg_json_results_prefix
 	if arg_run_benchmarks:
 		_on_Run_pressed()
 
