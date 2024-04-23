@@ -3,7 +3,6 @@
 #
 # NOTE: This script is tailored for the dedicated benchmarking server.
 #       It is not meant for local usage or experimentation.
-#       `sudo` must be able to work non-interactively for the script to succeed.
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -35,6 +34,20 @@ GODOT_REPO_DIR="$DIR/godot"
 if [[ ! -d "$GODOT_REPO_DIR/.git" ]]; then
   git clone https://github.com/godotengine/godot.git "$GODOT_REPO_DIR"
 fi
+
+# Check if latest commit is already benchmarked in the results repository. If so, skip running the benchmark.
+rm -rf /tmp/godot-benchmarks-results/
+git clone git@github.com:godotengine/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
+latest_commit="$(git -C "$GODOT_REPO_DIR" rev-parse HEAD)"
+
+pushd /tmp/godot-benchmarks-results/
+for result in 2*.md; do
+  if [[ "${result:11:9}" == "${latest_commit:0:9}" ]]; then
+    echo "godot-benchmarks: Skipping benchmark run as the latest Godot commit is already present in the results repository."
+    exit
+  fi
+done
+popd
 
 GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
@@ -156,12 +169,9 @@ $GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="re
 #$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/intel.md" --json-results-prefix="intel"
 #$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
 
-rm -rf /tmp/godot-benchmarks-results/
-# Clone a copy of the repository so we can push the new JSON files to it.
+# We cloned a copy of the repository above so we can push the new JSON files to it.
 # The website build is performed by GitHub Actions on the `main` branch of the repository below,
 # so we only push files to it and do nothing else.
-git clone git@github.com:godotengine/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
-
 cd /tmp/godot-benchmarks-results/
 
 # Merge benchmark run JSONs together.
