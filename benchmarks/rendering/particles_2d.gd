@@ -50,17 +50,21 @@ class Test2DParticles extends Node2D:
 		node.texture.image_size = Vector2(1, 1)
 		node.amount = particles
 		node.lifetime = 3
+		# Disable fixed FPS for GPUParticles to make their simulation look closer
+		# to CPUParticles (smoother).
+		node.fixed_fps = 0
+		node.interpolate = false
 		return node
 
 
 func benchmark_few_gpuparticles2d_nodes_with_many_particles() -> Node2D:
-	return Test2DParticles.new({type = ParticleType.GPU_PARTICLES, nodes = 10, particles = 1000})
+	return Test2DParticles.new({type = ParticleType.GPU_PARTICLES, nodes = 100, particles = 1000})
 	
 func benchmark_many_gpuparticles2d_nodes_with_few_particles() -> Node2D:
-	return Test2DParticles.new({type = ParticleType.GPU_PARTICLES, nodes = 1000, particles = 10})
+	return Test2DParticles.new({type = ParticleType.GPU_PARTICLES, nodes = 1000, particles = 100})
 	
 func benchmark_few_cpuparticles2d_nodes_with_many_particles() -> Node2D:
-	return Test2DParticles.new({type = ParticleType.CPU_PARTICLES, nodes = 10, particles = 1000})
+	return Test2DParticles.new({type = ParticleType.CPU_PARTICLES, nodes = 100, particles = 1000})
 	
 func benchmark_many_cpuparticles2d_nodes_with_few_particles() -> Node2D:
-	return Test2DParticles.new({type = ParticleType.CPU_PARTICLES, nodes = 1000, particles = 10})
+	return Test2DParticles.new({type = ParticleType.CPU_PARTICLES, nodes = 1000, particles = 100})
