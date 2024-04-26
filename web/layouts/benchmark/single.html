@@ -1,20 +1,31 @@
 {{ define "main" }}
 
+{{ $date := index (split (path.BaseName .Permalink) "_") 0 }}
+{{ $commit := index (split (path.BaseName .Permalink) "_") 1 }}
+
+{{ $benchmark := where .Site.Data.data.benchmarks "commit" "eq" $commit }}
+{{ $benchmark := where $benchmark "date" "eq" $date }}
+{{ $benchmark := index $benchmark 0 }}
+
 <h1>{{ index (split (path.BaseName .Permalink) "_") 0 }}
-  <a href="https://github.com/godotengine/godot/commit/{{ .Params.engine.version_hash }}"><code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a></h1>
+  <a href="https://github.com/godotengine/godot/commit/{{ $benchmark.engine.version_hash }}"><code>{{ slicestr $benchmark.engine.version_hash 0 9 }}</code></a>
+</h1>
 
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 10px;">
   {{/* Order is inverted for this site. */}}
   <div>
     {{with .Site.RegularPages.Next . }}
     <a href="{{ .RelPermalink }}">« Previous: {{ index (split (path.BaseName .Permalink) "_") 0 }}
-      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code></a>
+      <code>{{ slicestr $benchmark.engine.version_hash 0 9 }}</code>
+    </a>
     {{end}}
+
   </div>
   <div style="text-align: right">
     {{with .Site.RegularPages.Prev . }}
     <a href="{{ .RelPermalink }}">Next: {{ index (split (path.BaseName .Permalink) "_") 0 }}
-      <code>{{ slicestr .Params.engine.version_hash 0 9 }}</code> »</a>
+      <code>{{ slicestr $benchmark.engine.version_hash 0 9 }}</code> »
+    </a>
     {{end}}
   </div>
 </div>
@@ -50,36 +61,36 @@
   <tr>
     <td><abbr title="Using GCC compiler with all caches cleared">Time to build</abbr></td>
     <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.build_time.debug 0.001 | lang.FormatNumber 0 }} seconds<br></span>
-      <sub>Release</sub> {{ mul .Params.build_time.release 0.001 | lang.FormatNumber 0 }} seconds
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.build_time.debug 0.001 | lang.FormatNumber 0 }} seconds<br></span>
+      <sub>Release</sub> {{ mul $benchmark.build_time.release 0.001 | lang.FormatNumber 0 }} seconds
     </td>
   </tr>
   <tr>
     <td><abbr title="Using GCC compiler with all caches cleared">Build peak memory usage</abbr></td>
     <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.build_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
-      <sub>Release</sub> {{ mul .Params.build_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.build_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
+      <sub>Release</sub> {{ mul $benchmark.build_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
     </td>
   </tr>
   <tr>
     <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
     <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ .Params.empty_project_startup_shutdown_time.debug | lang.FormatNumber 0 }} ms<br></span>
-      <sub>Release</sub> {{ .Params.empty_project_startup_shutdown_time.release | lang.FormatNumber 0 }} ms
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ $benchmark.empty_project_startup_shutdown_time.debug | lang.FormatNumber 0 }} ms<br></span>
+      <sub>Release</sub> {{ $benchmark.empty_project_startup_shutdown_time.release | lang.FormatNumber 0 }} ms
     </td>
   </tr>
   <tr>
     <td><abbr title="Measured on an empty project">Startup + shutdown peak memory usage</abbr></td>
     <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.empty_project_startup_shutdown_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
-      <sub>Release</sub> {{ mul .Params.empty_project_startup_shutdown_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.empty_project_startup_shutdown_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
+      <sub>Release</sub> {{ mul $benchmark.empty_project_startup_shutdown_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
     </td>
   </tr>
   <tr>
     <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
     <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul .Params.binary_size.debug 0.001 | lang.FormatNumber 0 }} KB<br></span>
-      <sub>Release</sub> {{ mul .Params.binary_size.release 0.001 | lang.FormatNumber 0 }} KB
+      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.binary_size.debug 0.001 | lang.FormatNumber 0 }} KB<br></span>
+      <sub>Release</sub> {{ mul $benchmark.binary_size.release 0.001 | lang.FormatNumber 0 }} KB
     </td>
   </tr>
 </table>
@@ -100,10 +111,16 @@
     <tbody>
       {{/* Check CPU debug data only, but also get data from release CPU runs. */}}
       {{/* These runs are expected to have the same number of results available. */}}
-      {{ range .Params.benchmarks }}
+      {{ range $benchmark.benchmarks }}
       {{ if gt .results.cpu_debug.time 0 }}
       <tr>
-        <td><sub style="opacity: 0.65">{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+        <td>
+          <sub style="opacity: 0.65">
+            {{ delimit (first (sub (len .path) 1) .path) " > "}}
+          </sub>
+          <br>
+          <strong>{{ index (last 1 .path) 0 }}</strong>
+        </td>
         <td>
           {{ if gt .results.cpu_debug.idle 0 }}
           <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.cpu_debug.idle }} <sub>mspf</sub><br></span>
@@ -113,7 +130,7 @@
         <td>
           {{ if gt .results.cpu_debug.physics 0 }}
           <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.cpu_debug.physics }} <sub>mspf</sub><br></span>
-          <sub>Release</sub> {{ .results.cpu_debug.physics }} <sub>mspf</sub>
+          <sub>Release</sub> {{ .results.cpu_release.physics }} <sub>mspf</sub>
           {{ end }}
         </td>
         <td>
@@ -142,10 +159,16 @@
     <tbody>
       {{/* Check GPU AMD data only, but also get data from Intel and NVIDIA GPU runs. */}}
       {{/* These runs are expected to have the same number of results available. */}}
-      {{ range .Params.benchmarks }}
+      {{ range $benchmark.benchmarks }}
       {{ if gt .results.amd.render_cpu 0 }}
       <tr>
-        <td><sub style="opacity: 0.65">{{ .category }}</sub><br><strong>{{ .name }}</strong></td>
+        <td>
+          <sub style="opacity: 0.65">
+            {{ delimit (first (sub (len .path) 1) .path) " > "}}
+          </sub>
+          <br>
+          <strong>{{ index (last 1 .path) 0 }}</strong></td>
+        </td>
         <td>
           {{ if gt .results.amd.render_cpu 0 }}
           <!-- <span title="Intel HD Graphics">🔵</span> {{ .results.intel.render_cpu }} <sub>mspf</sub><br> -->

@@ -30,6 +30,9 @@
         window.location.href = window.location.href.replace('://godotengine.github.io/godot-benchmarks-results/','://benchmarks.godotengine.org/');
       }
     </script>
+    <script>
+      const Database = {{ .Site.Data.data }}
+    </script>
     {{ block "javascript" . }}{{end}}
   </body>
 </html>
