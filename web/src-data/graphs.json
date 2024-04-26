@@ -1,0 +1,77 @@
+[
+  {
+    "id": "core-callables",
+    "title": "Callables",
+    "benchmark-path-prefix": "Core/Callable"
+  },
+  {
+    "id": "core-crypto",
+    "title": "Crypto",
+    "benchmark-path-prefix": "Core/Crypto"
+  },
+  {
+    "id": "core-rng",
+    "title": "Random Number Generator",
+    "benchmark-path-prefix": "Core/Random Number Generator"
+  },
+  {
+    "id": "core-signal",
+    "title": "Signals",
+    "benchmark-path-prefix": "Core/Signal"
+  },
+  {
+    "id": "gdscript-allocations",
+    "title": "GDscript allocations",
+    "benchmark-path-prefix": "Gdscript/Alloc"
+  },
+  {
+    "id": "gdscript-arrays",
+    "title": "GDscript arrays",
+    "benchmark-path-prefix": "Gdscript/Array"
+  },
+  {
+    "id": "gdscript-string-checksum",
+    "title": "GDscript String Checksums",
+    "benchmark-path-prefix": "Gdscript/String Checksum"
+  },
+  {
+    "id": "gdscript-string-format",
+    "title": "GDscript String Format",
+    "benchmark-path-prefix": "Gdscript/String Format"
+  },
+  {
+    "id": "gdscript-string-manipulations",
+    "title": "GDscript String Manipulations",
+    "benchmark-path-prefix": "Gdscript/String Manipulation"
+  },
+  {
+    "id": "physics",
+    "title": "Rigid Body 3D",
+    "benchmark-path-prefix": "Physics/Rigid Body 3d"
+  },
+  {
+    "id": "rendering-culling",
+    "title": "Culling",
+    "benchmark-path-prefix": "Rendering/Culling"
+  },
+  {
+    "id": "rendering-hlod",
+    "title": "Hlod",
+    "benchmark-path-prefix": "Rendering/Hlod"
+  },
+  {
+    "id": "rendering-labels",
+    "title": "Rendering labels",
+    "benchmark-path-prefix": "Rendering/Hlod"
+  },
+  {
+    "id": "rendering-light-and-meches",
+    "title": "Lights and Meshes",
+    "benchmark-path-prefix": "Rendering/Lights And Meshes"
+  },
+  {
+    "id": "rendering-polygon-sprite-2d",
+    "title": "Polygon Sprite 2d",
+    "benchmark-path-prefix": "Rendering/Polygon Sprite 2d"
+  }
+]

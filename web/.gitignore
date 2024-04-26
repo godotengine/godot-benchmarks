@@ -4,7 +4,11 @@ public/
 # Temporary lock file while building
 .hugo_build.lock
 
-# Result JSON files
-# (should be committed to https://github.com/godotengine/godot-benchmarks-results instead)
-content/*.md
-!_content/_index.md
+# Generated files
+content/benchmark/*.md
+content/graph/*.md
+data/data.json
+
+# Untracked source files
+src-data/benchmarks/*.md
+src-data/benchmarks/*.json
