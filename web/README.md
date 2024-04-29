@@ -15,6 +15,9 @@ which runs benchmarks on a dedicated server with various GPU models.
   - GPU (Intel, release template)
   - GPU (NVIDIA, release template)
 -->
+- The produced results (as .json or .md) should be copied into the `src-data/benchmarks` folder.
+- The [./generate-content.py script](./generate-content.py) produces `.md` files
+  in the `content` folder, so that web pages can be generated for each graph and each benchmark.
 - [Hugo](https://gohugo.io/) is used to create a homepage listing recent
   benchmarked commits, plus a single page per engine commit. This allows linking
   to individual benchmarked commit in a future-proof way.
@@ -26,10 +29,13 @@ which runs benchmarks on a dedicated server with various GPU models.
 
 ## Development
 
-- Create JSON data or fetch existing JSON data from the live website.
-- Save this JSON data to the `content` folder with the following naming convention:
-  `YYYY-MM-DD_hash.json` where `hash` is a 9-character Git commit hash of the
-  Godot build used (truncated from a full commit hash).
+- Create JSON data or fetch existing JSON data from the live website, and copy the JSON files into 
+  the `src-data/benchmarks` folder. Files should be named using format `YYYY-MM-DD_hash.json` where 
+  `hash` is a 9-character Git commit hash of the Godot build used (truncated from a full commit hash).
+  The files can also have the `.md` extension (for backward compatibility), but they should still be 
+  JSON inside.
+- Run [./generate-content.py](./generate-content.py). This should create `.md` pages in both the 
+  `content/benchmark` and the `content/graph` folders.
 - Run `hugo server`.
 
 ## Production

@@ -14,7 +14,7 @@
 
 import json
 import sys
-from os import listdir
+import os
 from os.path import isdir, isfile, join
 
 # Source data paths.
@@ -40,7 +40,7 @@ data_output_json = {
 # Fetch the list of benchmark files
 benchmark_input_filename_test = lambda f: (f.endswith(".json") or f.endswith(".md"))
 benchmarks_files = [
-    f for f in listdir(benchmarks_path) if (isfile(join(benchmarks_path, f)) and benchmark_input_filename_test(f))
+    f for f in os.listdir(benchmarks_path) if (isfile(join(benchmarks_path, f)) and benchmark_input_filename_test(f))
 ]
 
 # Add the list of benchmarks.
@@ -48,7 +48,7 @@ for f in benchmarks_files:
     json_file = open(join(benchmarks_path, f))
 
     # Extract data from filename.
-    key = f.removesuffix(".json")
+    key = f.removesuffix(".json").removesuffix(".md")
     date = key.split("_")[0]
     commit = key.split("_")[1]
 
@@ -91,12 +91,16 @@ data_file.close()
 
 # Create a .md file for each benchmark.
 benchmarks_content_path = "./content/benchmark"
+if not os.path.exists(benchmarks_content_path):
+    os.mkdir(benchmarks_content_path)
 for benchmark in data_output_json["benchmarks"]:
     filename = benchmark["date"] + "_" + benchmark["commit"] + ".md"
     open(join(benchmarks_content_path, filename), "a").close()
 
 # Create a .md file for each graph.
 graphs_content_path = "./content/graph"
+if not os.path.exists(graphs_content_path):
+    os.mkdir(graphs_content_path)
 for graph in data_output_json["graphs"]:
     filename = graph["id"] + ".md"
     open(join(graphs_content_path, filename), "a").close()
