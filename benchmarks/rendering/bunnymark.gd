@@ -12,7 +12,7 @@ class Bunnymark extends Node2D:
 	var gravity := Vector2(0.0, 980.0)
 
 	var count := 1
-	var canvasitem_api := false
+	var canvasitem_draw_api := false
 	var meshinstance2d := false
 
 	var nodes := []
@@ -22,7 +22,7 @@ class Bunnymark extends Node2D:
 
 	func _init(settings: Dictionary) -> void:
 		count = settings.get("count", 1)
-		canvasitem_api = settings.get("canvasitem_api", false)
+		canvasitem_draw_api = settings.get("canvasitem_draw_api", false)
 		meshinstance2d = settings.get("meshinstance2d", false)
 
 	func _ready() -> void:
@@ -48,7 +48,7 @@ class Bunnymark extends Node2D:
 			speeds.append(speed)
 
 			positions.append(Vector2(0, 0))
-			if not canvasitem_api:
+			if not canvasitem_draw_api:
 				if not meshinstance2d:
 					node.texture = texture
 				node.self_modulate = hues[i]
@@ -73,7 +73,7 @@ class Bunnymark extends Node2D:
 			speeds[i] = spd
 			positions[i] += time*spd
 
-		if not canvasitem_api:
+		if not canvasitem_draw_api:
 			for i in count:
 				var pos = positions[i]
 				var node = nodes[i]
@@ -82,30 +82,30 @@ class Bunnymark extends Node2D:
 			queue_redraw()
 
 	func _draw() -> void:
-		if not canvasitem_api:
+		if not canvasitem_draw_api:
 			return
 
 		for i in count:
 			var pos = positions[i]
 			draw_texture(texture, pos, hues[i])
 
-func benchmark_bunnymark_canvasitem_api_05_000() -> Node2D:
-	return Bunnymark.new({ count = 5000, canvasitem_api = true })
+func benchmark_bunnymark_canvasitem_draw_api_05_000() -> Node2D:
+	return Bunnymark.new({ count = 5000, canvasitem_draw_api = true })
 
-func benchmark_bunnymark_canvasitem_api_10_000() -> Node2D:
-	return Bunnymark.new({ count = 10000, canvasitem_api = true })
+func benchmark_bunnymark_canvasitem_draw_api_10_000() -> Node2D:
+	return Bunnymark.new({ count = 10000, canvasitem_draw_api = true })
 
-func benchmark_bunnymark_canvasitem_api_20_000() -> Node2D:
-	return Bunnymark.new({ count = 20000, canvasitem_api = true })
+func benchmark_bunnymark_canvasitem_draw_api_20_000() -> Node2D:
+	return Bunnymark.new({ count = 20000, canvasitem_draw_api = true })
 
 
-func benchmark_bunnymark_meshinstance2d_api_05_000() -> Node2D:
+func benchmark_bunnymark_meshinstance2d_05_000() -> Node2D:
 	return Bunnymark.new({ count = 5000, meshinstance2d = true })
 
-func benchmark_bunnymark_meshinstance2d_api_10_000() -> Node2D:
+func benchmark_bunnymark_meshinstance2d_10_000() -> Node2D:
 	return Bunnymark.new({ count = 10000, meshinstance2d = true })
 
-func benchmark_bunnymark_meshinstance2d_api_20_000() -> Node2D:
+func benchmark_bunnymark_meshinstance2d_20_000() -> Node2D:
 	return Bunnymark.new({ count = 20000, meshinstance2d = true })
 
 
