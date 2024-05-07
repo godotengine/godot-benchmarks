@@ -89,31 +89,31 @@ class Bunnymark extends Node2D:
 			var pos = positions[i]
 			draw_texture(texture, pos, hues[i])
 
-func benchmark_bunnymark_canvasitem_draw_api_05_000() -> Node2D:
+func benchmark_bunnymark_canvasitem_draw_api_5000() -> Node2D:
 	return Bunnymark.new({ count = 5000, canvasitem_draw_api = true })
 
-func benchmark_bunnymark_canvasitem_draw_api_10_000() -> Node2D:
+func benchmark_bunnymark_canvasitem_draw_api_10000() -> Node2D:
 	return Bunnymark.new({ count = 10000, canvasitem_draw_api = true })
 
-func benchmark_bunnymark_canvasitem_draw_api_20_000() -> Node2D:
+func benchmark_bunnymark_canvasitem_draw_api_20000() -> Node2D:
 	return Bunnymark.new({ count = 20000, canvasitem_draw_api = true })
 
 
-func benchmark_bunnymark_meshinstance2d_05_000() -> Node2D:
+func benchmark_bunnymark_meshinstance2d_5000() -> Node2D:
 	return Bunnymark.new({ count = 5000, meshinstance2d = true })
 
-func benchmark_bunnymark_meshinstance2d_10_000() -> Node2D:
+func benchmark_bunnymark_meshinstance2d_10000() -> Node2D:
 	return Bunnymark.new({ count = 10000, meshinstance2d = true })
 
-func benchmark_bunnymark_meshinstance2d_20_000() -> Node2D:
+func benchmark_bunnymark_meshinstance2d_20000() -> Node2D:
 	return Bunnymark.new({ count = 20000, meshinstance2d = true })
 
 
-func benchmark_bunnymark_sprite2d_05_000() -> Node2D:
+func benchmark_bunnymark_sprite2d_5000() -> Node2D:
 	return Bunnymark.new({ count = 5000 })
 
-func benchmark_bunnymark_sprite2d_10_000() -> Node2D:
+func benchmark_bunnymark_sprite2d_10000() -> Node2D:
 	return Bunnymark.new({ count = 10000 })
 
-func benchmark_bunnymark_sprite2d_20_000() -> Node2D:
+func benchmark_bunnymark_sprite2d_20000() -> Node2D:
 	return Bunnymark.new({ count = 20000 })
