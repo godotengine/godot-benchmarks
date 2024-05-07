@@ -1,0 +1,40 @@
+name: Continuous integration
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and deploy to GitHub Pages
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate class reference table and build website
+        env:
+          HUGO_VERSION: '0.117.0'
+        run: |
+          curl -LO "https://github.com/gohugoio/hugo/releases/download/v$HUGO_VERSION/hugo_${HUGO_VERSION}_Linux-64bit.tar.gz"
+          tar xf "hugo_${HUGO_VERSION}_Linux-64bit.tar.gz" hugo
+          sudo mv hugo /usr/local/bin/
+          git clone --depth=1 https://github.com/godotengine/godot-benchmarks.git
+          # Copy benchmark JSONs to the web source so they can be included in the built website.
+          cp 2*.md godot-benchmarks/web/content
+          ls -l godot-benchmarks/web/content
+          hugo --minify --source=godot-benchmarks/web --destination="$PWD/public"
+
+      - name: Deploy to GitHub Pages 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        # Only deploy from the `main` branch, and never deploy from pull requests.
+        if: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' }}
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The branch the action should deploy to.
+          BRANCH: gh-pages
+          # The folder the action should deploy.
+          FOLDER: public
+          # Artifacts are large, don't keep the branch's history
+          SINGLE_COMMIT: true
