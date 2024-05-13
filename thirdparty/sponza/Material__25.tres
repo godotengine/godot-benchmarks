@@ -1,7 +1,7 @@
 [gd_resource type="StandardMaterial3D" load_steps=3 format=3 uid="uid://hs2ob5edfwom"]
 
-[ext_resource type="Texture2D" uid="uid://dkub6fpbj3o0r" path="res://thirdparty/sponza/textures/lion.webp" id="1_tnn7u"]
-[ext_resource type="Texture2D" uid="uid://cx87f7q45oulv" path="res://thirdparty/sponza/textures/lion_ddn.webp" id="2_prxi6"]
+[ext_resource type="Texture2D" uid="uid://b4bal7tk2os30" path="res://thirdparty/sponza/textures/lion.webp" id="1_tnn7u"]
+[ext_resource type="Texture2D" uid="uid://doihj4aiajwes" path="res://thirdparty/sponza/textures/lion_ddn.webp" id="2_prxi6"]
 
 [resource]
 resource_name = "Material__25"

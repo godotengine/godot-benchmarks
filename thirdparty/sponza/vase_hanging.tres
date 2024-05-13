@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://cd4pd12nq12s5"]
 
-[ext_resource type="Texture2D" uid="uid://cfp60mj1hdyak" path="res://thirdparty/sponza/textures/vase_hanging.webp" id="1_n4gyf"]
+[ext_resource type="Texture2D" uid="uid://2vnletmqed4r" path="res://thirdparty/sponza/textures/vase_hanging.webp" id="1_n4gyf"]
 
 [resource]
 resource_name = "vase_hanging"
