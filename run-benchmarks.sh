@@ -109,19 +109,19 @@ DATE="$(date +'%Y-%m-%d')"
 
 # Perform a warmup run first.
 echo "Performing debug warmup run."
-$GODOT_DEBUG --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+$GODOT_DEBUG --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
   echo "Performing benchmark debug startup/shutdown run."
-	$GODOT_DEBUG --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+	$GODOT_DEBUG --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
 TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 20))"
 
 echo "Performing benchmark debug peak memory usage run."
-PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG=$(/usr/bin/time -f "%M" "$GODOT_DEBUG" --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit 2>&1 | tail -1)
+PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG=$(/usr/bin/time -f "%M" "$GODOT_DEBUG" --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit 2>&1 | tail -1)
 
 # Perform a warmup run first.
 echo "Performing release warmup run."
@@ -137,24 +137,24 @@ done
 TIME_TO_STARTUP_SHUTDOWN_RELEASE="$((TOTAL / 20))"
 
 echo "Performing benchmark release peak memory usage run."
-PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit 2>&1 | tail -1)
+PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit 2>&1 | tail -1)
 
 # Import resources and build C# solutions in the project (required to run it).
 echo "Performing resource importing and C# solution building."
-$GODOT_DEBUG --headless --editor --build-solutions --quit-after 2
+$GODOT_DEBUG --headless --editor --gpu-index 1 --build-solutions --quit-after 2
 
 # Run CPU benchmarks.
 
 echo "Running CPU benchmarks."
-$GODOT_DEBUG --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md" --json-results-prefix="cpu_debug"
-$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md" --json-results-prefix="cpu_release"
+$GODOT_DEBUG --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md" --json-results-prefix="cpu_debug"
+$GODOT_RELEASE --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md" --json-results-prefix="cpu_release"
 
 # Run GPU benchmarks.
-# TODO: Run on different GPUs.
+# TODO: Run on NVIDIA GPU.
 echo "Running GPU benchmarks."
-$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/amd.md" --json-results-prefix="amd"
-#$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/intel.md" --json-results-prefix="intel"
-#$GODOT_RELEASE --audio-driver Dummy -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
+$GODOT_RELEASE --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/amd.md" --json-results-prefix="amd"
+$GODOT_RELEASE --audio-driver Dummy --gpu-index 0 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/intel.md" --json-results-prefix="intel"
+#$GODOT_RELEASE --audio-driver Dummy --gpu-index 2 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
 
 rm -rf /tmp/godot-benchmarks-results/
 # Clone a copy of the repository so we can push the new JSON files to it.
@@ -167,8 +167,8 @@ cd /tmp/godot-benchmarks-results/
 # Merge benchmark run JSONs together.
 # Use editor build as release build errors due to missing PCK file.
 echo "Merging JSON files together."
-$GODOT_DEBUG --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md --output-path /tmp/merged.md
-#$GODOT_DEBUG --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md --output-path /tmp/merged.md
+$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md --output-path /tmp/merged.md
+#$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md --output-path /tmp/merged.md
 
 OUTPUT_PATH="/tmp/godot-benchmarks-results/${DATE}_${COMMIT_HASH}.md"
 rm -f "$OUTPUT_PATH"
