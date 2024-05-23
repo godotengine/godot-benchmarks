@@ -35,6 +35,12 @@ if [[ ! -d "$GODOT_REPO_DIR/.git" ]]; then
   git clone https://github.com/godotengine/godot.git "$GODOT_REPO_DIR"
 fi
 
+pushd "$GODOT_REPO_DIR"
+git reset --hard
+git clean -qdfx --exclude bin
+git pull
+popd
+
 # Check if latest commit is already benchmarked in the results repository. If so, skip running the benchmark.
 rm -rf /tmp/godot-benchmarks-results/
 git clone git@github.com:godotengine/godot-benchmarks-results.git /tmp/godot-benchmarks-results/
@@ -53,10 +59,6 @@ GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
 if [[ "$ARG1" != "--skip-build" ]]; then
   cd "$GODOT_REPO_DIR"
-
-  git reset --hard
-  git clean -qdfx --exclude bin
-  git pull
 
   if command -v ccache &> /dev/null; then
     # Clear ccache to avoid skewing the build time results.
