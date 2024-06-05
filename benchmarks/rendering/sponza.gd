@@ -18,6 +18,10 @@ class TestScene:
 	var using_dof: bool
 	var dof_bokeh_shape: RenderingServer.DOFBokehShape
 
+	var using_refprobe: bool
+	var using_voxelgi: bool
+	var using_sdfgi: bool
+
 	var using_glow: bool
 	var using_ssr: bool
 	var using_ssao: bool
@@ -47,6 +51,18 @@ class TestScene:
 	func with_dof(shape: RenderingServer.DOFBokehShape) -> TestScene:
 		using_dof = true
 		dof_bokeh_shape = shape
+		return self
+
+	func with_refprobe() -> TestScene:
+		using_refprobe = true
+		return self
+
+	func with_voxelgi() -> TestScene:
+		using_voxelgi = true
+		return self
+
+	func with_sdgfi() -> TestScene:
+		using_sdfgi = true
 		return self
 
 	func with_glow() -> TestScene:
@@ -103,6 +119,21 @@ class TestScene:
 			RenderingServer.camera_attributes_set_dof_blur_bokeh_shape(dof_bokeh_shape)
 
 		var env: Environment = null
+
+		if using_refprobe:
+			var ref_probe := ReflectionProbe.new()
+			ref_probe.size.x = 24
+			add_child(ref_probe)
+
+		if using_voxelgi:
+			var voxelgi := VoxelGI.new()
+			voxelgi.size.x = 24
+			voxelgi.data = load("res://supplemental/sponza.VoxelGI_data.res")
+			add_child(voxelgi)
+
+		if using_sdfgi:
+			env = Environment.new()
+			env.sdfgi_enabled = true
 
 		if using_ssr:
 			env = Environment.new()
@@ -196,6 +227,18 @@ func benchmark_dof_hex() -> TestScene:
 
 func benchmark_dof_circle() -> TestScene:
 	return TestScene.new().with_dof(RenderingServer.DOF_BOKEH_CIRCLE)
+
+
+func benchmark_gi_refprobe() -> TestScene:
+	return TestScene.new().with_directional_light().with_refprobe()
+
+
+func benchmark_gi_voxelgi() -> TestScene:
+	return TestScene.new().with_directional_light().with_voxelgi()
+
+
+func benchmark_gi_sdfgi() -> TestScene:
+	return TestScene.new().with_directional_light().with_sdgfi()
 
 
 func benchmark_effect_glow() -> TestScene:
