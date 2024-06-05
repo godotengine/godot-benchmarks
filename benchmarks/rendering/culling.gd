@@ -155,17 +155,6 @@ func benchmark_basic_cull() -> TestScene:
 	return rv
 
 
-func benchmark_directional_light_cull() -> TestScene:
-	var rv := TestScene.new()
-	rv.fill_with_objects = true
-	var light := DirectionalLight3D.new()
-	light.shadow_enabled = true
-	light.rotation = Vector3(-0.6, 0.3, -0.3)
-	light.position.x = 2
-	rv.add_child(light)
-	return rv
-
-
 func benchmark_dynamic_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
@@ -183,7 +172,25 @@ func benchmark_dynamic_rotate_cull() -> TestScene:
 	return rv
 
 
-func benchmark_dynamic_light_cull() -> TestScene:
+func benchmark_directional_light_cull() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	var light := DirectionalLight3D.new()
+	light.shadow_enabled = true
+	light.rotation = Vector3(-0.6, 0.3, -0.3)
+	light.position.x = 2
+	rv.add_child(light)
+	return rv
+
+
+func benchmark_static_omni_light_cull() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.fill_with_omni_lights = true
+	return rv
+
+
+func benchmark_dynamic_omni_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
@@ -192,18 +199,11 @@ func benchmark_dynamic_light_cull() -> TestScene:
 	return rv
 
 
-func benchmark_dynamic_light_cull_with_shadows() -> TestScene:
+func benchmark_dynamic_omni_light_cull_with_shadows() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
 	rv.use_shadows = true
 	rv.dynamic_instances = rv.light_instances
 	rv.dynamic_instances_xforms = rv.light_instance_xforms
-	return rv
-
-
-func benchmark_static_light_cull() -> TestScene:
-	var rv := TestScene.new()
-	rv.fill_with_objects = true
-	rv.fill_with_omni_lights = true
 	return rv
