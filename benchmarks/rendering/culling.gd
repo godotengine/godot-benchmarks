@@ -26,6 +26,7 @@ class TestScene:
 	var use_shadows := false
 	var fill_with_objects := false
 	var fill_with_omni_lights := false
+	var fill_with_spot_lights := false
 
 	func _init() -> void:
 		cam.far = 200.0
@@ -38,6 +39,8 @@ class TestScene:
 			do_fill_with_objects()
 		if fill_with_omni_lights:
 			do_fill_with_omni_lights()
+		if fill_with_spot_lights:
+			do_fill_with_spot_lights()
 
 	func do_fill_with_objects() -> void:
 		meshes.append(BoxMesh.new())
@@ -90,19 +93,29 @@ class TestScene:
 			object_xforms.append(xf)
 
 	func do_fill_with_omni_lights() -> void:
+		do_fill_with_lights(true)
+
+	func do_fill_with_spot_lights() -> void:
+		do_fill_with_lights(false)
+
+	func do_fill_with_lights(omni: bool) -> void:
 		var zn := 2
 		var zextent := cam.far - zn
 		var ss := get_tree().root.get_visible_rect().size
 		var from := cam.project_position(Vector2(0, ss.y), zextent)
 		var extents := cam.project_position(Vector2(ss.x, 0), zextent) - from
 
-		var light := RenderingServer.omni_light_create()
+		var light: RID
+		if omni:
+			light = RenderingServer.omni_light_create()
+			# Dual paraboloid shadows are faster than cubemap shadows.
+			RenderingServer.light_omni_set_shadow_mode(
+				light, RenderingServer.LIGHT_OMNI_SHADOW_DUAL_PARABOLOID
+			)
+		else:
+			light = RenderingServer.spot_light_create()
 		RenderingServer.light_set_param(light, RenderingServer.LIGHT_PARAM_RANGE, 10)
 		RenderingServer.light_set_shadow(light, use_shadows)
-		# Dual parabolid shadows are faster than cubemap shadows.
-		RenderingServer.light_omni_set_shadow_mode(
-			light, RenderingServer.LIGHT_OMNI_SHADOW_DUAL_PARABOLOID
-		)
 		lights.append(light)
 
 		for i in NUMBER_OF_OMNI_LIGHTS:
@@ -112,6 +125,7 @@ class TestScene:
 				from.y + randf() * extents.y,
 				-(zn + zextent * randf())
 			)
+
 			var ins := RenderingServer.instance_create()
 			RenderingServer.instance_set_base(ins, light)
 			RenderingServer.instance_set_scenario(ins, get_world_3d().scenario)
@@ -211,6 +225,24 @@ func benchmark_dynamic_omni_light_cull_with_shadows() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
+	rv.use_shadows = true
+	rv.dynamic_instances = rv.light_instances
+	rv.dynamic_instances_xforms = rv.light_instance_xforms
+	return rv
+
+
+func benchmark_static_spot_light_cull_with_shadows() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.fill_with_spot_lights = true
+	rv.use_shadows = true
+	return rv
+
+
+func benchmark_dynamic_spot_light_cull_with_shadows() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.fill_with_spot_lights = true
 	rv.use_shadows = true
 	rv.dynamic_instances = rv.light_instances
 	rv.dynamic_instances_xforms = rv.light_instance_xforms
