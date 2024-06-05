@@ -190,6 +190,14 @@ func benchmark_static_omni_light_cull() -> TestScene:
 	return rv
 
 
+func benchmark_static_omni_light_cull_with_shadows() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.fill_with_omni_lights = true
+	rv.use_shadows = true
+	return rv
+
+
 func benchmark_dynamic_omni_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
