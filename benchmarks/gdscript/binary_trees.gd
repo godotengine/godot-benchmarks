@@ -1,5 +1,8 @@
 extends Benchmark
 
+# Ported from
+# https://github.com/hanabi1224/Programming-Language-Benchmarks/blob/main/bench/algorithm/binarytrees/1.lua
+
 
 func bottom_up_tree(depth: int) -> Array:
 	if depth > 0:

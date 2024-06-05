@@ -1,5 +1,8 @@
 extends Benchmark
 
+# Ported from
+# https://github.com/hanabi1224/Programming-Language-Benchmarks/blob/main/bench/algorithm/spectral-norm/1.lua
+
 
 func eval_a(i: int, j: int) -> float:
 	var ij := i + j - 1

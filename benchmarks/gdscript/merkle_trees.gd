@@ -1,5 +1,8 @@
 extends Benchmark
 
+# Ported from
+# https://github.com/hanabi1224/Programming-Language-Benchmarks/blob/main/bench/algorithm/merkletrees/1.lua
+
 
 class TreeNode:
 	var value := -1

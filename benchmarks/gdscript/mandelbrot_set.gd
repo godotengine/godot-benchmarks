@@ -5,6 +5,8 @@ const HEIGHT := 400
 const MAX_ITERATION := 1000
 
 
+# Method from https://github.com/bliepp/mandelbrot_set_godot/blob/master/shaders/mandelbrot.shader
+# Licensed under MIT
 func hsv(hue: float, sat: float, value: float) -> Color:
 	hue = fposmod(hue, 360.0)
 	var h := floori(hue) / 60
@@ -25,6 +27,8 @@ func hsv(hue: float, sat: float, value: float) -> Color:
 	return Color(value, p, q)
 
 
+# Algorithm from
+# https://en.wikipedia.org/wiki/Plotting_algorithms_for_the_Mandelbrot_set#Optimized_escape_time_algorithms
 func mandelbrot_set(width: int, height: int, max_iteration: int) -> void:
 	var image := Image.create(width, height, false, Image.FORMAT_RGB8)
 	var ratio := float(width) / float(height)

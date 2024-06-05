@@ -1,5 +1,8 @@
 extends Benchmark
 
+# Ported from
+# https://github.com/hanabi1224/Programming-Language-Benchmarks/blob/main/bench/algorithm/nbody/4.lua
+
 const SOLAR_MASS := 4 * PI * PI
 const DAYS_PER_YEAR := 365.24
 
