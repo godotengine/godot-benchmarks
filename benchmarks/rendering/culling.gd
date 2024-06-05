@@ -1,7 +1,7 @@
 extends Benchmark
 
-const NUMBER_OF_OBJECTS = 10_000
-const NUMBER_OF_OMNI_LIGHTS = 100
+const NUMBER_OF_OBJECTS := 10_000
+const NUMBER_OF_OMNI_LIGHTS := 100
 
 
 func _init() -> void:
@@ -11,15 +11,15 @@ func _init() -> void:
 
 class TestScene:
 	extends Node3D
-	var objects := []
-	var object_xforms := []
-	var lights := []
-	var light_instances := []
-	var light_instance_xforms := []
-	var meshes := []
+	var objects: Array[RID] = []
+	var object_xforms: Array[Transform3D] = []
+	var lights: Array[RID] = []
+	var light_instances: Array[RID] = []
+	var light_instance_xforms: Array[Transform3D] = []
+	var meshes: Array[PrimitiveMesh] = []
 	var cam := Camera3D.new()
-	var dynamic_instances
-	var dynamic_instances_xforms
+	var dynamic_instances: Array[RID]
+	var dynamic_instances_xforms: Array[Transform3D]
 	var dynamic_instances_rotate := false
 	var time_accum := 0.0
 	var unshaded := false
@@ -27,12 +27,12 @@ class TestScene:
 	var fill_with_objects := false
 	var fill_with_omni_lights := false
 
-	func _init():
+	func _init() -> void:
 		cam.far = 200.0
 		cam.transform.origin.z = 0.873609
 		add_child(cam)
 
-	func _ready():
+	func _ready() -> void:
 		cam.make_current()
 		if fill_with_objects:
 			do_fill_with_objects()
@@ -139,8 +139,8 @@ class TestScene:
 		time_accum += delta * 4.0
 
 		for i in dynamic_instances.size():
-			var xf: Transform3D = dynamic_instances_xforms[i]
-			var angle = i * PI * 2.0 / dynamic_instances.size()
+			var xf := dynamic_instances_xforms[i]
+			var angle := i * PI * 2.0 / dynamic_instances.size()
 			if dynamic_instances_rotate:
 				xf = xf.rotated_local(Vector3.RIGHT, angle * sin(time_accum) * 2.0)
 			else:
@@ -148,14 +148,14 @@ class TestScene:
 			RenderingServer.instance_set_transform(dynamic_instances[i], xf)
 
 
-func benchmark_basic_cull():
+func benchmark_basic_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.unshaded = true
 	return rv
 
 
-func benchmark_directional_light_cull():
+func benchmark_directional_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	var light := DirectionalLight3D.new()
@@ -166,7 +166,7 @@ func benchmark_directional_light_cull():
 	return rv
 
 
-func benchmark_dynamic_cull():
+func benchmark_dynamic_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.dynamic_instances = rv.objects
@@ -174,7 +174,7 @@ func benchmark_dynamic_cull():
 	return rv
 
 
-func benchmark_dynamic_rotate_cull():
+func benchmark_dynamic_rotate_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.dynamic_instances_rotate = true
 	rv.fill_with_objects = true
@@ -183,7 +183,7 @@ func benchmark_dynamic_rotate_cull():
 	return rv
 
 
-func benchmark_dynamic_light_cull():
+func benchmark_dynamic_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
@@ -192,7 +192,7 @@ func benchmark_dynamic_light_cull():
 	return rv
 
 
-func benchmark_dynamic_light_cull_with_shadows():
+func benchmark_dynamic_light_cull_with_shadows() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
@@ -202,7 +202,7 @@ func benchmark_dynamic_light_cull_with_shadows():
 	return rv
 
 
-func benchmark_static_light_cull():
+func benchmark_static_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
