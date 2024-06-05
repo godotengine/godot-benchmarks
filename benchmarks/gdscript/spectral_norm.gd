@@ -49,13 +49,13 @@ func calculate_spectral_norm(n: int) -> void:
 	print("%.9f" % sqrt(vbv / vv))
 
 
-func benchmark_spectral_norm_2000() -> void:
-	calculate_spectral_norm(2000)
+func benchmark_spectral_norm_100() -> void:
+	calculate_spectral_norm(500)
 
 
-func benchmark_spectral_norm_4000() -> void:
-	calculate_spectral_norm(4000)
+func benchmark_spectral_norm_500() -> void:
+	calculate_spectral_norm(1000)
 
 
-func benchmark_spectral_norm_8000() -> void:
-	calculate_spectral_norm(8000)
+func benchmark_spectral_norm_1000() -> void:
+	calculate_spectral_norm(1000)

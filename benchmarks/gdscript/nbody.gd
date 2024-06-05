@@ -159,5 +159,5 @@ func benchmark_nbody_500_000() -> void:
 	calculate_nbody(500_000)
 
 
-func benchmark_nbody_5_000_000() -> void:
-	calculate_nbody(5_000_000)
+func benchmark_nbody_1_000_000() -> void:
+	calculate_nbody(1_000_000)

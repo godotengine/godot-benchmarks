@@ -71,9 +71,9 @@ func calculate_merkle_trees(n: int) -> void:
 	)
 
 
+func benchmark_merkle_trees_13() -> void:
+	calculate_merkle_trees(13)
+
+
 func benchmark_merkle_trees_15() -> void:
 	calculate_merkle_trees(15)
-
-
-func benchmark_merkle_trees_17() -> void:
-	calculate_merkle_trees(17)
