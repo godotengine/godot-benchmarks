@@ -20,6 +20,7 @@ class TestScene:
 	var cam := Camera3D.new()
 	var dynamic_instances
 	var dynamic_instances_xforms
+	var dynamic_instances_rotate := false
 	var time_accum := 0.0
 	var unshaded := false
 	var use_shadows := false
@@ -140,7 +141,10 @@ class TestScene:
 		for i in dynamic_instances.size():
 			var xf: Transform3D = dynamic_instances_xforms[i]
 			var angle = i * PI * 2.0 / dynamic_instances.size()
-			xf.origin += Vector3(sin(angle), cos(angle), 0.0) * sin(time_accum) * 2.0
+			if dynamic_instances_rotate:
+				xf = xf.rotated_local(Vector3.RIGHT, angle * sin(time_accum) * 2.0)
+			else:
+				xf.origin += Vector3(sin(angle), cos(angle), 0.0) * sin(time_accum) * 2.0
 			RenderingServer.instance_set_transform(dynamic_instances[i], xf)
 
 
@@ -164,6 +168,15 @@ func benchmark_directional_light_cull():
 
 func benchmark_dynamic_cull():
 	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.dynamic_instances = rv.objects
+	rv.dynamic_instances_xforms = rv.object_xforms
+	return rv
+
+
+func benchmark_dynamic_rotate_cull():
+	var rv := TestScene.new()
+	rv.dynamic_instances_rotate = true
 	rv.fill_with_objects = true
 	rv.dynamic_instances = rv.objects
 	rv.dynamic_instances_xforms = rv.object_xforms
