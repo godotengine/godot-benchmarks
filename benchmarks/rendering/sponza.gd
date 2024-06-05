@@ -22,6 +22,7 @@ class TestScene:
 	var using_refprobe: bool
 	var using_voxelgi: bool
 	var using_sdfgi: bool
+	var using_ssil: bool
 
 	var using_glow: bool
 	var using_ssr: bool
@@ -68,6 +69,10 @@ class TestScene:
 
 	func with_sdgfi() -> TestScene:
 		using_sdfgi = true
+		return self
+
+	func with_ssil() -> TestScene:
+		using_ssil = true
 		return self
 
 	func with_glow() -> TestScene:
@@ -144,6 +149,10 @@ class TestScene:
 		if using_sdfgi:
 			env = Environment.new()
 			env.sdfgi_enabled = true
+
+		if using_ssil:
+			env = Environment.new()
+			env.ssil_enabled = true
 
 		if using_ssr:
 			env = Environment.new()
@@ -253,6 +262,10 @@ func benchmark_gi_voxelgi() -> TestScene:
 
 func benchmark_gi_sdfgi() -> TestScene:
 	return TestScene.new().with_directional_light().with_sdgfi()
+
+
+func benchmark_gi_ssil() -> TestScene:
+	return TestScene.new().with_directional_light().with_ssil()
 
 
 func benchmark_effect_glow() -> TestScene:
