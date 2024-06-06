@@ -10,6 +10,16 @@ var label_size := Vector2(
 )
 
 
+class ResizingLabel:
+	extends Label
+
+	var time_accum := 0.0
+
+	func _process(delta: float) -> void:
+		time_accum += delta * 4.0
+		size += Vector2(sin(time_accum), cos(time_accum)) * 4.0
+
+
 func _init() -> void:
 	test_render_cpu = true
 	test_render_gpu = true
@@ -38,4 +48,21 @@ func benchmark_label_autowrap_word() -> Label:
 func benchmark_label_autowrap_smart() -> Label:
 	var label := benchmark_label()
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return label
+
+
+func benchmark_label_resize() -> Label:
+	var label := ResizingLabel.new()
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_font_size_override("font_size", FONT_SIZE)
+	label.size = label_size
+	label.text = LOREM_IPSUM.repeat(100)
+	return label
+
+
+func benchmark_rich_text_label() -> RichTextLabel:
+	var label := RichTextLabel.new()
+	label.add_theme_font_size_override("normal_font_size", FONT_SIZE)
+	label.size = label_size
+	label.text = LOREM_IPSUM.repeat(200)
 	return label
