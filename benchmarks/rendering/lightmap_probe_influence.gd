@@ -1,6 +1,7 @@
 extends Benchmark
 
 const NUMBER_OF_OBJECTS := 1000
+const NUMBER_OF_PROBES := 500
 
 
 func _init() -> void:
@@ -25,13 +26,12 @@ class TestScene:
 		var lightmap := LightmapGI.new()
 		lightmap.light_data = load("res://supplemental/sponza.lmbake")
 		$Sponza.add_child(lightmap)
-		# Create 512 probes
-		for x in 8:
-			for y in 8:
-				for z in range(-2, 6):
-					var probe := LightmapProbe.new()
-					probe.position = Vector3(x, y, z)
-					$Sponza.add_child(probe)
+		var half_probes := NUMBER_OF_PROBES / 2
+		for i in NUMBER_OF_PROBES:
+			var probe := LightmapProbe.new()
+			probe.position.y = 1
+			probe.position.z = i - half_probes
+			$Sponza.add_child(probe)
 
 		var meshes: Array[PrimitiveMesh] = [
 			BoxMesh.new(),
