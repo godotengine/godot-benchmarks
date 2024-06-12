@@ -26,6 +26,12 @@ class TestScene:
 		num_area_2d = _num_area_2d
 		visualize = _visualize
 
+		meshes[0].size = Vector2(20.0, 20.0)
+		meshes[1].radius = 10.0
+		meshes[1].height = 28.0
+		meshes[2].radius = 10.0
+		meshes[2].height = 20.0
+
 	func _ready() -> void:
 		window_size = get_window().size
 		for i in num_character_bodies:
