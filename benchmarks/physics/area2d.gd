@@ -66,5 +66,5 @@ func _init() -> void:
 	test_idle = true
 
 
-func benchmark_1000_area_2d() -> Node2D:
+func benchmark_1000_area_2d() -> TestScene:
 	return TestScene.new(2000, 1000, true)
