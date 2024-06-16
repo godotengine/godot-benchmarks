@@ -11,6 +11,7 @@ var box_mesh := BoxMesh.new()
 var sphere_mesh := SphereMesh.new()
 
 func _init() -> void:
+	benchmark_time = 10e6
 	test_physics = true
 	test_idle = true
 
