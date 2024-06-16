@@ -11,7 +11,6 @@ class TestScene:
 	var num_area_3d: int
 	var visualize := true
 	var area_3d_nodes: Array[Area3D]
-	var window_size: Vector2i
 	var time_accum := 0.0
 	var shapes: Array[Shape3D] = [
 		BoxShape3D.new(),
@@ -30,7 +29,6 @@ class TestScene:
 		visualize = _visualize
 
 	func _ready() -> void:
-		window_size = get_window().size
 		if visualize:
 			var camera := Camera3D.new()
 			camera.position = Vector3(0.0, 20.0, 20.0)
