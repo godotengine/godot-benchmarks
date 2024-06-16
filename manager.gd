@@ -168,7 +168,6 @@ func run_test(test_id: TestID) -> void:
 		var time_limit = bench_script.get("benchmark_time")
 		begin_time = Time.get_ticks_usec()
 
-		# Time limit of 5 seconds (5 million microseconds).
 		while (Time.get_ticks_usec() - begin_time) < time_limit:
 			await get_tree().process_frame
 
