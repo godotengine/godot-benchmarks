@@ -36,12 +36,6 @@ class TestScene:
 		softbody.set_point_pinned(275, true)
 		softbody.set_point_pinned(517, true)
 		add_child(softbody)
-		var boundary := StaticBody3D.new()
-		boundary.position.y = -4
-		var boundary_shape := CollisionShape3D.new()
-		boundary_shape.shape = WorldBoundaryShape3D.new()
-		boundary.add_child(boundary_shape)
-		add_child(boundary)
 		if visualize:
 			var camera := Camera3D.new()
 			camera.position = Vector3(0.0, 20.0, 20.0)
