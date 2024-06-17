@@ -1,12 +1,13 @@
 extends Benchmark
 
-const SPREAD_H := 20.0
+const SPREAD_H := 25.0
 const SPREAD_V := 10.0
 
 
 class TestScene:
 	extends Node3D
 
+	var collision_scene := preload("res://supplemental/8ball.glb")
 	var n_of_rigidbodies: int
 	var visualize := true
 	var shapes: Array[Shape3D] = [
@@ -25,23 +26,15 @@ class TestScene:
 		visualize = _visualize
 
 	func _ready() -> void:
-		var softbody := SoftBody3D.new()
-		var plane_mesh := PlaneMesh.new()
-		plane_mesh.size = Vector2(60, 60)
-		plane_mesh.subdivide_depth = 21
-		plane_mesh.subdivide_width = 21
-		softbody.mesh = plane_mesh
-		softbody.set_point_pinned(11, true)
-		softbody.set_point_pinned(253, true)
-		softbody.set_point_pinned(275, true)
-		softbody.set_point_pinned(517, true)
-		add_child(softbody)
+		var collision_node := collision_scene.instantiate() as Node3D
+		collision_node.rotate_y(PI / 2.0)
+		collision_node.scale = Vector3(7, 7, 7)
+		add_child(collision_node)
 		if visualize:
 			var camera := Camera3D.new()
 			camera.position = Vector3(0.0, 20.0, 20.0)
 			camera.rotate_x(-0.8)
 			add_child(camera)
-
 		for i in n_of_rigidbodies:
 			var rigid := RigidBody3D.new()
 			rigid.position = Vector3(
@@ -68,5 +61,5 @@ func _init() -> void:
 	test_idle = true
 
 
-func benchmark_softbody_3d_500_rigidbodies() -> TestScene:
-	return TestScene.new(500, true)
+func benchmark_triangle_mesh_3d_1000_rigidbodies() -> TestScene:
+	return TestScene.new(1000, true)
