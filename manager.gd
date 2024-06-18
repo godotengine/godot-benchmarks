@@ -165,7 +165,7 @@ func run_test(test_id: TestID) -> void:
 		for i in 3:
 			await get_tree().process_frame
 
-		var time_limit = bench_script.get("benchmark_time")
+		var time_limit: int = bench_script.get("benchmark_time")
 		begin_time = Time.get_ticks_usec()
 
 		while (Time.get_ticks_usec() - begin_time) < time_limit:
