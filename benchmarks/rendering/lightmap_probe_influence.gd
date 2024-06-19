@@ -26,12 +26,6 @@ class TestScene:
 		var lightmap := LightmapGI.new()
 		lightmap.light_data = load("res://supplemental/sponza.lmbake")
 		$Sponza.add_child(lightmap)
-		var half_probes := NUMBER_OF_PROBES / 2
-		for i in NUMBER_OF_PROBES:
-			var probe := LightmapProbe.new()
-			probe.position.y = 1
-			probe.position.z = i - half_probes
-			$Sponza.add_child(probe)
 
 		var meshes: Array[PrimitiveMesh] = [
 			BoxMesh.new(),
@@ -43,6 +37,7 @@ class TestScene:
 		var half_objects := NUMBER_OF_OBJECTS / 2
 		for i in NUMBER_OF_OBJECTS:
 			var ins := MeshInstance3D.new()
+			ins.gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
 			ins.mesh = meshes[i % meshes.size()]
 			ins.position.y = 1
 			ins.position.z = i - half_objects
