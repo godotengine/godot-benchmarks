@@ -39,7 +39,7 @@ class TestScene:
 		if NavigationServer3D.map_get_iteration_id(get_world_3d().navigation_map) == 0:
 			return
 		for agent in agents:
-			var nav_agent: NavigationAgent3D = agent.get_child(0)
+			var nav_agent := agent.get_child(0) as NavigationAgent3D
 			if nav_agent.is_navigation_finished():
 				continue
 			var next_position := nav_agent.get_next_path_position()
