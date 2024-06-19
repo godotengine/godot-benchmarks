@@ -20,11 +20,9 @@ func calculate_navigation_path(n_of_paths: int) -> void:
 
 func _rand_pos() -> Vector3:
 	return Vector3(
-		randf_range(0.0, SPREAD_H),
-		randf_range(0.0, SPREAD_V),
-		randf_range(0.0, SPREAD_H)
+		randf_range(0.0, SPREAD_H), randf_range(0.0, SPREAD_V), randf_range(0.0, SPREAD_H)
 	)
 
 
-func benchmark_navigation_1000_random_paths() -> void:
-	calculate_navigation_path(1000)
+func benchmark_navigation_10_000_random_paths() -> void:
+	calculate_navigation_path(10_000)
