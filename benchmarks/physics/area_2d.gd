@@ -68,6 +68,7 @@ class TestScene:
 
 
 func _init() -> void:
+	benchmark_time = 10e6
 	test_physics = true
 	test_idle = true
 
