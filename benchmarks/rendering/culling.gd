@@ -1,40 +1,46 @@
 extends Benchmark
 
-const NUMBER_OF_OBJECTS = 10_000
-const NUMBER_OF_OMNI_LIGHTS = 100
+const NUMBER_OF_OBJECTS := 10_000
+const NUMBER_OF_OMNI_LIGHTS := 100
+
 
 func _init() -> void:
 	test_render_cpu = true
 	test_render_gpu = true
 
 
-class TestScene extends Node3D:
-	var objects := []
-	var object_xforms := []
-	var lights := []
-	var light_instances := []
-	var light_instance_xforms := []
-	var meshes := []
+class TestScene:
+	extends Node3D
+	var objects: Array[RID] = []
+	var object_xforms: Array[Transform3D] = []
+	var lights: Array[RID] = []
+	var light_instances: Array[RID] = []
+	var light_instance_xforms: Array[Transform3D] = []
+	var meshes: Array[PrimitiveMesh] = []
 	var cam := Camera3D.new()
-	var dynamic_instances
-	var dynamic_instances_xforms
+	var dynamic_instances: Array[RID]
+	var dynamic_instances_xforms: Array[Transform3D]
+	var dynamic_instances_rotate := false
 	var time_accum := 0.0
 	var unshaded := false
 	var use_shadows := false
 	var fill_with_objects := false
 	var fill_with_omni_lights := false
+	var fill_with_spot_lights := false
 
-	func _init():
+	func _init() -> void:
 		cam.far = 200.0
 		cam.transform.origin.z = 0.873609
 		add_child(cam)
 
-	func _ready():
+	func _ready() -> void:
 		cam.make_current()
 		if fill_with_objects:
 			do_fill_with_objects()
 		if fill_with_omni_lights:
 			do_fill_with_omni_lights()
+		if fill_with_spot_lights:
+			do_fill_with_spot_lights()
 
 	func do_fill_with_objects() -> void:
 		meshes.append(BoxMesh.new())
@@ -45,18 +51,21 @@ class TestScene extends Node3D:
 
 		for mesh in meshes:
 			var shader := Shader.new()
-			var shader_string := """
+			var shader_string := (
+				"""
 				shader_type spatial;
 				%s
 				void fragment() {
 					ALBEDO = vec3(%s, %s, %s);
 				}
-				""" % [
+				"""
+				% [
 					"render_mode unshaded;\n" if unshaded else "",
 					str(randf()).pad_decimals(3),
 					str(randf()).pad_decimals(3),
 					str(randf()).pad_decimals(3),
 				]
+			)
 			shader.code = shader_string
 			var material := ShaderMaterial.new()
 			material.shader = shader
@@ -70,7 +79,11 @@ class TestScene extends Node3D:
 
 		for i in NUMBER_OF_OBJECTS:
 			var xf := Transform3D()
-			xf.origin = Vector3(from.x + randf() * extents.x,from.y + randf() * extents.y, - (zn + zextent * randf()))
+			xf.origin = Vector3(
+				from.x + randf() * extents.x,
+				from.y + randf() * extents.y,
+				-(zn + zextent * randf())
+			)
 			var ins := RenderingServer.instance_create()
 			RenderingServer.instance_set_base(ins, meshes[i % meshes.size()].get_rid())
 			RenderingServer.instance_set_scenario(ins, get_world_3d().scenario)
@@ -80,26 +93,43 @@ class TestScene extends Node3D:
 			object_xforms.append(xf)
 
 	func do_fill_with_omni_lights() -> void:
+		do_fill_with_lights(true)
+
+	func do_fill_with_spot_lights() -> void:
+		do_fill_with_lights(false)
+
+	func do_fill_with_lights(omni: bool) -> void:
 		var zn := 2
 		var zextent := cam.far - zn
 		var ss := get_tree().root.get_visible_rect().size
-		var from := cam.project_position(Vector2(0,ss.y),zextent)
-		var extents := cam.project_position(Vector2(ss.x,0),zextent) - from
+		var from := cam.project_position(Vector2(0, ss.y), zextent)
+		var extents := cam.project_position(Vector2(ss.x, 0), zextent) - from
 
-		var light := RenderingServer.omni_light_create()
-		RenderingServer.light_set_param(light, RenderingServer.LIGHT_PARAM_RANGE,10)
+		var light: RID
+		if omni:
+			light = RenderingServer.omni_light_create()
+			# Dual paraboloid shadows are faster than cubemap shadows.
+			RenderingServer.light_omni_set_shadow_mode(
+				light, RenderingServer.LIGHT_OMNI_SHADOW_DUAL_PARABOLOID
+			)
+		else:
+			light = RenderingServer.spot_light_create()
+		RenderingServer.light_set_param(light, RenderingServer.LIGHT_PARAM_RANGE, 10)
 		RenderingServer.light_set_shadow(light, use_shadows)
-		# Dual parabolid shadows are faster than cubemap shadows.
-		RenderingServer.light_omni_set_shadow_mode(light, RenderingServer.LIGHT_OMNI_SHADOW_DUAL_PARABOLOID)
 		lights.append(light)
 
 		for i in NUMBER_OF_OMNI_LIGHTS:
 			var xf := Transform3D()
-			xf.origin = Vector3(from.x + randf() * extents.x,from.y + randf() * extents.y, - (zn + zextent * randf()))
+			xf.origin = Vector3(
+				from.x + randf() * extents.x,
+				from.y + randf() * extents.y,
+				-(zn + zextent * randf())
+			)
+
 			var ins := RenderingServer.instance_create()
 			RenderingServer.instance_set_base(ins, light)
-			RenderingServer.instance_set_scenario(ins,get_world_3d().scenario)
-			RenderingServer.instance_set_transform(ins,xf)
+			RenderingServer.instance_set_scenario(ins, get_world_3d().scenario)
+			RenderingServer.instance_set_transform(ins, xf)
 
 			light_instances.append(ins)
 			light_instance_xforms.append(xf)
@@ -123,19 +153,40 @@ class TestScene extends Node3D:
 		time_accum += delta * 4.0
 
 		for i in dynamic_instances.size():
-			var xf = dynamic_instances_xforms[i]
-			var angle = i * PI * 2.0 / dynamic_instances.size()
-			xf.origin += Vector3(sin(angle), cos(angle), 0.0) * sin(time_accum) * 2.0
+			var xf := dynamic_instances_xforms[i]
+			var angle := i * PI * 2.0 / dynamic_instances.size()
+			if dynamic_instances_rotate:
+				xf = xf.rotated_local(Vector3.RIGHT, angle * sin(time_accum) * 2.0)
+			else:
+				xf.origin += Vector3(sin(angle), cos(angle), 0.0) * sin(time_accum) * 2.0
 			RenderingServer.instance_set_transform(dynamic_instances[i], xf)
 
 
-func benchmark_basic_cull():
+func benchmark_basic_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.unshaded = true
 	return rv
 
-func benchmark_directional_light_cull():
+
+func benchmark_dynamic_cull() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.dynamic_instances = rv.objects
+	rv.dynamic_instances_xforms = rv.object_xforms
+	return rv
+
+
+func benchmark_dynamic_rotate_cull() -> TestScene:
+	var rv := TestScene.new()
+	rv.dynamic_instances_rotate = true
+	rv.fill_with_objects = true
+	rv.dynamic_instances = rv.objects
+	rv.dynamic_instances_xforms = rv.object_xforms
+	return rv
+
+
+func benchmark_directional_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	var light := DirectionalLight3D.new()
@@ -145,14 +196,23 @@ func benchmark_directional_light_cull():
 	rv.add_child(light)
 	return rv
 
-func benchmark_dynamic_cull():
+
+func benchmark_static_omni_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
-	rv.dynamic_instances = rv.objects
-	rv.dynamic_instances_xforms = rv.object_xforms
+	rv.fill_with_omni_lights = true
 	return rv
 
-func benchmark_dynamic_light_cull():
+
+func benchmark_static_omni_light_cull_with_shadows() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.fill_with_omni_lights = true
+	rv.use_shadows = true
+	return rv
+
+
+func benchmark_dynamic_omni_light_cull() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
@@ -160,7 +220,8 @@ func benchmark_dynamic_light_cull():
 	rv.dynamic_instances_xforms = rv.light_instance_xforms
 	return rv
 
-func benchmark_dynamic_light_cull_with_shadows():
+
+func benchmark_dynamic_omni_light_cull_with_shadows() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
 	rv.fill_with_omni_lights = true
@@ -169,10 +230,20 @@ func benchmark_dynamic_light_cull_with_shadows():
 	rv.dynamic_instances_xforms = rv.light_instance_xforms
 	return rv
 
-func benchmark_static_light_cull():
+
+func benchmark_static_spot_light_cull_with_shadows() -> TestScene:
 	var rv := TestScene.new()
 	rv.fill_with_objects = true
-	rv.fill_with_omni_lights = true
+	rv.fill_with_spot_lights = true
+	rv.use_shadows = true
 	return rv
 
 
+func benchmark_dynamic_spot_light_cull_with_shadows() -> TestScene:
+	var rv := TestScene.new()
+	rv.fill_with_objects = true
+	rv.fill_with_spot_lights = true
+	rv.use_shadows = true
+	rv.dynamic_instances = rv.light_instances
+	rv.dynamic_instances_xforms = rv.light_instance_xforms
+	return rv
