@@ -1,7 +1,7 @@
 extends Benchmark
 
 const SPREAD_H := 20.0
-const SPREAD_V := 10.0
+const SPREAD_V := 80.0
 
 
 class TestScene:
