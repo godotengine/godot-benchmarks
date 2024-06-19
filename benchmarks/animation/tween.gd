@@ -36,7 +36,7 @@ func tween_methods(n_of_methods: int) -> Node:
 		)
 		node2d.texture = ICON
 		node.add_child(node2d)
-		tween.tween_method(node2d.rotate, 0, TAU, 5)
+		tween.tween_method(node2d.rotate, 0.0, 0.01, 5)
 	return node
 
 
