@@ -1,0 +1,43 @@
+[gd_resource type="MeshLibrary" load_steps=9 format=3 uid="uid://x303bfmllwmk"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_mqd7q"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0i8f0"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_1yxu2"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_atl5i"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ox1xu"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_v4aqj"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_4mk8y"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_s7i7c"]
+
+[resource]
+item/0/name = "Box"
+item/0/mesh = SubResource("BoxMesh_mqd7q")
+item/0/mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/0/shapes = [SubResource("BoxShape3D_0i8f0"), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)]
+item/0/navigation_mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/0/navigation_layers = 1
+item/1/name = "Sphere"
+item/1/mesh = SubResource("SphereMesh_1yxu2")
+item/1/mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/1/shapes = [SubResource("SphereShape3D_atl5i"), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)]
+item/1/navigation_mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/1/navigation_layers = 1
+item/2/name = "Cylinder"
+item/2/mesh = SubResource("CylinderMesh_ox1xu")
+item/2/mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/2/shapes = [SubResource("CylinderShape3D_v4aqj"), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)]
+item/2/navigation_mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/2/navigation_layers = 1
+item/3/name = "Capsule"
+item/3/mesh = SubResource("CapsuleMesh_4mk8y")
+item/3/mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/3/shapes = [SubResource("CapsuleShape3D_s7i7c"), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)]
+item/3/navigation_mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+item/3/navigation_layers = 1
