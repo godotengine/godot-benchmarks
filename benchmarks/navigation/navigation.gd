@@ -1,8 +1,8 @@
 extends Benchmark
 
-const NAVMESH := preload("res://supplemental/navmesh_3d.res")
+const NAVMESH := preload("res://supplemental/navmesh_sponza.tres")
 const SPREAD_H := 20.0
-const SPREAD_V := 4.0
+const SPREAD_V := 10.0
 
 
 func calculate_navigation_path(n_of_paths: int) -> void:
