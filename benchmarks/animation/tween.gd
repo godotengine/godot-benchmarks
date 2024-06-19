@@ -22,7 +22,7 @@ func tween_properties(n_of_properties: int) -> Node:
 		)
 		node2d.texture = ICON
 		node.add_child(node2d)
-		tween.parallel().tween_property(node2d, "position", viewport_size, 5)
+		tween.parallel().tween_property(node2d, "position", viewport_size / 2.0, 5)
 	return node
 
 
