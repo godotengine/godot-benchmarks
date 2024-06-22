@@ -37,5 +37,5 @@ func solve_astar(n_of_times: int, n_of_points: int) -> void:
 		astar.get_point_path(point1, point2)
 
 
-func benchmark_astar_1000_times_1000_points() -> void:
-	solve_astar(1000, 1000)
+func benchmark_astar_5000_times_5000_points() -> void:
+	solve_astar(5000, 5000)
