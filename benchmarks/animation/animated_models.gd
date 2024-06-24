@@ -57,11 +57,17 @@ class TestScene:
 			if using_blend_tree:
 				animation_tree = model.get_node(^"AnimationTreeBlend")
 				if chance == 0:
-					animation_tree["parameters/OneShotDash/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+					animation_tree["parameters/OneShotDash/request"] = (
+						AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+					)
 				elif chance == 1:
-					animation_tree["parameters/OneShotKick/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+					animation_tree["parameters/OneShotKick/request"] = (
+						AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+					)
 				elif chance == 2:
-					animation_tree["parameters/OneShotPunch/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+					animation_tree["parameters/OneShotPunch/request"] = (
+						AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+					)
 
 	func _random_state(playback: AnimationNodeStateMachinePlayback) -> void:
 		var random_state := randi() % 7
