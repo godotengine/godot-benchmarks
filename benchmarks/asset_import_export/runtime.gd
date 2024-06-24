@@ -1,5 +1,8 @@
 extends Benchmark
 
+const IMAGE_PATH := "res://supplemental/images"
+const AUDIO_PATH := "res://supplemental/audio"
+
 
 func benchmark_import_gltf() -> void:
 	var gltf_document := GLTFDocument.new()
@@ -25,4 +28,12 @@ func benchmark_export_gltf() -> void:
 
 func benchmark_import_images() -> void:
 	for i in 200:
-		load("res://supplemental/images/%d.webp" % i)
+		load(IMAGE_PATH.path_join("%d.webp" % i))
+
+
+func benchmark_import_audio() -> void:
+	var dir := DirAccess.open(AUDIO_PATH)
+	for file in dir.get_files():
+		if not file.get_extension() == "ogg":
+			continue
+		AudioStreamOggVorbis.load_from_file(AUDIO_PATH.path_join(file))
