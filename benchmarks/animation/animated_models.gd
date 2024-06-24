@@ -1,6 +1,6 @@
 extends Benchmark
 
-const SPREAD_H := 25.0
+const SPREAD_H := 16.0
 const SPREAD_V := 10.0
 
 
@@ -12,6 +12,7 @@ class TestScene:
 	var n_of_models: int
 	var visualize := true
 	var using_state_machine := false
+	var using_blend_tree := false
 
 	func _init(_n_of_models: int, _visualize: bool) -> void:
 		n_of_models = _n_of_models
@@ -27,7 +28,7 @@ class TestScene:
 			)
 			var animation_tree: AnimationTree
 			if using_state_machine:
-				animation_tree = mannequiny_node.get_node("AnimationTreeState")
+				animation_tree = mannequiny_node.get_node(^"AnimationTreeState")
 				animation_tree.active = true
 				var playback: AnimationNodeStateMachinePlayback = animation_tree["parameters/playback"]
 				var random_state := randi() % 4
@@ -40,6 +41,11 @@ class TestScene:
 						playback.travel(&"jump")
 					3:
 						playback.travel(&"land")
+			if using_blend_tree:
+				animation_tree = mannequiny_node.get_node(^"AnimationTreeBlend")
+				animation_tree.active = true
+				animation_tree["parameters/Idle/blend_position"] = randf_range(0.0, 0.3)
+				animation_tree["parameters/IdleOrRun/blend_amount"] = randf()
 			add_child(mannequiny_node)
 			models.append(mannequiny_node)
 		if visualize:
@@ -48,8 +54,25 @@ class TestScene:
 			camera.rotate_x(-0.8)
 			add_child(camera)
 
+	func _process(_delta: float) -> void:
+		for model in models:
+			var chance := randi() % 200
+			var animation_tree: AnimationTree
+			if using_blend_tree:
+				animation_tree = model.get_node(^"AnimationTreeBlend")
+				if chance == 0:
+					animation_tree["parameters/OneShotDash/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+				elif chance == 1:
+					animation_tree["parameters/OneShotKick/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+				elif chance == 2:
+					animation_tree["parameters/OneShotPunch/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+
 	func with_state_machine() -> TestScene:
 		using_state_machine = true
+		return self
+
+	func with_blend_tree() -> TestScene:
+		using_blend_tree = true
 		return self
 
 
@@ -59,3 +82,7 @@ func _init() -> void:
 
 func benchmark_animation_state_machine_1000() -> TestScene:
 	return TestScene.new(1000, true).with_state_machine()
+
+
+func benchmark_animation_blend_tree_100() -> TestScene:
+	return TestScene.new(100, true).with_blend_tree()
