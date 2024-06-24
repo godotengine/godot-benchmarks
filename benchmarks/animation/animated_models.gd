@@ -31,16 +31,7 @@ class TestScene:
 				animation_tree = mannequiny_node.get_node(^"AnimationTreeState")
 				animation_tree.active = true
 				var playback: AnimationNodeStateMachinePlayback = animation_tree["parameters/playback"]
-				var random_state := randi() % 4
-				match random_state:
-					0:
-						playback.travel(&"idle")
-					1:
-						playback.travel(&"run")
-					2:
-						playback.travel(&"jump")
-					3:
-						playback.travel(&"land")
+				_random_state(playback)
 			if using_blend_tree:
 				animation_tree = mannequiny_node.get_node(^"AnimationTreeBlend")
 				animation_tree.active = true
@@ -56,8 +47,13 @@ class TestScene:
 
 	func _process(_delta: float) -> void:
 		for model in models:
-			var chance := randi() % 200
+			var chance := randi() % 200  # Chance to change animation
 			var animation_tree: AnimationTree
+			if using_state_machine:
+				animation_tree = model.get_node(^"AnimationTreeState")
+				if chance <= 10:
+					var playback: AnimationNodeStateMachinePlayback = animation_tree["parameters/playback"]
+					_random_state(playback)
 			if using_blend_tree:
 				animation_tree = model.get_node(^"AnimationTreeBlend")
 				if chance == 0:
@@ -66,6 +62,24 @@ class TestScene:
 					animation_tree["parameters/OneShotKick/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
 				elif chance == 2:
 					animation_tree["parameters/OneShotPunch/request"] = AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE
+
+	func _random_state(playback: AnimationNodeStateMachinePlayback) -> void:
+		var random_state := randi() % 7
+		match random_state:
+			0:
+				playback.travel(&"idle")
+			1:
+				playback.travel(&"run")
+			2:
+				playback.travel(&"jump")
+			3:
+				playback.travel(&"land")
+			4:
+				playback.travel(&"dash")
+			5:
+				playback.travel(&"fight_kick")
+			6:
+				playback.travel(&"fight_punch")
 
 	func with_state_machine() -> TestScene:
 		using_state_machine = true
