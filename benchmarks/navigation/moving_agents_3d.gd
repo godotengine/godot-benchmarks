@@ -24,10 +24,21 @@ class TestScene:
 		nav_region.navigation_mesh = NAVMESH
 		sponza.add_child(nav_region)
 
+		var mesh := CapsuleMesh.new()
+		mesh.radial_segments = 4
+		mesh.rings = 0
+		mesh.height = 0.75
+		mesh.radius = 0.25
+		var material := StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mesh.material = material
+
 		for i in n_of_agents:
 			var agent_parent := MeshInstance3D.new()
-			agent_parent.mesh = CapsuleMesh.new()
+			agent_parent.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			agent_parent.mesh = mesh
 			agent_parent.position = _rand_pos()
+
 			var agent := NavigationAgent3D.new()
 			agent.avoidance_enabled = true
 			agent.target_position = _rand_pos()
