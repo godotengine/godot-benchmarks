@@ -1,30 +1,50 @@
 extends Benchmark
 
-const GODOT_PATH := "/home/emmanouil/Documents/Godot_v4.3-beta2_linux.x86_64"
+const GODOT_PATH := "godot"
+const TEMP_PATH := "user://tmp"
 
 
-func open_project(path: String, path_to_delete := "") -> void:
-	var root_project_path := DirAccess.open(".").get_current_dir()
-	var project_path := root_project_path.path_join(path)
-	OS.execute(GODOT_PATH, ["--verbose", "-e", "--quit", "--path", project_path])
-	if not path_to_delete.is_empty():
-		resursive_file_delete(path_to_delete)
+func create_project() -> void:
+	DirAccess.make_dir_absolute(TEMP_PATH)
+	var project_path := TEMP_PATH.path_join("project.godot")
+	FileAccess.open(project_path, FileAccess.WRITE)
 
 
-func resursive_file_delete(path: String) -> void:
-	var root_project_path := DirAccess.open(".").get_current_dir()
-	var project_path := root_project_path.path_join(path)
-	var dir := DirAccess.open(project_path)
+func open_project() -> void:
+	var temp_path_globalized := ProjectSettings.globalize_path(TEMP_PATH)
+	OS.execute(GODOT_PATH, ["--verbose", "-e", "--quit", "--path", temp_path_globalized])
+
+
+func resursive_files_delete(path: String) -> void:
+	var dir := DirAccess.open(path)
+	dir.include_hidden = true
 	for file in dir.get_files():
 		dir.remove(file)
 	for subdir in dir.get_directories():
-		resursive_file_delete(path.path_join(subdir))
+		resursive_files_delete(path.path_join(subdir))
+	DirAccess.remove_absolute(path)
+
+
+func recursive_files_copy(path_from: String, path_to: String) -> void:
+	var dir_from := DirAccess.open(path_from)
+	DirAccess.make_dir_recursive_absolute(path_to)
+	for file in dir_from.get_files():
+		DirAccess.copy_absolute(path_from.path_join(file), path_to.path_join(file))
+	for subdir in dir_from.get_directories():
+		recursive_files_copy(path_from.path_join(subdir), path_to.path_join(subdir))
 
 
 func benchmark_start_editor_no_shader_cache() -> void:
-	var path := "supplemental/projects/no_shader_cache"
-	open_project(path, path.path_join(".godot/shader_cache"))
+	create_project()
+	open_project()
+	resursive_files_delete(TEMP_PATH)
 
 
 func benchmark_start_editor_shader_cache() -> void:
-	open_project("supplemental/projects/shader_cache")
+	create_project()
+	var root_project_path := DirAccess.open(".").get_current_dir()
+	var root_shader_cache_path := root_project_path.path_join(".godot/shader_cache")
+	var temp_shader_cache := TEMP_PATH.path_join(".godot/shader_cache")
+	recursive_files_copy(root_shader_cache_path, temp_shader_cache)
+	open_project()
+	resursive_files_delete(TEMP_PATH)
