@@ -20,6 +20,7 @@ public partial class RigidBody2D : Benchmark
         SquareMesh.Size = new Vector2(20.0f, 20.0f);
         CircleMesh.Radius = 10.0f;
         CircleMesh.Height = 20.0f;
+        benchmark_time = 10e6;
         test_physics = true;
         test_idle = true;
     }

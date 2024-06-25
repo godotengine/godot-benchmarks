@@ -17,6 +17,7 @@ public partial class RigidBody3D : Benchmark
 
     public RigidBody3D()
     {
+        benchmark_time = 10e6;
         test_physics = true;
         test_idle = true;
     }
