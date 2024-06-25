@@ -50,11 +50,11 @@ func calculate_spectral_norm(n: int) -> void:
 
 
 func benchmark_spectral_norm_100() -> void:
-	calculate_spectral_norm(500)
+	calculate_spectral_norm(100)
 
 
 func benchmark_spectral_norm_500() -> void:
-	calculate_spectral_norm(1000)
+	calculate_spectral_norm(500)
 
 
 func benchmark_spectral_norm_1000() -> void:
