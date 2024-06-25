@@ -94,7 +94,7 @@ public partial class MerkleTrees : Benchmark
         longLivedTree.CalHash();
         GD.Print($"long lived tree of depth {maxDepth}\t root hash: {longLivedTree.GetHash()} check: {longLivedTree.Check().ToString().ToLowerInvariant()}");
     }
-    
+
     public void BenchmarkMerkleTrees13()
     {
         CalculateMerkleTrees(13);
