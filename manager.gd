@@ -82,7 +82,7 @@ func _ready():
 	set_process(false)
 
 	# Register script language compatibility
-	if Engine.has_singleton("GodotSharp"):
+	if ClassDB.class_exists(&"CSharpScript"):
 		languages[".cs"] = {"test_prefix": "Benchmark"}
 
 	# Register contents of `benchmarks/` folder automatically.
