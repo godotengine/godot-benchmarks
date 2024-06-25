@@ -1,7 +1,7 @@
 extends Benchmark
 
-const GODOT_PATH := "godot"
 const TEMP_PATH := "user://tmp"
+var godot_path := OS.get_executable_path()
 
 
 func create_project() -> void:
@@ -12,7 +12,7 @@ func create_project() -> void:
 
 func open_project() -> void:
 	var temp_path_globalized := ProjectSettings.globalize_path(TEMP_PATH)
-	OS.execute(GODOT_PATH, ["--verbose", "-e", "--quit", "--path", temp_path_globalized])
+	OS.execute(godot_path, ["--verbose", "-e", "--quit", "--path", temp_path_globalized])
 
 
 func resursive_files_delete(path: String) -> void:
@@ -42,7 +42,7 @@ func benchmark_start_editor_no_shader_cache() -> void:
 
 func benchmark_start_editor_shader_cache() -> void:
 	create_project()
-	var root_project_path := DirAccess.open(".").get_current_dir()
+	var root_project_path := "."
 	var root_shader_cache_path := root_project_path.path_join(".godot/shader_cache")
 	var temp_shader_cache := TEMP_PATH.path_join(".godot/shader_cache")
 	recursive_files_copy(root_shader_cache_path, temp_shader_cache)
