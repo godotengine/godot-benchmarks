@@ -12,7 +12,7 @@ func create_project() -> void:
 
 func open_project() -> void:
 	var temp_path_globalized := ProjectSettings.globalize_path(TEMP_PATH)
-	OS.execute(godot_path, ["--verbose", "-e", "--quit", "--path", temp_path_globalized])
+	OS.execute(godot_path, ["-e", "--quit", "--path", temp_path_globalized])
 
 
 func resursive_files_delete(path: String) -> void:
