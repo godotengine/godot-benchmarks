@@ -102,6 +102,8 @@ func _ready() -> void:
 			ClassDB.instantiate(&"CPPBenchmarkMerkleTrees"),
 			ClassDB.instantiate(&"CPPBenchmarkNbody"),
 			ClassDB.instantiate(&"CPPBenchmarkSpectralNorm"),
+			ClassDB.instantiate(&"CPPBenchmarkArray"),
+			ClassDB.instantiate(&"CPPBenchmarkForLoop"),
 		]
 		for cpp_class in cpp_classes:
 			for method in cpp_class.get_method_list():
