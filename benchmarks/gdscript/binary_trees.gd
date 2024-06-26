@@ -7,8 +7,8 @@ extends Benchmark
 func bottom_up_tree(depth: int) -> Array:
 	if depth > 0:
 		depth -= 1
-		var left = bottom_up_tree(depth)
-		var right = bottom_up_tree(depth)
+		var left := bottom_up_tree(depth)
+		var right := bottom_up_tree(depth)
 		return [left, right]
 	return [null, null]
 
