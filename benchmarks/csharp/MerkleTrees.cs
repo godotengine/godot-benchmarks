@@ -69,28 +69,26 @@ public partial class MerkleTrees : Benchmark
     const int MinDepth = 4;
     public static void CalculateMerkleTrees(int input)
     {
-        var maxDepth = Mathf.Max(MinDepth + 2, input);
+        int maxDepth = Mathf.Max(MinDepth + 2, input);
 
-        var stretchDepth = maxDepth + 1;
-        var stretchTree = TreeNode.Create(stretchDepth);
+        int stretchDepth = maxDepth + 1;
+        TreeNode stretchTree = TreeNode.Create(stretchDepth);
         stretchTree.CalHash();
         GD.Print($"stretch tree of depth {stretchDepth}\t root hash: {stretchTree.GetHash()} check: {stretchTree.Check().ToString().ToLowerInvariant()}");
 
-        var longLivedTree = TreeNode.Create(maxDepth);
-        var nResults = (maxDepth - MinDepth) / 2 + 1;
-        for (int i = 0; i < nResults; i++)
+        TreeNode longLivedTree = TreeNode.Create(maxDepth);
+        int maxPlusMinDepth = maxDepth + MinDepth;
+        for (int depth = MinDepth; depth < maxDepth; depth += 2)
         {
-            var depth = i * 2 + MinDepth;
-            var n = (1 << maxDepth - depth + MinDepth);
-
-            var sum = 0L;
-            for (int j = 0; j < n; j++)
+            int iterations = 1 << (maxPlusMinDepth - depth);
+            long sum = 0;
+            for (int i = 0; i < iterations; i++)
             {
-                var tree = TreeNode.Create(depth);
+                TreeNode tree = TreeNode.Create(depth);
                 tree.CalHash();
                 sum += tree.GetHash();
             }
-            GD.Print($"{n}\t trees of depth {depth}\t root hash sum: {sum}");
+            GD.Print($"{iterations}\t trees of depth {depth}\t root hash sum: {sum}");
         }
 
         longLivedTree.CalHash();
@@ -105,5 +103,10 @@ public partial class MerkleTrees : Benchmark
     public void BenchmarkMerkleTrees15()
     {
         CalculateMerkleTrees(15);
+    }
+
+    public void BenchmarkMerkleTrees18()
+    {
+        CalculateMerkleTrees(18);
     }
 }

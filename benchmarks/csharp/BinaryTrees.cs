@@ -33,35 +33,36 @@ public partial class BinaryTrees : Benchmark
             }
             return c;
         }
-
-        internal void Hold() { }
     }
 
     const int MinDepth = 4;
     public void CalculateBinaryTrees(int input)
     {
-        var maxDepth = Mathf.Max(MinDepth + 2, input);
+        int maxDepth = Mathf.Max(MinDepth + 2, input);
 
-        var stretchDepth = maxDepth + 1;
+        int stretchDepth = maxDepth + 1;
         GD.Print($"stretch tree of depth {stretchDepth}\t check: {TreeNode.Create(stretchDepth).Check()}");
 
-        var longLivedTree = TreeNode.Create(maxDepth);
-        var nResults = (maxDepth - MinDepth) / 2 + 1;
-        for (int i = 0; i < nResults; i++)
+        TreeNode longLivedTree = TreeNode.Create(maxDepth);
+        int maxPlusMinDepth = maxDepth + MinDepth;
+        for (int depth = MinDepth; depth < maxDepth; depth += 2)
         {
-            var depth = i * 2 + MinDepth;
-            var n = (1 << maxDepth - depth + MinDepth);
-
-            var check = 0;
-            for (int j = 0; j < n; j++)
+            int iterations = 1 << (maxPlusMinDepth - depth);
+            int check = 0;
+            for (int i = 0; i < iterations; i++)
             {
                 check += TreeNode.Create(depth).Check();
             }
 
-            GD.Print($"{n}\t trees of depth {depth}\t check: {check}");
+            GD.Print($"{iterations}\t trees of depth {depth}\t check: {check}");
         }
 
         GD.Print($"long lived tree of depth {maxDepth}\t check: {longLivedTree.Check()}");
+    }
+
+    public void BenchmarkBinaryTrees13()
+    {
+        CalculateBinaryTrees(13);
     }
 
     public void BenchmarkBinaryTrees15()
