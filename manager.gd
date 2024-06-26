@@ -96,7 +96,12 @@ func _ready() -> void:
 	# Load GDExtension (C++) benchmarks
 	if ClassDB.class_exists(&"CPPBenchmark"):
 		cpp_classes = [
-			ClassDB.instantiate(&"CPPBenchmarkHelloWorld")
+			ClassDB.instantiate(&"CPPBenchmarkHelloWorld"),
+			ClassDB.instantiate(&"CPPBenchmarkMandelbrotSet"),
+			ClassDB.instantiate(&"CPPBenchmarkBinaryTrees"),
+			ClassDB.instantiate(&"CPPBenchmarkMerkleTrees"),
+			ClassDB.instantiate(&"CPPBenchmarkNbody"),
+			ClassDB.instantiate(&"CPPBenchmarkSpectralNorm"),
 		]
 		for cpp_class in cpp_classes:
 			for method in cpp_class.get_method_list():
