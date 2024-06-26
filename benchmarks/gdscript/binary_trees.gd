@@ -7,14 +7,14 @@ extends Benchmark
 func bottom_up_tree(depth: int) -> Array:
 	if depth > 0:
 		depth -= 1
-		var left = bottom_up_tree(depth)[0]
-		var right = bottom_up_tree(depth)[1]
+		var left := bottom_up_tree(depth)
+		var right := bottom_up_tree(depth)
 		return [left, right]
 	return [null, null]
 
 
 func item_check(tree: Array) -> int:
-	if tree[1]:
+	if tree[1] != null:
 		return 1 + item_check(tree[0]) + item_check(tree[1])
 	return 1
 
@@ -41,9 +41,9 @@ func calculate_binary_trees(n: int) -> void:
 	)
 
 
+func benchmark_binary_trees_13() -> void:
+	calculate_binary_trees(13)
+
+
 func benchmark_binary_trees_15() -> void:
 	calculate_binary_trees(15)
-
-
-func benchmark_binary_trees_18() -> void:
-	calculate_binary_trees(18)
