@@ -33,12 +33,11 @@ func at_av(x: PackedFloat64Array, y: PackedFloat64Array, t: PackedFloat64Array, 
 func calculate_spectral_norm(n: int) -> void:
 	var u := PackedFloat64Array([])
 	u.resize(n)
+	u.fill(1.0)
 	var v := PackedFloat64Array([])
 	v.resize(n)
 	var t := PackedFloat64Array([])
 	t.resize(n)
-	for i in n:
-		u[i] = 1.0
 	for i in 10:
 		at_av(u, v, t, n)
 		at_av(v, u, t, n)
