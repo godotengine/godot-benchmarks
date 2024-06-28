@@ -1,4 +1,5 @@
 using Godot;
+using System;
 
 public partial class StringFormat : Benchmark
 {
@@ -14,63 +15,73 @@ public partial class StringFormat : Benchmark
 
     // Benchmark various ways to format strings.
 
-    private void benchmark_no_op_constant_method() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello nothing!".Format(new Godot.Collections.Dictionary(){});
-    }
-
-    private void benchmark_simple_constant_concatenate() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello " + ENGINE_NAME + "!";
-    }
-
-    private void benchmark_simple_constant_percent() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello %s!" % ENGINE_NAME;
-    }
-
-    private void benchmark_simple_constant_method() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello {engine}!".Format(new Godot.Collections.Dictionary(){{"engine", ENGINE_NAME}});
-    }
-
-    private void benchmark_simple_constant_method_constant_dict() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello {engine}!".Format(FORMAT_DICT);
-    }
-
-    private void benchmark_simple_variable_concatenate() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello " + engine_name + "!";
-    }
-
-    private void benchmark_simple_variable_percent() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello %s!" % engine_name;
-    }
-
-    private void benchmark_simple_variable_method() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello {engine}!".Format(new Godot.Collections.Dictionary(){{engine = engine_name}});
-    }
-
-    private void benchmark_complex_variable_concatenate() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello " + engine_name + "!\nA few examples of formatting: " + str(some_integer) + ", " + str(some_float).PadDecimals(2) + ", " + str(some_vector2i);
-    }
-
-    private void benchmark_complex_variable_percent() {
-        for (int i = 0; i < ITERATIONS; i++)
-            "Hello %s!\nA few examples of formatting: %d, %.2f, %v" % [engine_name, some_integer, some_float, some_vector2i];
-    }
-
-    private void benchmark_complex_variable_method() {
+    private void BenchmarkNoOpConstantMethod() {
         for (int i = 0; i < ITERATIONS; i++) {
-            "Hello {engine}!\nA few examples of formatting: {an_integer}, {a_float}, {a_vector2}".Format(new Godot.Collections.Dictionary(){
-                    {engine = engine_name},
-                    {an_integer = some_integer},
-                    {a_float = str(some_float).PadDecimals(2)},
-                    {a_vector2i = some_vector2i},
+            String.Format("Hello nothing!", new Godot.Collections.Dictionary(){});
+        }
+    }
+
+    private void BenchmarkSimpleConstantConcatenate() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            string temp = "Hello " + ENGINE_NAME + "!";
+        }
+    }
+
+    private void BenchmarkSimpleConstantPercent() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            string temp = $"Hello {ENGINE_NAME}!";
+        }
+    }
+
+    private void BenchmarkSimpleConstantMethod() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            String.Format("Hello {engine}!", new Godot.Collections.Dictionary(){{"engine", ENGINE_NAME}});
+        }
+    }
+
+    private void BenchmarkSimpleConstantMethodConstantDict() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            String.Format("Hello {engine}!", FORMAT_DICT);
+        }
+    }
+
+    private void BenchmarkSimpleVariableConcatenate() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            string temp = "Hello " + engine_name + "!";
+        }
+    }
+
+    private void BenchmarkSimpleVariablePercent() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            string temp = $"Hello {engine_name}!";
+        }
+    }
+
+    private void BenchmarkSimpleVariableMethod() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            String.Format("Hello {engine}!", new Godot.Collections.Dictionary(){{"engine", engine_name}});
+        }
+    }
+
+    private void BenchmarkComplexVariableConcatenate() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            string temp = "Hello " + engine_name + "!\nA few examples of formatting: " + some_integer.ToString() + ", " + some_float.ToString().PadDecimals(2) + ", " + some_vector2i.ToString();
+        }
+    }
+
+    private void BenchmarkComplexVariablePercent() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            string temp = $"Hello {engine_name}!\nA few examples of formatting: {some_integer}, {some_float:F2}, {some_vector2i}";
+        }
+    }
+
+    private void BenchmarkComplexVariableMethod() {
+        for (int i = 0; i < ITERATIONS; i++) {
+            String.Format("Hello {engine}!\nA few examples of formatting: {an_integer}, {a_float}, {a_vector2}", new Godot.Collections.Dictionary(){
+                    {"engine", engine_name},
+                    {"an_integer", some_integer},
+                    {"a_float", some_float.ToString().PadDecimals(2)},
+                    {"a_vector2i", some_vector2i},
             });
         }
     }
