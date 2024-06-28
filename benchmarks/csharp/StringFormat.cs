@@ -1,6 +1,5 @@
 using Godot;
 using System;
-using System.Collections.Generic;
 
 public partial class StringFormat : Benchmark
 {
@@ -8,7 +7,6 @@ public partial class StringFormat : Benchmark
     const int ITERATIONS = 1_000_000;
     const string ENGINE_NAME = "Godot";
     Godot.Collections.Dictionary FORMAT_DICT = new Godot.Collections.Dictionary(){{"engine", ENGINE_NAME}};
-    //Dictionary<string, string> FORMAT_DICT = new Dictionary<string, string>() {{"engine", engine_name}};
 
     string engine_name = "Godot";
     int some_integer = 123456;
@@ -62,8 +60,6 @@ public partial class StringFormat : Benchmark
     private void BenchmarkSimpleVariableMethod() {
         for (int i = 0; i < ITERATIONS; i++) {
             String.Format("Hello {0}!", new Godot.Collections.Dictionary(){{"engine", engine_name}}["engine"]);
-            //Dictionary<string, string> d = new Dictionary<string, string>() {{"engine", engine_name}};
-            //String.Format("Hello {0}!", d["engine"]);
         }
     }
 
