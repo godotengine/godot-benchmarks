@@ -11,10 +11,12 @@ class TestScene:
 	extends Node2D
 
 	var n_of_agents: int
+	var visualize: bool
 	var agents: Array[Node2D]
 
-	func _init(_n_of_agents: int) -> void:
+	func _init(_n_of_agents: int, _visualize: bool) -> void:
 		n_of_agents = _n_of_agents
+		visualize = _visualize
 
 	func _ready() -> void:
 		var nav_region := NavigationRegion2D.new()
@@ -22,9 +24,7 @@ class TestScene:
 		add_child(nav_region)
 
 		for i in n_of_agents:
-			var agent_parent := Sprite2D.new()
-			agent_parent.scale = Vector2(0.1, 0.1)
-			agent_parent.texture = ICON
+			var agent_parent := Node2D.new()
 			agent_parent.position = _rand_pos()
 			var agent := NavigationAgent2D.new()
 			agent.avoidance_enabled = true
@@ -32,6 +32,11 @@ class TestScene:
 			agent_parent.add_child(agent)
 			add_child(agent_parent)
 			agents.append(agent_parent)
+			if visualize:
+				var sprite := Sprite2D.new()
+				sprite.scale = Vector2(0.1, 0.1)
+				sprite.texture = ICON
+				agent_parent.add_child(sprite)
 
 	func _physics_process(delta: float) -> void:
 		if NavigationServer2D.map_get_iteration_id(get_world_2d().navigation_map) == 0:
@@ -54,4 +59,4 @@ func _init() -> void:
 
 
 func benchmark_1000_moving_agents() -> TestScene:
-	return TestScene.new(1000)
+	return TestScene.new(1000, true)
