@@ -102,6 +102,7 @@ func _ready() -> void:
 			ClassDB.instantiate(&"CPPBenchmarkControl"),
 			ClassDB.instantiate(&"CPPBenchmarkForLoop"),
 			ClassDB.instantiate(&"CPPBenchmarkHelloWorld"),
+			ClassDB.instantiate(&"CPPBenchmarkLambdaPerformance"),
 			ClassDB.instantiate(&"CPPBenchmarkMandelbrotSet"),
 			ClassDB.instantiate(&"CPPBenchmarkMerkleTrees"),
 			ClassDB.instantiate(&"CPPBenchmarkNbody"),
