@@ -12,7 +12,7 @@ public partial class Alloc : Benchmark
             rt = n;
         }
 
-        // Avoid triggering a stack overflow with rt.free()
+        // Avoid triggering a stack overflow with rt.Free()
         while (rt.GetChildCount() != 0) {
             Node n = rt.GetChild(0);
             rt.RemoveChild(n);
