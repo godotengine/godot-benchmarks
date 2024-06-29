@@ -4,16 +4,19 @@ public partial class Alloc : Benchmark
 {
     const int ITERATIONS = 100_000;
 
-    void BenchmarkDeepTree() {
+    void BenchmarkDeepTree()
+    {
         Node rt = new Node();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < ITERATIONS; i++)
+        {
             Node n = new Node();
             n.AddChild(rt);
             rt = n;
         }
 
         // Avoid triggering a stack overflow with rt.Free()
-        while (rt.GetChildCount() != 0) {
+        while (rt.GetChildCount() != 0)
+        {
             Node n = rt.GetChild(0);
             rt.RemoveChild(n);
             rt.Free();
@@ -22,22 +25,27 @@ public partial class Alloc : Benchmark
         rt.Free();
     }
 
-    void BenchmarkWideTree() {
+    void BenchmarkWideTree()
+    {
         Node rt = new Node();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < ITERATIONS; i++)
+        {
             rt.AddChild(new Node());
         }
         rt.Free();
     }
 
-    void BenchmarkFragmentation() {
+    void BenchmarkFragmentation()
+    {
         Node top = new Node();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++)
+        {
             top.AddChild(new Node());
         }
 
         for (int k = 0; k < 10; k++) {
-            for (int i = 0; i < ITERATIONS; i++) {
+            for (int i = 0; i < ITERATIONS; i++)
+            {
                 // Attempt to scatter children in memory by assigning newly created nodes to a random parent
                 int idx = (int)GD.Randi() % top.GetChildCount();
                 top.GetChild(idx).AddChild(new Node());
@@ -55,9 +63,11 @@ public partial class Alloc : Benchmark
         top.Free();
     }
 
-    void BenchmarkDuplicate() {
+    void BenchmarkDuplicate()
+    {
         Node rt = new Node();
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 16; i++)
+        {
             Node n = new Node();
             n.AddChild(rt.Duplicate());
             n.AddChild(rt.Duplicate());

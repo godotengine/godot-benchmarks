@@ -8,73 +8,85 @@ public partial class StringChecksum : Benchmark
 
     // Benchmark computation of checksums on a string.
 
-    private void BenchmarkMd5BufferEmpty() {
+    private void BenchmarkMd5BufferEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             "".Md5Buffer();
     }
 
 
-    private void BenchmarkMd5BufferNonEmpty() {
+    private void BenchmarkMd5BufferNonEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             LOREM_IPSUM.Md5Buffer();
     }
 
 
-    private void BenchmarkSha1BufferEmpty() {
+    private void BenchmarkSha1BufferEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             "".Sha1Buffer();
     }
 
 
-    private void BenchmarkSha1BufferNonEmpty() {
+    private void BenchmarkSha1BufferNonEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             LOREM_IPSUM.Sha1Buffer();
     }
 
 
-    private void BenchmarkSha256BufferEmpty() {
+    private void BenchmarkSha256BufferEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             "".Sha256Buffer();
     }
 
 
-    private void BenchmarkSha256BufferNonEmpty() {
+    private void BenchmarkSha256BufferNonEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             LOREM_IPSUM.Sha256Buffer();
     }
 
 
-    private void BenchmarkMd5TextEmpty() {
+    private void BenchmarkMd5TextEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             "".Md5Text();
     }
 
 
-    private void BenchmarkMd5TextNonEmpty() {
+    private void BenchmarkMd5TextNonEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             LOREM_IPSUM.Md5Text();
     }
 
 
-    private void BenchmarkSha1TextEmpty() {
+    private void BenchmarkSha1TextEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             "".Sha1Text();
     }
 
 
-    private void BenchmarkSha1TextNonEmpty() {
+    private void BenchmarkSha1TextNonEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             LOREM_IPSUM.Sha1Text();
     }
 
 
-    private void BenchmarkSha256TextEmpty() {
+    private void BenchmarkSha256TextEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             "".Sha256Text();
     }
 
 
-    private void BenchmarkSha256TextNonEmpty() {
+    private void BenchmarkSha256TextNonEmpty()
+    {
         for (int i = 0; i < ITERATIONS; i++)
             LOREM_IPSUM.Sha256Text();
     }

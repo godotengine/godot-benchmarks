@@ -3,13 +3,13 @@ using Godot;
 public partial class SpectralNorm : Benchmark
 {
     // Based on https://github.com/hanabi1224/Programming-Language-Benchmarks/blob/main/bench/algorithm/spectral-norm/3.cs
-    /* return element i,j of infinite matrix A */
+    // Return element i,j of infinite matrix A.
     private double eval_A(int i, int j)
     {
         return 1.0 / ((i + j) * (i + j + 1) / 2 + i + 1);
     }
 
-    /* multiply vector v by matrix A, each thread evaluate its range only */
+    // multiply vector v by matrix A, each thread evaluate its range only.
     private void MultiplyAv(double[] v, double[] Av, int n)
     {
         for (int i = 0; i < n; i++)
@@ -22,7 +22,7 @@ public partial class SpectralNorm : Benchmark
         }
     }
 
-    /* multiply vector v by matrix A transposed */
+    // multiply vector v by matrix A transposed.
     private void MultiplyAtv(double[] v, double[] Atv, int n)
     {
         for (int i = 0; i < n; i++)
@@ -35,7 +35,7 @@ public partial class SpectralNorm : Benchmark
         }
     }
 
-    /* multiply vector v by matrix A and then by matrix A transposed */
+    // Multiply vector v by matrix A and then by matrix A transposed.
     private void MultiplyAtAv(double[] v, double[] tmp, double[] AtAv, int n)
     {
         MultiplyAv(v, tmp, n);
@@ -48,7 +48,7 @@ public partial class SpectralNorm : Benchmark
         double[] v = new double[n];
         double[] tmp = new double[n];
 
-        // create unit vector
+        // Create unit vector.
         for (int i = 0; i < n; i++)
             u[i] = 1.0;
 
