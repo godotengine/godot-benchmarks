@@ -1,6 +1,22 @@
 extends Node
 
-const RANDOM_SEED = 0x60d07
+const RANDOM_SEED := 0x60d07
+const CPP_CLASS_NAMES: Array[StringName] = [
+	&"CPPBenchmarkAlloc",
+	&"CPPBenchmarkArray",
+	&"CPPBenchmarkBinaryTrees",
+	&"CPPBenchmarkControl",
+	&"CPPBenchmarkForLoop",
+	&"CPPBenchmarkHelloWorld",
+	&"CPPBenchmarkLambdaPerformance",
+	&"CPPBenchmarkMandelbrotSet",
+	&"CPPBenchmarkMerkleTrees",
+	&"CPPBenchmarkNbody",
+	&"CPPBenchmarkSpectralNorm",
+	&"CPPBenchmarkStringChecksum",
+	&"CPPBenchmarkStringFormat",
+	&"CPPBenchmarkStringManipulation",
+]
 
 class Results:
 	var render_cpu := 0.0
@@ -53,7 +69,6 @@ var languages := {".gd": {"test_prefix": "benchmark_"}, ".cpp": {"test_prefix": 
 
 # List of benchmarks populated in `_ready()`.
 var test_results := {}
-
 var cpp_classes: Array[RefCounted] = []
 
 var save_json_to_path := ""
@@ -94,32 +109,19 @@ func _ready() -> void:
 			test_results[test_id] = null
 
 	# Load GDExtension (C++) benchmarks
-	if ClassDB.class_exists(&"CPPBenchmark"):
-		cpp_classes = [
-			ClassDB.instantiate(&"CPPBenchmarkAlloc"),
-			ClassDB.instantiate(&"CPPBenchmarkArray"),
-			ClassDB.instantiate(&"CPPBenchmarkBinaryTrees"),
-			ClassDB.instantiate(&"CPPBenchmarkControl"),
-			ClassDB.instantiate(&"CPPBenchmarkForLoop"),
-			ClassDB.instantiate(&"CPPBenchmarkHelloWorld"),
-			ClassDB.instantiate(&"CPPBenchmarkLambdaPerformance"),
-			ClassDB.instantiate(&"CPPBenchmarkMandelbrotSet"),
-			ClassDB.instantiate(&"CPPBenchmarkMerkleTrees"),
-			ClassDB.instantiate(&"CPPBenchmarkNbody"),
-			ClassDB.instantiate(&"CPPBenchmarkSpectralNorm"),
-			ClassDB.instantiate(&"CPPBenchmarkStringChecksum"),
-			ClassDB.instantiate(&"CPPBenchmarkStringFormat"),
-			ClassDB.instantiate(&"CPPBenchmarkStringManipulation"),
-		]
-		for cpp_class in cpp_classes:
-			for method in cpp_class.get_method_list():
-				if not method.name.begins_with(languages[".cpp"]["test_prefix"]):
-					continue
-				var test_id := TestID.new()
-				test_id.name = method.name.trim_prefix(languages[".cpp"]["test_prefix"])
-				test_id.category = "C++/" + cpp_class.get_class().replace("CPPBenchmark", "")
-				test_id.language = ".cpp"
-				test_results[test_id] = null
+	for cpp_class_name in CPP_CLASS_NAMES:
+		if not ClassDB.class_exists(cpp_class_name):
+			continue
+		var cpp_class = ClassDB.instantiate(cpp_class_name)
+		cpp_classes.append(cpp_class)
+		for method in cpp_class.get_method_list():
+			if not method.name.begins_with(languages[".cpp"]["test_prefix"]):
+				continue
+			var test_id := TestID.new()
+			test_id.name = method.name.trim_prefix(languages[".cpp"]["test_prefix"])
+			test_id.category = "C++/" + cpp_class.get_class().replace("CPPBenchmark", "")
+			test_id.language = ".cpp"
+			test_results[test_id] = null
 
 
 func get_test_ids() -> Array[TestID]:
