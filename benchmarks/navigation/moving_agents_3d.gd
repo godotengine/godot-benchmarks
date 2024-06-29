@@ -78,4 +78,4 @@ func _init() -> void:
 
 
 func benchmark_1000_moving_agents() -> TestScene:
-	return TestScene.new(1000, true)
+	return TestScene.new(1000, false)
