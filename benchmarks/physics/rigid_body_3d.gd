@@ -1,6 +1,6 @@
 extends Benchmark
 
-const VISUALIZE := true
+
 const SPREAD_H := 20.0;
 const SPREAD_V := 10.0;
 
@@ -19,7 +19,7 @@ func _init() -> void:
 func setup_scene(create_body_func: Callable, unique_shape: bool, ccd_mode: bool, boundary: bool, num_shapes: int) -> Node3D:
 	var scene_root := Node3D.new()
 
-	if VISUALIZE:
+	if Manager.visualize:
 		var camera := Camera3D.new()
 		camera.position = Vector3(0.0, 20.0, 20.0)
 		camera.rotate_x(-0.8)
@@ -60,7 +60,7 @@ func create_box(unique_shape: bool, ccd_mode: bool) -> RigidBody3D:
 	var collision_shape := CollisionShape3D.new()
 	rigid_body.continuous_cd = ccd_mode
 
-	if VISUALIZE:
+	if Manager.visualize:
 		var mesh_instance := MeshInstance3D.new()
 		mesh_instance.mesh = box_mesh
 		rigid_body.add_child(mesh_instance)
@@ -80,7 +80,7 @@ func create_sphere(unique_shape: bool, ccd_mode: bool) -> RigidBody3D:
 	var collision_shape := CollisionShape3D.new()
 	rigid_body.continuous_cd = ccd_mode
 
-	if VISUALIZE:
+	if Manager.visualize:
 		var mesh_instance := MeshInstance3D.new()
 		mesh_instance.mesh = sphere_mesh
 		rigid_body.add_child(mesh_instance)

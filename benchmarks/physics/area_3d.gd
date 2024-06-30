@@ -9,7 +9,6 @@ class TestScene:
 
 	var num_character_bodies: int
 	var num_area_3d: int
-	var visualize := true
 	var area_3d_nodes: Array[Area3D]
 	var time_accum := 0.0
 	var shapes: Array[Shape3D] = [
@@ -23,13 +22,12 @@ class TestScene:
 		SphereMesh.new(),
 	]
 
-	func _init(_num_character_bodies: int, _num_area_3d: int, _visualize: bool) -> void:
+	func _init(_num_character_bodies: int, _num_area_3d: int) -> void:
 		num_character_bodies = _num_character_bodies
 		num_area_3d = _num_area_3d
-		visualize = _visualize
 
 	func _ready() -> void:
-		if visualize:
+		if Manager.visualize:
 			var camera := Camera3D.new()
 			camera.position = Vector3(0.0, 20.0, 20.0)
 			camera.rotate_x(-0.8)
@@ -64,7 +62,7 @@ class TestScene:
 		var r := randi() % shapes.size()
 		var collision_shape := CollisionShape3D.new()
 		collision_shape.shape = shapes[r]
-		if visualize:
+		if Manager.visualize:
 			var mesh_instance := MeshInstance3D.new()
 			mesh_instance.mesh = meshes[r]
 			parent.add_child(mesh_instance)
@@ -78,4 +76,4 @@ func _init() -> void:
 
 
 func benchmark_1000_area_3d() -> TestScene:
-	return TestScene.new(2000, 1000, true)
+	return TestScene.new(2000, 1000)

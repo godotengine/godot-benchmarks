@@ -8,7 +8,6 @@ class TestScene:
 	extends Node3D
 
 	var n_of_rigidbodies: int
-	var visualize := true
 	var shapes: Array[Shape3D] = [
 		BoxShape3D.new(),
 		CapsuleShape3D.new(),
@@ -20,9 +19,8 @@ class TestScene:
 		SphereMesh.new(),
 	]
 
-	func _init(_n_of_rigidbodies: int, _visualize: bool) -> void:
+	func _init(_n_of_rigidbodies: int) -> void:
 		n_of_rigidbodies = _n_of_rigidbodies
-		visualize = _visualize
 
 	func _ready() -> void:
 		var softbody := SoftBody3D.new()
@@ -36,7 +34,7 @@ class TestScene:
 		softbody.set_point_pinned(275, true)
 		softbody.set_point_pinned(517, true)
 		add_child(softbody)
-		if visualize:
+		if Manager.visualize:
 			var camera := Camera3D.new()
 			camera.position = Vector3(0.0, 20.0, 20.0)
 			camera.rotate_x(-0.8)
@@ -56,7 +54,7 @@ class TestScene:
 		var r := randi() % shapes.size()
 		var collision_shape := CollisionShape3D.new()
 		collision_shape.shape = shapes[r]
-		if visualize:
+		if Manager.visualize:
 			var mesh_instance := MeshInstance3D.new()
 			mesh_instance.mesh = meshes[r]
 			parent.add_child(mesh_instance)
@@ -70,4 +68,4 @@ func _init() -> void:
 
 
 func benchmark_softbody_3d_500_rigidbodies() -> TestScene:
-	return TestScene.new(500, true)
+	return TestScene.new(500)

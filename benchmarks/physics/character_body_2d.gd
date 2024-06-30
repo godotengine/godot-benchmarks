@@ -10,14 +10,12 @@ class TestScene:
 	var tile_map_scene := preload("res://supplemental/tilemap_scene.tscn")
 	var tile_map_node: Node2D
 	var n_of_character_bodies: int
-	var visualize := true
 	var character_bodies: Array[CharacterBody2D] = []
 	var capsule_mesh := CapsuleMesh.new()
 	var window_size: Vector2i
 
-	func _init(_n_of_character_bodies: int, _visualize: bool) -> void:
+	func _init(_n_of_character_bodies: int) -> void:
 		n_of_character_bodies = _n_of_character_bodies
-		visualize = _visualize
 		capsule_mesh.radius = 10.0
 		capsule_mesh.height = 28.0
 
@@ -33,7 +31,7 @@ class TestScene:
 			var collision_shape := CollisionShape2D.new()
 			collision_shape.shape = CapsuleShape2D.new()
 			body.add_child(collision_shape)
-			if visualize:
+			if Manager.visualize:
 				var mesh_instance := MeshInstance2D.new()
 				mesh_instance.mesh = capsule_mesh
 				body.add_child(mesh_instance)
@@ -64,4 +62,4 @@ func _init() -> void:
 
 
 func benchmark_1000_character_bodies_2d() -> TestScene:
-	return TestScene.new(1000, true)
+	return TestScene.new(1000)
