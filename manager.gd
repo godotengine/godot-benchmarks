@@ -56,6 +56,7 @@ var test_results := {}
 
 var save_json_to_path := ""
 var json_results_prefix := ""
+var visualize := false
 
 
 ## Recursively walks the given directory and returns all files found

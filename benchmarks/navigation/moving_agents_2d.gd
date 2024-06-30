@@ -11,12 +11,10 @@ class TestScene:
 	extends Node2D
 
 	var n_of_agents: int
-	var visualize: bool
 	var agents: Array[Node2D]
 
-	func _init(_n_of_agents: int, _visualize: bool) -> void:
+	func _init(_n_of_agents: int) -> void:
 		n_of_agents = _n_of_agents
-		visualize = _visualize
 
 	func _ready() -> void:
 		var nav_region := NavigationRegion2D.new()
@@ -32,7 +30,7 @@ class TestScene:
 			agent_parent.add_child(agent)
 			add_child(agent_parent)
 			agents.append(agent_parent)
-			if visualize:
+			if Manager.visualize:
 				var sprite := Sprite2D.new()
 				sprite.scale = Vector2(0.1, 0.1)
 				sprite.texture = ICON
@@ -59,4 +57,4 @@ func _init() -> void:
 
 
 func benchmark_1000_moving_agents() -> TestScene:
-	return TestScene.new(1000, false)
+	return TestScene.new(1000)

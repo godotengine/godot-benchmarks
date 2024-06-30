@@ -8,6 +8,7 @@ var arg_exclude_benchmarks := ""
 var arg_save_json := ""
 var arg_json_results_prefix := ""
 var arg_run_benchmarks := false
+var arg_visualize := false
 
 @onready var tree := $Tree as Tree
 var categories := {}
@@ -34,6 +35,7 @@ func _ready() -> void:
 
 		print("Variable %s set by command line to %s" % [var_name, self.get(var_name)])
 
+	Manager.visualize = arg_visualize
 	# No point in copying JSON without any results yet.
 	$CopyJSON.visible = false
 
