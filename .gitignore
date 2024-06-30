@@ -18,3 +18,20 @@ mono_crash.*.json
 
 # Godot Git repository clone (run-benchmarks.sh)
 /godot/
+
+# Binaries
+*.o
+*.os
+*.so
+*.obj
+*.bc
+*.pyc
+*.dblite
+*.pdb
+*.lib
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
+*.idb
