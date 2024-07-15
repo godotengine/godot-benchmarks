@@ -1,1 +1,8 @@
+# Properly detect languages on Github
 web/static/thirdparty/* linguist-vendored
+
+# Normalize EOL for all files that Git considers text files
+* text=auto eol=lf
+# Except for Visual Studio files
+*.sln eol=crlf
+*.csproj eol=crlf
