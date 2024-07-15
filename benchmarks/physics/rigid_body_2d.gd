@@ -1,6 +1,5 @@
 extends Benchmark
 
-const VISUALIZE := true
 const SPREAD_H := 1600.0;
 const SPREAD_V := 800.0;
 
@@ -22,7 +21,7 @@ func _init() -> void:
 func setup_scene(create_body_func: Callable, unique_shape: bool, ccd_mode: RigidBody2D.CCDMode, boundary: bool, num_shapes: int) -> Node2D:
 	var scene_root := Node2D.new()
 
-	if VISUALIZE:
+	if Manager.visualize:
 		var camera := Camera2D.new()
 		camera.position = Vector2(0.0, -100.0)
 		camera.zoom = Vector2(0.5, 0.5)
@@ -61,7 +60,7 @@ func create_square(unique_shape: bool, ccd_mode: RigidBody2D.CCDMode) -> RigidBo
 	var collision_shape := CollisionShape2D.new()
 	rigid_body.continuous_cd = ccd_mode
 
-	if VISUALIZE:
+	if Manager.visualize:
 		var mesh_instance := MeshInstance2D.new()
 		mesh_instance.mesh = square_mesh
 		rigid_body.add_child(mesh_instance)
@@ -81,7 +80,7 @@ func create_circle(unique_shape: bool, ccd_mode: RigidBody2D.CCDMode) -> RigidBo
 	var collision_shape := CollisionShape2D.new()
 	rigid_body.continuous_cd = ccd_mode
 
-	if VISUALIZE:
+	if Manager.visualize:
 		var mesh_instance := MeshInstance2D.new()
 		mesh_instance.mesh = circle_mesh
 		rigid_body.add_child(mesh_instance)

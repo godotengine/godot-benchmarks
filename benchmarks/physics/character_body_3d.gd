@@ -12,13 +12,11 @@ class TestScene:
 	var grid_map_scene := preload("res://supplemental/gridmap_scene.tscn")
 	var grid_map_node: Node3D
 	var n_of_character_bodies: int
-	var visualize := true
 	var character_bodies: Array[CharacterBody3D] = []
 	var capsule_mesh := CapsuleMesh.new()
 
-	func _init(_n_of_character_bodies: int, _visualize: bool) -> void:
+	func _init(_n_of_character_bodies: int) -> void:
 		n_of_character_bodies = _n_of_character_bodies
-		visualize = _visualize
 
 	func _ready() -> void:
 		grid_map_node = grid_map_scene.instantiate()
@@ -32,7 +30,7 @@ class TestScene:
 			var collision_shape := CollisionShape3D.new()
 			collision_shape.shape = CapsuleShape3D.new()
 			body.add_child(collision_shape)
-			if visualize:
+			if Manager.visualize:
 				var mesh_instance := MeshInstance3D.new()
 				mesh_instance.mesh = capsule_mesh
 				body.add_child(mesh_instance)
@@ -63,4 +61,4 @@ func _init() -> void:
 
 
 func benchmark_1000_character_bodies_3d() -> TestScene:
-	return TestScene.new(1000, true)
+	return TestScene.new(1000)

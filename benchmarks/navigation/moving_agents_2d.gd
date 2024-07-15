@@ -22,9 +22,7 @@ class TestScene:
 		add_child(nav_region)
 
 		for i in n_of_agents:
-			var agent_parent := Sprite2D.new()
-			agent_parent.scale = Vector2(0.1, 0.1)
-			agent_parent.texture = ICON
+			var agent_parent := Node2D.new()
 			agent_parent.position = _rand_pos()
 			var agent := NavigationAgent2D.new()
 			agent.avoidance_enabled = true
@@ -32,6 +30,11 @@ class TestScene:
 			agent_parent.add_child(agent)
 			add_child(agent_parent)
 			agents.append(agent_parent)
+			if Manager.visualize:
+				var sprite := Sprite2D.new()
+				sprite.scale = Vector2(0.1, 0.1)
+				sprite.texture = ICON
+				agent_parent.add_child(sprite)
 
 	func _physics_process(delta: float) -> void:
 		if NavigationServer2D.map_get_iteration_id(get_world_2d().navigation_map) == 0:
