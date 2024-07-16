@@ -30,8 +30,7 @@ You can save the results JSON to a file using `--save-json="path/to/file.json"`
 
 > **Note**
 >
-> To import the project in the editor from the command line, use `godot --editor --quit`.
-> If this doesn't work, use `timeout 30 godot --editor`.
+> To import the project in the editor from the command line, use `godot --import`.
 
 > **Note**
 >
