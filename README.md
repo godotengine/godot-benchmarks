@@ -28,16 +28,14 @@ The results JSON is printed to standard output once all benchmarks are run.
 You can save the results JSON to a file using `--save-json="path/to/file.json"`
 (the target folder **must** exist).
 
-> **Note**
+> [!TIP]
 >
-> To import the project in the editor from the command line, use `godot --editor --quit`.
-> If this doesn't work, use `timeout 30 godot --editor`.
+> To import the project in the editor from the command line, use `godot --import`.
 
-> **Note**
+> [!NOTE]
 >
 > `godot` is assumed to be in your `PATH` environment variable here. If this is
-> not the case, replace `godot` with the absolute path to your Godot editor or export template
-> binary.
+> not the case, replace `godot` with the absolute path to your Godot editor or export template binary.
 
 #### Run all benchmarks
 

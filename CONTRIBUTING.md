@@ -2,10 +2,10 @@
 
 Thank you for your interest in contributing!
 
-> **Note**
+> [!NOTE]
 >
-> This project only supports Godot's `master` branch (4.0's development branch),
-> not Godot 3.x.  
+> This project only supports Godot's `master` branch (4.x's development branch),
+> not Godot 3.x.
 > Attempting to open this project in Godot 3.x will result in errors.
 
 ## Adding new benchmarks
@@ -59,7 +59,9 @@ Remember to follow the
 when writing new scripts. Adding type hints is recommended whenever possible,
 unless you are specifically benchmarking non-typed scripts.
 
-> C# benchmark functions must begin with `Benchmark`, instead of `benchmark_`.  
+> [!NOTE]
+>
+> C# benchmark functions must begin with `Benchmark`, instead of `benchmark_`.
 > For C# benchmarks to be available, you must use the .NET version of the engine.
 
 ### Test the benchmark
