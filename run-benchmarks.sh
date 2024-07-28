@@ -20,19 +20,19 @@ export DISPLAY=":0"
 ARG1="${1:-''}"
 
 if ! command -v git &> /dev/null; then
-  echo "ERROR: git must be installed and in PATH."
-  exit 1
+	echo "ERROR: git must be installed and in PATH."
+	exit 1
 fi
 
 if [[ "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
-  echo "Usage: $0 [--skip-build]"
-  exit
+	echo "Usage: $0 [--skip-build]"
+	exit
 fi
 
 GODOT_REPO_DIR="$DIR/godot"
 
 if [[ ! -d "$GODOT_REPO_DIR/.git" ]]; then
-  git clone https://github.com/godotengine/godot.git "$GODOT_REPO_DIR"
+	git clone https://github.com/godotengine/godot.git "$GODOT_REPO_DIR"
 fi
 
 pushd "$GODOT_REPO_DIR"
@@ -48,64 +48,64 @@ latest_commit="$(git -C "$GODOT_REPO_DIR" rev-parse HEAD)"
 
 pushd /tmp/godot-benchmarks-results/
 for result in 2*.md; do
-  if [[ "${result:11:9}" == "${latest_commit:0:9}" ]]; then
-    echo "godot-benchmarks: Skipping benchmark run as the latest Godot commit is already present in the results repository."
-    exit
-  fi
+	if [[ "${result:11:9}" == "${latest_commit:0:9}" ]]; then
+		echo "godot-benchmarks: Skipping benchmark run as the latest Godot commit is already present in the results repository."
+		exit
+	fi
 done
 popd
 
 GODOT_EMPTY_PROJECT_DIR="$DIR/web/godot-empty-project"
 
 if [[ "$ARG1" != "--skip-build" ]]; then
-  cd "$GODOT_REPO_DIR"
+	cd "$GODOT_REPO_DIR"
 
-  if command -v ccache &> /dev/null; then
-    # Clear ccache to avoid skewing the build time results.
-    ccache --clear
-  fi
-  touch .gdignore
+	if command -v ccache &> /dev/null; then
+		# Clear ccache to avoid skewing the build time results.
+		ccache --clear
+	fi
+	touch .gdignore
 
-  # Measure clean build times for debug and release builds (in milliseconds).
-  # Also create a `.gdignore` file to prevent Godot from importing resources
-  # within the Godot Git clone.
-  # WARNING: Any untracked and ignored files included in the repository will be removed!
-  BEGIN="$(date +%s%3N)"
-  PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
-  END="$(date +%s%3N)"
-  TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
+	# Measure clean build times for debug and release builds (in milliseconds).
+	# Also create a `.gdignore` file to prevent Godot from importing resources
+	# within the Godot Git clone.
+	# WARNING: Any untracked and ignored files included in the repository will be removed!
+	BEGIN="$(date +%s%3N)"
+	PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	END="$(date +%s%3N)"
+	TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
-  git clean -qdfx --exclude bin
-  if command -v ccache &> /dev/null; then
-    # Clear ccache to avoid skewing the build time results.
-    ccache --clear
-  fi
-  touch .gdignore
+	git clean -qdfx --exclude bin
+	if command -v ccache &> /dev/null; then
+		# Clear ccache to avoid skewing the build time results.
+		ccache --clear
+	fi
+	touch .gdignore
 
-  BEGIN="$(date +%s%3N)"
-  PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
-  END="$(date +%s%3N)"
-  TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
+	BEGIN="$(date +%s%3N)"
+	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	END="$(date +%s%3N)"
+	TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
 
-  # FIXME: C# is disabled because the engine crashes on exit after running benchmarks.
-  #
-  # Generate Mono glue for C# build to work.
-  # echo "Generating .NET glue."
-  # bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
-  # echo "Building .NET assemblies."
-  # # https://docs.godotengine.org/en/stable/contributing/development/compiling/compiling_with_dotnet.html#nuget-packages
-  # mkdir -p "$HOME/MyLocalNugetSource"
-  # # Source may already exist, so allow failure for the command below.
-  # dotnet nuget add source "$HOME/MyLocalNugetSource" --name MyLocalNugetSource || true
-  # modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --push-nupkgs-local "$HOME/MyLocalNugetSource"
+	# FIXME: C# is disabled because the engine crashes on exit after running benchmarks.
+	#
+	# Generate Mono glue for C# build to work.
+	# echo "Generating .NET glue."
+	# bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
+	# echo "Building .NET assemblies."
+	# # https://docs.godotengine.org/en/stable/contributing/development/compiling/compiling_with_dotnet.html#nuget-packages
+	# mkdir -p "$HOME/MyLocalNugetSource"
+	# # Source may already exist, so allow failure for the command below.
+	# dotnet nuget add source "$HOME/MyLocalNugetSource" --name MyLocalNugetSource || true
+	# modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --push-nupkgs-local "$HOME/MyLocalNugetSource"
 
-  cd "$DIR"
+	cd "$DIR"
 else
-  echo "run-benchmarks: Skipping engine build as requested on the command line."
-  TIME_TO_BUILD_DEBUG=1
-  TIME_TO_BUILD_RELEASE=1
-  PEAK_MEMORY_BUILD_DEBUG=1
-  PEAK_MEMORY_BUILD_RELEASE=1
+	echo "run-benchmarks: Skipping engine build as requested on the command line."
+	TIME_TO_BUILD_DEBUG=1
+	TIME_TO_BUILD_RELEASE=1
+	PEAK_MEMORY_BUILD_DEBUG=1
+	PEAK_MEMORY_BUILD_RELEASE=1
 fi
 
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
@@ -128,7 +128,7 @@ $GODOT_DEBUG --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
-  echo "Performing benchmark debug startup/shutdown run."
+	echo "Performing benchmark debug startup/shutdown run."
 	$GODOT_DEBUG --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
@@ -144,7 +144,7 @@ $GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || 
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
-  echo "Performing benchmark release startup/shutdown run."
+	echo "Performing benchmark release startup/shutdown run."
 	$GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
@@ -199,24 +199,24 @@ BINARY_SIZE_RELEASE="$(stat --printf="%s" "$GODOT_RELEASE")"
 echo "Appending extra JSON at the end of the merged JSON."
 EXTRA_JSON=$(cat << EOF
 "binary_size": {
-  "debug": $BINARY_SIZE_DEBUG,
-  "release": $BINARY_SIZE_RELEASE
+	"debug": $BINARY_SIZE_DEBUG,
+	"release": $BINARY_SIZE_RELEASE
 },
 "build_time": {
-  "debug": $TIME_TO_BUILD_DEBUG,
-  "release": $TIME_TO_BUILD_RELEASE
+	"debug": $TIME_TO_BUILD_DEBUG,
+	"release": $TIME_TO_BUILD_RELEASE
 },
 "build_peak_memory_usage": {
-  "debug": $PEAK_MEMORY_BUILD_DEBUG,
-  "release": $PEAK_MEMORY_BUILD_RELEASE
+	"debug": $PEAK_MEMORY_BUILD_DEBUG,
+	"release": $PEAK_MEMORY_BUILD_RELEASE
 },
 "empty_project_startup_shutdown_time": {
-  "debug": $TIME_TO_STARTUP_SHUTDOWN_DEBUG,
-  "release": $TIME_TO_STARTUP_SHUTDOWN_RELEASE
+	"debug": $TIME_TO_STARTUP_SHUTDOWN_DEBUG,
+	"release": $TIME_TO_STARTUP_SHUTDOWN_RELEASE
 },
 "empty_project_startup_shutdown_peak_memory_usage": {
-  "debug": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG,
-  "release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
+	"debug": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG,
+	"release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
 }
 EOF
 )

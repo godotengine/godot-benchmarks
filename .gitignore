@@ -16,5 +16,35 @@ mono_crash.*.json
 .directory
 *~
 
+# IDE-specific ignores
+.fleet/
+.history/
+.idea/
+.vs/
+.vscode/
+*.code-workspace
+
+# Python-specific ignores
+__pycache__/
+*_cache/
+*.pyc
+.venv
+venv
+
 # Godot Git repository clone (run-benchmarks.sh)
-/godot/
+godot/
+
+# Output HTML files
+web/public/
+
+# Temporary lock file while building
+web/.hugo_build.lock
+
+# Generated files
+web/content/benchmark/*.md
+web/content/graph/*.md
+web/data/data.json
+
+# Untracked source files
+web/src-data/benchmarks/*.json
+web/src-data/benchmarks/*.md
