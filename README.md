@@ -8,6 +8,26 @@ such as rendering and scripting.
 
 ## Running benchmarks
 
+### Setup
+
+To be able to run C# benchmarks, you need to use a .NET build of Godot. If not
+using a .NET build, the project will still be able to run GDScript and C++
+benchmarks (if compiled), but C# benchmarks won't run.
+
+To be able to run C++ benchmarks, you need to compile the GDExtension for your
+platform in the [`gdextension/`](gdextension/) folder. To do so, run the
+following commands in that folder:
+
+```bash
+cd gdextension/
+git submodule update --init --recursive
+scons
+scons target=template_release
+```
+
+Remember to recompile the extension after any changes to the C++ code have been
+made, so that the changes are reflected when running benchmarks.
+
 ### Using a graphical interface
 
 Open the project in the editor, then run it from the editor or from an export
@@ -17,7 +37,7 @@ in the bottom-right corner.
 Once benchmarks are run, you can copy the results JSON using the
 **Copy JSON to Clipboard** button at the bottom. The results JSON is also printed to
 standard output, which you can see if you're running the project from a terminal.
-
+v
 ### Using the command line
 
 After opening the project in the editor (required so that resources can be imported),

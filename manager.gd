@@ -1,6 +1,22 @@
 extends Node
 
-const RANDOM_SEED = 0x60d07
+const RANDOM_SEED := 0x60d07
+const CPP_CLASS_NAMES: Array[StringName] = [
+	&"CPPBenchmarkAlloc",
+	&"CPPBenchmarkArray",
+	&"CPPBenchmarkBinaryTrees",
+	&"CPPBenchmarkControl",
+	&"CPPBenchmarkForLoop",
+	&"CPPBenchmarkHelloWorld",
+	&"CPPBenchmarkLambdaPerformance",
+	&"CPPBenchmarkMandelbrotSet",
+	&"CPPBenchmarkMerkleTrees",
+	&"CPPBenchmarkNbody",
+	&"CPPBenchmarkSpectralNorm",
+	&"CPPBenchmarkStringChecksum",
+	&"CPPBenchmarkStringFormat",
+	&"CPPBenchmarkStringManipulation",
+]
 
 class Results:
 	var render_cpu := 0.0
@@ -49,10 +65,11 @@ func test_ids_from_path(path: String) -> Array[TestID]:
 
 
 # List of supported languages and their styles.
-var languages := {".gd": {"test_prefix": "benchmark_"}}
+var languages := {".gd": {"test_prefix": "benchmark_"}, ".cpp": {"test_prefix": "benchmark_"}}
 
 # List of benchmarks populated in `_ready()`.
 var test_results := {}
+var cpp_classes: Array[RefCounted] = []
 
 var save_json_to_path := ""
 var json_results_prefix := ""
@@ -78,7 +95,7 @@ func dir_contents(path: String, contents: PackedStringArray = PackedStringArray(
 	return contents
 
 
-func _ready():
+func _ready() -> void:
 	RenderingServer.viewport_set_measure_render_time(get_tree().root.get_viewport_rid(),true)
 	set_process(false)
 
@@ -89,6 +106,21 @@ func _ready():
 	# Register contents of `benchmarks/` folder automatically.
 	for benchmark_path in dir_contents("res://benchmarks/"):
 		for test_id in test_ids_from_path(benchmark_path):
+			test_results[test_id] = null
+
+	# Load GDExtension (C++) benchmarks
+	for cpp_class_name in CPP_CLASS_NAMES:
+		if not ClassDB.class_exists(cpp_class_name):
+			continue
+		var cpp_class = ClassDB.instantiate(cpp_class_name)
+		cpp_classes.append(cpp_class)
+		for method in cpp_class.get_method_list():
+			if not method.name.begins_with(languages[".cpp"]["test_prefix"]):
+				continue
+			var test_id := TestID.new()
+			test_id.name = method.name.trim_prefix(languages[".cpp"]["test_prefix"])
+			test_id.category = "C++/" + cpp_class.get_class().replace("CPPBenchmark", "")
+			test_id.language = ".cpp"
 			test_results[test_id] = null
 
 
@@ -148,7 +180,19 @@ func run_test(test_id: TestID) -> void:
 	# Add a dummy child so that the above check works for subsequent reloads
 	get_tree().current_scene.add_child(Node.new())
 
-	var bench_script = load("res://benchmarks/%s%s" % [test_id.category, test_id.language]).new()
+	var language := test_id.language
+	var bench_script
+	if language != ".cpp":
+		bench_script = load("res://benchmarks/%s%s" % [test_id.category, language]).new()
+	else:
+		var cpp_class_name := "CPPBenchmark" + test_id.category.replace("C++", "").replace("/", "")
+		for cpp_class in cpp_classes:
+			if cpp_class_name == cpp_class.get_class():
+				bench_script = ClassDB.instantiate(cpp_class_name)
+				break
+	if not is_instance_valid(bench_script):
+		printerr("Benchmark not found!")
+		return
 	var results := Results.new()
 
 	# Call and time the function to be tested
