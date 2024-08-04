@@ -48,22 +48,3 @@ web/data/data.json
 # Untracked source files
 web/src-data/benchmarks/*.json
 web/src-data/benchmarks/*.md
-
-# Compiled binaries from the GDExtension used for C++ benchmarks
-*.o
-*.os
-*.so
-*.dll
-*.dylib
-*.obj
-*.bc
-*.pyc
-*.dblite
-*.pdb
-*.lib
-*.config
-*.creator
-*.creator.user
-*.files
-*.includes
-*.idb

@@ -1,0 +1,19 @@
+# Compiled binaries from the GDExtension used for C++ benchmarks
+*.o
+*.os
+*.so
+*.dll
+*.framework
+*.dylib
+*.obj
+*.bc
+*.pyc
+*.dblite
+*.pdb
+*.lib
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
+*.idb
