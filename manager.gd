@@ -203,7 +203,7 @@ func run_test(test_id: TestID) -> void:
 
 	# Continue benchmarking if the function call has returned a node
 	var frames_captured := 0
-	if bench_node:
+	if bench_node and bench_node is Node:
 		get_tree().current_scene.add_child(bench_node)
 
 		# TODO: Any better ways of waiting for shader compilation?

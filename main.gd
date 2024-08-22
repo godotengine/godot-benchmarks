@@ -14,6 +14,7 @@ var arg_visualize := false
 var categories := {}
 
 func _ready() -> void:
+	print(OS.has_feature("debug"))
 	# Parse valid command-line arguments of the form `--key=value` into member variables.
 	for argument in OS.get_cmdline_user_args():
 		if not argument.begins_with("--"):
