@@ -138,6 +138,29 @@ TIME_TO_STARTUP_SHUTDOWN_DEBUG="$((TOTAL / 20))"
 echo "Performing benchmark debug peak memory usage run."
 PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG=$(/usr/bin/time -f "%M" "$GODOT_DEBUG" --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit 2>&1 | tail -1)
 
+echo "Open the Godot Editor once to generate shader cache."
+$GODOT_DEBUG -e --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+TOTAL=0
+for _ in {0..9}; do
+	BEGIN="$(date +%s%3N)"
+	echo "Performing benchmark shader cache debug editor run."
+	$GODOT_DEBUG -e --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+	END="$(date +%s%3N)"
+	TOTAL="$((TOTAL + END - BEGIN))"
+done
+TIME_TO_STARTUP_SHADER_CACHE="$((TOTAL / 10))"
+
+TOTAL=0
+for _ in {0..9}; do
+	rm -r "$GODOT_EMPTY_PROJECT_DIR/.godot"
+	BEGIN="$(date +%s%3N)"
+	echo "Performing benchmark no shader cache debug editor run."
+	$GODOT_DEBUG -e --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+	END="$(date +%s%3N)"
+	TOTAL="$((TOTAL + END - BEGIN))"
+done
+TIME_TO_STARTUP_NO_SHADER_CACHE="$((TOTAL / 10))"
+
 # Perform a warmup run first.
 echo "Performing release warmup run."
 $GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
@@ -217,6 +240,12 @@ EXTRA_JSON=$(cat << EOF
 "empty_project_startup_shutdown_peak_memory_usage": {
 	"debug": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG,
 	"release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
+},
+"empty_project_editor_startup_shader_cache": {
+	"debug": $TIME_TO_STARTUP_SHADER_CACHE,
+},
+"empty_project_editor_startup_no_shader_cache": {
+	"debug": $TIME_TO_STARTUP_NO_SHADER_CACHE,
 }
 EOF
 )
