@@ -242,10 +242,10 @@ EXTRA_JSON=$(cat << EOF
 	"release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
 },
 "empty_project_editor_startup_shader_cache": {
-	"debug": $TIME_TO_STARTUP_SHADER_CACHE,
+	"debug": $TIME_TO_STARTUP_SHADER_CACHE
 },
 "empty_project_editor_startup_no_shader_cache": {
-	"debug": $TIME_TO_STARTUP_NO_SHADER_CACHE,
+	"debug": $TIME_TO_STARTUP_NO_SHADER_CACHE
 }
 EOF
 )
