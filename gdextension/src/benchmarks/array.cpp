@@ -17,7 +17,7 @@ void CPPBenchmarkArray::_bind_methods() {
 }
 
 void CPPBenchmarkArray::benchmark_fill_loop() {
-    int length = 10000000;
+    constexpr int length = 10000000;
 	int array[length];
     for (int i = 0; i < length; i++) {
         array[i] = 1234;
@@ -25,7 +25,7 @@ void CPPBenchmarkArray::benchmark_fill_loop() {
 }
 
 void CPPBenchmarkArray::benchmark_int32_array() {
-	TypedArray<int> array;
+	TypedArray<int32_t> array;
 
     for(int i = 0; i < iterations; i++)
         array.push_back(i);
@@ -38,7 +38,7 @@ void CPPBenchmarkArray::benchmark_int32_array() {
 }
 
 void CPPBenchmarkArray::benchmark_int64_array() {
-	TypedArray<long> array;
+	TypedArray<int64_t> array;
 
     for(int i = 0; i < iterations; i++)
         array.push_back(i);

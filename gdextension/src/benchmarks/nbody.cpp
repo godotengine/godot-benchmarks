@@ -11,7 +11,7 @@ void CPPBenchmarkNbody::_bind_methods() {
 }
 
 void CPPBenchmarkNbody::offset_momentum() {
-    double px, py, pz = 0;
+    double px = 0, py = 0, pz = 0;
     for(char i = 0; i < body_count; i++) {
         Body b = bodies[i];
         px -= b.vx * b.mass;

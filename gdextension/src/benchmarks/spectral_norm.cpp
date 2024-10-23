@@ -3,6 +3,8 @@
 
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include <malloc.h>
+
 using namespace godot;
 
 void CPPBenchmarkSpectralNorm::_bind_methods() {
@@ -44,9 +46,9 @@ void CPPBenchmarkSpectralNorm::multiply_at_av(double v[], double tmp[], double a
 }
 
 void CPPBenchmarkSpectralNorm::calculate_spectral_norm(int n) {
-    double u[n];
-    double v[n];
-    double tmp[n];
+    double *u = (double *)alloca(sizeof(double) * n);
+    double *v = (double *)alloca(sizeof(double) * n);
+    double *tmp = (double *)alloca(sizeof(double) * n);
 
     // create unit vector
     for (int i = 0; i < n; i++)
