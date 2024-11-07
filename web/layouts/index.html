@@ -33,8 +33,16 @@
   </div>
 
   <h2>Latest benchmark runs</h2>
-  <ul>
-    {{ range sort $benchmarks ".date" "asc" | first 100}}
+  <ul id="recent-benchmarks">
+    {{ range sort $benchmarks ".date" "desc" | first 10}}
+      <li>
+        <a href="/benchmark/{{ .date }}_{{ .commit }}">{{ .date }}<code>{{ slicestr .engine.version_hash 0 9 }}</code></a>
+      </li>
+    {{ end }}
+      <li><a onclick="showAllBenchmarks()" style="cursor: pointer">Show all benchmarks...</a></li>
+  </ul>
+  <ul id="all-benchmarks" style="display: none">
+    {{ range sort $benchmarks ".date" "desc"}}
       <li>
         <a href="/benchmark/{{ .date }}_{{ .commit }}">{{ .date }}<code>{{ slicestr .engine.version_hash 0 9 }}</code></a>
       </li>
@@ -99,11 +107,16 @@
 <script>
   // Update all graphs.
   function updateGraphs() {
-    let selectTag = document.querySelector('#metric');
-    Database.graphs.forEach((g) => {
-      displayGraph(`#${g.id}`, g.id, "compact")
+    let selectTag = document.querySelector("#metric");
+    Database.graphs.forEach((graph) => {
+      displayGraph(`#${graph.id}`, graph.id, "compact");
     })
   }
-  updateGraphs()
+  updateGraphs();
+
+  function showAllBenchmarks() {
+    document.getElementById("recent-benchmarks").style.display = "none";
+    document.getElementById("all-benchmarks").style.display = "block";
+  }
 </script>
 {{ end }}
