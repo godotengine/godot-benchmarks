@@ -35,4 +35,3 @@ func benchmark_save_with_password() -> void:
 func benchmark_load_with_password() -> void:
 	for i in ITERATIONS:
 		config.load_encrypted_pass(CONFIG_FILE_ENCRYPTED, "PasswordIsGodot")
-

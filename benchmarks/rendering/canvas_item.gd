@@ -28,6 +28,7 @@ class TestScene:
 	func _draw() -> void:
 		for i in shape_amount:
 			var x := (i * 20) % window_size.x
+			@warning_ignore("integer_division")
 			var y := (i * 200) / window_size.x
 			var center := Vector2(x, y)
 			var remainder := i % 5

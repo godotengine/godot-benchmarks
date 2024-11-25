@@ -66,5 +66,3 @@ func benchmark_500_sprite_2d():
 	return TestSprite.new(500)
 func benchmark_5000_sprite_2d():
 	return TestSprite.new(5000)
-
-

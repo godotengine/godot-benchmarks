@@ -9,6 +9,7 @@ const MAX_ITERATION := 1000
 # Licensed under MIT
 func hsv(hue: float, sat: float, value: float) -> Color:
 	hue = fposmod(hue, 360.0)
+	@warning_ignore("integer_division")
 	var h := floori(hue) / 60
 	var f := hue / 60.0 - h
 	var p := value * (1.0 - sat)

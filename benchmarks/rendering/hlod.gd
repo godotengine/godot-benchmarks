@@ -137,4 +137,3 @@ func benchmark_aaa_setup():
 		var tmp := Node3D.new()
 		attach_model_recursive(tmp, NUMBER_OF_OBJECTS)
 		tmp.free()
-

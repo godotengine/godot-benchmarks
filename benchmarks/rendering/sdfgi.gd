@@ -34,7 +34,7 @@ class TestScene extends Node3D:
 			$VeryLargeScene/Camera3D.environment = env
 			add_child(world_env)
 
-	func _process(delta):
+	func _process(_delta):
 		pass
 
 	func _exit_tree():

@@ -1,5 +1,6 @@
 extends Benchmark
 
+@warning_ignore("unused_signal")
 signal emitter
 
 const ITERATIONS = 2_000_000

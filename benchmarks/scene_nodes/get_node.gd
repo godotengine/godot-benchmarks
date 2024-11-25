@@ -17,7 +17,7 @@ func _init() -> void:
 		var random_parent := nodes[randi() % nodes.size()]
 		random_parent.add_child(new_node)
 		nodes.push_back(new_node)
-	
+
 	for node in nodes:
 		node_paths.push_back(root.get_path_to(node))
 

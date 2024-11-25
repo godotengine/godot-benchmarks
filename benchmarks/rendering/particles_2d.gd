@@ -15,7 +15,7 @@ class Test2DParticles extends Node2D:
 	var nodes: int = 1
 	var particles: int = 1
 	var type := ParticleType.GPU_PARTICLES
-	
+
 	func _init(settings: Dictionary) -> void:
 		type = settings.get("type")
 		nodes = settings.get("nodes")
@@ -34,7 +34,7 @@ class Test2DParticles extends Node2D:
 				node = cpu_node
 			node.position = Vector2(randf_range(-x, x), randf_range(-y, y))
 			add_child(node)
-			
+
 	func create_particles(node) -> Node2D:
 		node.process_material = ParticleProcessMaterial.new()
 		node.process_material.spread = 180
@@ -59,12 +59,12 @@ class Test2DParticles extends Node2D:
 
 func benchmark_few_gpuparticles2d_nodes_with_many_particles() -> Node2D:
 	return Test2DParticles.new({type = ParticleType.GPU_PARTICLES, nodes = 100, particles = 1000})
-	
+
 func benchmark_many_gpuparticles2d_nodes_with_few_particles() -> Node2D:
 	return Test2DParticles.new({type = ParticleType.GPU_PARTICLES, nodes = 1000, particles = 100})
-	
+
 func benchmark_few_cpuparticles2d_nodes_with_many_particles() -> Node2D:
 	return Test2DParticles.new({type = ParticleType.CPU_PARTICLES, nodes = 100, particles = 1000})
-	
+
 func benchmark_many_cpuparticles2d_nodes_with_few_particles() -> Node2D:
 	return Test2DParticles.new({type = ParticleType.CPU_PARTICLES, nodes = 1000, particles = 100})

@@ -1,7 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://33dqw5jcha0h"]
 
-[ext_resource type="Script" path="res://supplemental/camera_move.gd" id="1_vqkte"]
-
+[ext_resource type="Script" uid="uid://bmit1bxe3126r" path="res://supplemental/camera_move.gd" id="1_vqkte"]
 
 [sub_resource type="Environment" id="Environment_itcjv"]
 
@@ -81,8 +80,8 @@ tracks/2/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_dtehi"]
 _data = {
-"RESET": SubResource("Animation_5lvnf"),
-"move": SubResource("Animation_41l7d")
+&"RESET": SubResource("Animation_5lvnf"),
+&"move": SubResource("Animation_41l7d")
 }
 
 [node name="VeryLargeScene" type="Node3D"]
@@ -95,7 +94,7 @@ script = ExtResource("1_vqkte")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
 libraries = {
-"": SubResource("AnimationLibrary_dtehi")
+&"": SubResource("AnimationLibrary_dtehi")
 }
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]

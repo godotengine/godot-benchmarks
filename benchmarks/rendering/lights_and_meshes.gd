@@ -152,4 +152,3 @@ func benchmark_speed_slow() -> Node3D:
 
 func benchmark_stress() -> Node3D:
 	return create_scene({mesh=sphere_mesh,objects=10000,lights=100,speed=5.0})
-

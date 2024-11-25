@@ -34,6 +34,7 @@ class TestScene:
 			CylinderMesh.new(),
 			PrismMesh.new(),
 		]
+		@warning_ignore("integer_division")
 		var half_objects := NUMBER_OF_OBJECTS / 2
 		for i in NUMBER_OF_OBJECTS:
 			var ins := MeshInstance3D.new()

@@ -41,7 +41,7 @@ func _parse_all(strs):
 	var rv = []
 	for s in strs:
 		var expr = Expression.new()
-		var err = expr.parse(s, _var_names())
+		var _err = expr.parse(s, _var_names())
 		rv.append(expr)
 	return rv
 
@@ -54,11 +54,11 @@ func _execute_all(exprs):
 
 func benchmark_parse_20_complex_expressions_cold():
 	var strs = EXPRESSIONS
-	var exprs = _parse_all(strs)
+	var _exprs = _parse_all(strs)
 
 func benchmark_parse_20_complex_expressions_with_cached_parse():
 	var strs = EXPRESSIONS
-	var exprs = _parse_all(strs)
+	var _exprs = _parse_all(strs)
 
 func benchmark_parse_20_complex_expressions_with_cached_parse_then_execute():
 	var strs = EXPRESSIONS

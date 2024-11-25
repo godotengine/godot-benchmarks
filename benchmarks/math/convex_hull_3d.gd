@@ -27,11 +27,11 @@ func mesh_with_vertices(vertices: PackedVector3Array) -> Mesh:
 
 	return arr_mesh
 
-func _bench_convex(clean: bool, simplify: bool) -> void:
+func _bench_convex(_clean: bool, simplify: bool) -> void:
 	for i in NUM_ITERATIONS:
 		var points := generate_point_cloud(CLOUD_SIZE, NUM_POINTS, POSITION)
 		var mesh := mesh_with_vertices(points)
-		var convex := mesh.create_convex_shape(clean, simplify)
+		var _convex := mesh.create_convex_shape(_clean, simplify)
 
 func benchmark_both_clean_and_simplify() -> void:
 	return _bench_convex(true, true)

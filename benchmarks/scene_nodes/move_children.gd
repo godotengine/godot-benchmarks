@@ -7,7 +7,7 @@ const ITERATIONS = 1_000
 var root: Node
 var children: Array[Node]
 
-# Benchmark move_child by moving to random positions ITERATIONS 
+# Benchmark move_child by moving to random positions ITERATIONS
 # children ITERATIONS times. The tree is created in init.
 
 func _init() -> void:
