@@ -163,12 +163,12 @@ TIME_TO_STARTUP_NO_SHADER_CACHE="$((TOTAL / 10))"
 
 # Perform a warmup run first.
 echo "Performing release warmup run."
-$GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+$GODOT_RELEASE --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 TOTAL=0
 for _ in {0..19}; do
 	BEGIN="$(date +%s%3N)"
 	echo "Performing benchmark release startup/shutdown run."
-	$GODOT_RELEASE --audio-driver Dummy --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
+	$GODOT_RELEASE --audio-driver Dummy --gpu-index 1 --path "$GODOT_EMPTY_PROJECT_DIR" --quit || true
 	END="$(date +%s%3N)"
 	TOTAL="$((TOTAL + END - BEGIN))"
 done
@@ -192,7 +192,7 @@ $GODOT_RELEASE --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --exclude-
 echo "Running GPU benchmarks."
 $GODOT_RELEASE --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/amd.md" --json-results-prefix="amd"
 $GODOT_RELEASE --audio-driver Dummy --gpu-index 0 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/intel.md" --json-results-prefix="intel"
-#$GODOT_RELEASE --audio-driver Dummy --gpu-index 2 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
+$GODOT_RELEASE --audio-driver Dummy --gpu-index 2 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
 
 # We cloned a copy of the repository above so we can push the new JSON files to it.
 # The website build is performed by GitHub Actions on the `main` branch of the repository below,
@@ -202,8 +202,7 @@ cd /tmp/godot-benchmarks-results/
 # Merge benchmark run JSONs together.
 # Use editor build as release build errors due to missing PCK file.
 echo "Merging JSON files together."
-$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md --output-path /tmp/merged.md
-#$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md --output-path /tmp/merged.md
+$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md --output-path /tmp/merged.md
 
 OUTPUT_PATH="/tmp/godot-benchmarks-results/${DATE}_${COMMIT_HASH}.md"
 rm -f "$OUTPUT_PATH"

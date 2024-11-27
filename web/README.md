@@ -12,7 +12,7 @@ which runs benchmarks on a dedicated server with various GPU models.
   - CPU (release template)
   - GPU (AMD, release template)
   - GPU (Intel, release template)
-  <!-- - GPU (NVIDIA, release template) -->
+  - GPU (NVIDIA, release template)
 - The produced results (as .json or .md) should be copied into the `src-data/benchmarks` folder.
 - The [./generate-content.py script](./generate-content.py) produces `.md` files
   in the `content` folder, so that web pages can be generated for each graph and each benchmark.
