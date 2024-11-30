@@ -170,16 +170,28 @@
         </td>
         <td>
           {{ if gt .results.amd.render_cpu 0 }}
+
+          {{ if gt .results.intel.render_cpu 0 }}
           <span title="Intel HD Graphics">🔵</span> {{ .results.intel.render_cpu }} <sub>mspf</sub><br>
-          <span title="AMD Radeon RX 550">🔴</span> {{ .results.amd.render_cpu }} <sub>mspf</sub>&nbsp;
-          <span title="NVIDIA GeForce GT 1030">🟢</span> {{ .results.nvidia.render_cpu }} <sub>mspf</sub>
+          {{ end }}
+          <span title="AMD Radeon RX 550">🔴</span> {{ .results.amd.render_cpu }} <sub>mspf</sub>
+          {{ if gt .results.nvidia.render_cpu 0 }}
+          <br><span title="NVIDIA GeForce GT 1030">🟢</span> {{ .results.nvidia.render_cpu }} <sub>mspf</sub>
+          {{ end }}
+
           {{ end }}
         </td>
         <td>
           {{ if gt .results.amd.render_gpu 0 }}
+
+          {{ if gt .results.intel.render_gpu 0 }}
           <span title="Intel HD Graphics">🔵</span> {{ .results.intel.render_gpu }} <sub>mspf</sub><br>
-          <span title="AMD Radeon RX 550">🔴</span> {{ .results.amd.render_gpu }} <sub>mspf</sub>&nbsp;
-          <span title="NVIDIA GeForce GT 1030">🟢</span> {{ .results.nvidia.render_gpu }} <sub>mspf</sub>
+          {{ end }}
+          <span title="AMD Radeon RX 550">🔴</span> {{ .results.amd.render_gpu }} <sub>mspf</sub>
+          {{ if gt .results.nvidia.render_gpu 0 }}
+          <br><span title="NVIDIA GeForce GT 1030">🟢</span> {{ .results.nvidia.render_gpu }} <sub>mspf</sub>
+          {{ end }}
+
           {{ end }}
         </td>
       </tr>
