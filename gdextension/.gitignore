@@ -18,5 +18,5 @@
 *.includes
 *.idb
 
-# Generated Files
+# SCons-generated files
 /compile_commands.json
