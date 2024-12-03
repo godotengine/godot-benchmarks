@@ -38,7 +38,7 @@ void CPPBenchmarkArray::benchmark_int32_array() {
 }
 
 void CPPBenchmarkArray::benchmark_int64_array() {
-	TypedArray<long> array;
+	TypedArray<int64_t> array;
 
     for(int i = 0; i < iterations; i++)
         array.push_back(i);
