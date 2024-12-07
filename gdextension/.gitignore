@@ -11,6 +11,8 @@
 *.dblite
 *.pdb
 *.lib
+*.ilk
+*.exp
 *.config
 *.creator
 *.creator.user
