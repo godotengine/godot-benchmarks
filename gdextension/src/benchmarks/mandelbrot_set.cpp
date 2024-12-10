@@ -1,17 +1,17 @@
 #include "mandelbrot_set.h"
-#include <godot_cpp/core/class_db.hpp>
 
 #include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
 
 void CPPBenchmarkMandelbrotSet::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("benchmark_mandelbrot_set"), &CPPBenchmarkMandelbrotSet::benchmark_mandelbrot_set);
+	ClassDB::bind_method(D_METHOD("benchmark_mandelbrot_set"), &CPPBenchmarkMandelbrotSet::benchmark_mandelbrot_set);
 }
 
 Color CPPBenchmarkMandelbrotSet::hsv(float hue, float sat, float value) {
-    hue = godot::Math::fposmod(hue, 360.0f);
-	int h = godot::Math::floor(hue) / 60;
+	hue = Math::fposmod(hue, 360.0f);
+	int h = Math::floor(hue) / 60;
 	float f = hue / 60.0 - h;
 	float p = value * (1.0 - sat);
 	float q = value * (1.0 - sat * f);
@@ -31,7 +31,7 @@ Color CPPBenchmarkMandelbrotSet::hsv(float hue, float sat, float value) {
 
 void CPPBenchmarkMandelbrotSet::mandelbrot_set(int p_width, int p_height, int p_max_iteration) {
 	Ref<Image> image = memnew(Image);
-    image = Image::create_empty(p_width, p_height, false, Image::Format::FORMAT_RGB8);
+	image = Image::create_empty(p_width, p_height, false, Image::Format::FORMAT_RGB8);
 	float ratio = float(p_width) / float(p_height);
 	float x_range = 3.6;
 	float y_range = x_range / ratio;
@@ -52,12 +52,12 @@ void CPPBenchmarkMandelbrotSet::mandelbrot_set(int p_width, int p_height, int p_
 				x2 = xx * xx;
 				y2 = yy * yy;
 				iteration += 1;
-            }
+			}
 			float m = float(iteration) / float(p_max_iteration);
 			Color color = hsv(360.0 * m, 1.0, ceilf(1.0 - 1.1 * m));
 			image->set_pixel(x, y, color);
-        }
-    }
+		}
+	}
 }
 
 void CPPBenchmarkMandelbrotSet::benchmark_mandelbrot_set() {

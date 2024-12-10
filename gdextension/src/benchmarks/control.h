@@ -4,15 +4,20 @@
 #include "../cppbenchmark.h"
 
 namespace godot {
-    class CPPBenchmarkControl : public CPPBenchmark {
-        GDCLASS(CPPBenchmarkControl, CPPBenchmark)
 
-        protected:
-	        static void _bind_methods();
-        public:
-            void benchmark_control();
-            CPPBenchmarkControl();
-            ~CPPBenchmarkControl();
-    };
-}
+class CPPBenchmarkControl : public CPPBenchmark {
+	GDCLASS(CPPBenchmarkControl, CPPBenchmark)
+
+protected:
+	static void _bind_methods();
+
+public:
+	void benchmark_control();
+
+	CPPBenchmarkControl();
+	~CPPBenchmarkControl();
+};
+
+} // namespace godot
+
 #endif

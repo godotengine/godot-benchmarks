@@ -26,21 +26,21 @@ void initialize_benchmark_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	ClassDB::register_class<CPPBenchmark>();
-	ClassDB::register_class<CPPBenchmarkAlloc>();
-	ClassDB::register_class<CPPBenchmarkArray>();
-	ClassDB::register_class<CPPBenchmarkBinaryTrees>();
-	ClassDB::register_class<CPPBenchmarkControl>();
-	ClassDB::register_class<CPPBenchmarkForLoop>();
-	ClassDB::register_class<CPPBenchmarkHelloWorld>();
-	ClassDB::register_class<CPPBenchmarkLambdaPerformance>();
-	ClassDB::register_class<CPPBenchmarkMandelbrotSet>();
-	ClassDB::register_class<CPPBenchmarkMerkleTrees>();
-	ClassDB::register_class<CPPBenchmarkNbody>();
-	ClassDB::register_class<CPPBenchmarkSpectralNorm>();
-	ClassDB::register_class<CPPBenchmarkStringChecksum>();
-	ClassDB::register_class<CPPBenchmarkStringFormat>();
-	ClassDB::register_class<CPPBenchmarkStringManipulation>();
+	GDREGISTER_CLASS(CPPBenchmark);
+	GDREGISTER_CLASS(CPPBenchmarkAlloc);
+	GDREGISTER_CLASS(CPPBenchmarkArray);
+	GDREGISTER_CLASS(CPPBenchmarkBinaryTrees);
+	GDREGISTER_CLASS(CPPBenchmarkControl);
+	GDREGISTER_CLASS(CPPBenchmarkForLoop);
+	GDREGISTER_CLASS(CPPBenchmarkHelloWorld);
+	GDREGISTER_CLASS(CPPBenchmarkLambdaPerformance);
+	GDREGISTER_CLASS(CPPBenchmarkMandelbrotSet);
+	GDREGISTER_CLASS(CPPBenchmarkMerkleTrees);
+	GDREGISTER_CLASS(CPPBenchmarkNbody);
+	GDREGISTER_CLASS(CPPBenchmarkSpectralNorm);
+	GDREGISTER_CLASS(CPPBenchmarkStringChecksum);
+	GDREGISTER_CLASS(CPPBenchmarkStringFormat);
+	GDREGISTER_CLASS(CPPBenchmarkStringManipulation);
 }
 
 void uninitialize_benchmark_module(ModuleInitializationLevel p_level) {
@@ -52,7 +52,7 @@ void uninitialize_benchmark_module(ModuleInitializationLevel p_level) {
 extern "C" {
 // Initialization.
 GDExtensionBool GDE_EXPORT benchmark_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
-	godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
+	GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
 	init_obj.register_initializer(initialize_benchmark_module);
 	init_obj.register_terminator(uninitialize_benchmark_module);
