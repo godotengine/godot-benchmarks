@@ -44,6 +44,9 @@ class TestID:
 func test_ids_from_path(path: String) -> Array[TestID]:
 	var rv : Array[TestID] = []
 
+	# Recognize paths in an exported project correctly.
+	path = path.trim_suffix(".remap")
+
 	# Check for runnable tests.
 	for extension in languages.keys():
 		if not path.ends_with(extension):
