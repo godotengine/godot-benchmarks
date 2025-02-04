@@ -17,7 +17,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 
 	// Include benchmark data JSON to generate graphs.
 	const allBenchmarks = Database.benchmarks.sort(
-		(a, b) => `${a.date}.${a.commit}` > `${b.date}.${b.commit}`,
+		(a, b) => `${a.date}.${a.commit}` > `${b.date}.${b.commit}` ? 1 : -1,
 	);
 	const graph = Database.graphs.find((g) => g.id == graphID);
 	if (!graph) {
