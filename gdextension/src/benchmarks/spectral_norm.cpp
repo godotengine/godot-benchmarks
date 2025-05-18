@@ -3,6 +3,10 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#endif
+
 using namespace godot;
 
 void CPPBenchmarkSpectralNorm::_bind_methods() {
