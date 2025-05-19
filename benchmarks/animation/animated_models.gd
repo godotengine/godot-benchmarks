@@ -100,6 +100,7 @@ func _init() -> void:
 	test_render_cpu = true
 	test_render_gpu = true
 
+
 func benchmark_animation_state_machine_1000() -> TestScene:
 	return TestScene.new(1000, true).with_state_machine()
 
