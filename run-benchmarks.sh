@@ -194,6 +194,43 @@ $GODOT_RELEASE --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --include-
 $GODOT_RELEASE --audio-driver Dummy --gpu-index 0 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/intel.md" --json-results-prefix="intel"
 $GODOT_RELEASE --audio-driver Dummy --gpu-index 2 -- --run-benchmarks --include-benchmarks="rendering/*" --save-json="/tmp/nvidia.md" --json-results-prefix="nvidia"
 
+echo "Appending extra benchmarks."
+EXTRA_JSON=$(cat << EOF
+"benchmarks": [
+  {
+    "category": "Extra/Size",
+    "name": "Binary Size",
+    "results": {"cpu_debug": {"size_bytes":$BINARY_SIZE_DEBUG}, "cpu_release": {"size_bytes": $BINARY_SIZE_RELEASE}}
+  }, {
+    "category": "Extra/Build Time",
+    "name": "Build Time",
+    "results": {"cpu_debug": {"time":$TIME_TO_BUILD_DEBUG}, "cpu_release": {"time": $TIME_TO_BUILD_RELEASE}}
+  }, {
+    "category": "Extra/Build Memory Use",
+    "name": "Build Peak Memory Use",
+    "results": {"cpu_debug": {"ram_bytes":$PEAK_MEMORY_BUILD_DEBUG}, "cpu_release": {"ram_bytes": $PEAK_MEMORY_BUILD_RELEASE}}
+  }, {
+    "category": "Extra/Startup Time",
+    "name": "Startup + Shutdown Time",
+    "results": {"cpu_debug": {"time":$TIME_TO_STARTUP_SHUTDOWN_DEBUG}, "cpu_release": {"time": $TIME_TO_STARTUP_SHUTDOWN_RELEASE}}
+  }, {
+    "category": "Extra/Startup Time",
+    "name": "Startup Time With Shader Cache",
+    "results": {"cpu_debug": {"time":$TIME_TO_STARTUP_SHADER_CACHE}, "cpu_release": {"time": $TIME_TO_STARTUP_SHADER_CACHE}}
+  }, {
+    "category": "Extra/Startup Time",
+    "name": "Startup Time Without Shader Cache",
+    "results": {"cpu_debug": {"time":$TIME_TO_STARTUP_NO_SHADER_CACHE}, "cpu_release": {"time": $TIME_TO_STARTUP_NO_SHADER_CACHE}}
+  }, {
+    "category": "Extra/Memory Use",
+    "name": "Startup + Shutdown Peak Memory Use",
+    "results": {"cpu_debug": {"ram_bytes":$PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG}, "cpu_release": {"ram_bytes": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE}}
+  }
+]
+EOF
+)
+echo "$EXTRA_JSON" > "/tmp/extra.md"
+
 # We cloned a copy of the repository above so we can push the new JSON files to it.
 # The website build is performed by GitHub Actions on the `main` branch of the repository below,
 # so we only push files to it and do nothing else.
@@ -202,7 +239,7 @@ cd /tmp/godot-benchmarks-results/
 # Merge benchmark run JSONs together.
 # Use editor build as release build errors due to missing PCK file.
 echo "Merging JSON files together."
-$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md --output-path /tmp/merged.md
+$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md /tmp/extra.md --output-path /tmp/merged.md
 
 OUTPUT_PATH="/tmp/godot-benchmarks-results/${DATE}_${COMMIT_HASH}.md"
 rm -f "$OUTPUT_PATH"
@@ -214,41 +251,6 @@ strip "$GODOT_DEBUG" "$GODOT_RELEASE"
 
 BINARY_SIZE_DEBUG="$(stat --printf="%s" "$GODOT_DEBUG")"
 BINARY_SIZE_RELEASE="$(stat --printf="%s" "$GODOT_RELEASE")"
-
-# Add extra JSON at the end of the merged JSON. We assume the merged JSON has no
-# newline at the end of file, as Godot writes it. To append more data to the
-# JSON dictionary, we remove the last `}` character and add a `,` instead.
-echo "Appending extra JSON at the end of the merged JSON."
-EXTRA_JSON=$(cat << EOF
-"binary_size": {
-	"debug": $BINARY_SIZE_DEBUG,
-	"release": $BINARY_SIZE_RELEASE
-},
-"build_time": {
-	"debug": $TIME_TO_BUILD_DEBUG,
-	"release": $TIME_TO_BUILD_RELEASE
-},
-"build_peak_memory_usage": {
-	"debug": $PEAK_MEMORY_BUILD_DEBUG,
-	"release": $PEAK_MEMORY_BUILD_RELEASE
-},
-"empty_project_startup_shutdown_time": {
-	"debug": $TIME_TO_STARTUP_SHUTDOWN_DEBUG,
-	"release": $TIME_TO_STARTUP_SHUTDOWN_RELEASE
-},
-"empty_project_startup_shutdown_peak_memory_usage": {
-	"debug": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG,
-	"release": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE
-},
-"empty_project_editor_startup_shader_cache": {
-	"debug": $TIME_TO_STARTUP_SHADER_CACHE
-},
-"empty_project_editor_startup_no_shader_cache": {
-	"debug": $TIME_TO_STARTUP_NO_SHADER_CACHE
-}
-EOF
-)
-echo "$(head -c -1 /tmp/merged.md),$EXTRA_JSON}" > "$OUTPUT_PATH"
 
 # Build website files after running all benchmarks, so that benchmarks
 # appear on the web interface.
