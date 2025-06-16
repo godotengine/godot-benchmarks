@@ -148,5 +148,30 @@
     "id": "viewport-allocation",
     "title": "Viewport Allocation",
     "benchmark-path-prefix": "Viewport/Allocation"
+  },
+  {
+    "id": "binary-size",
+    "title": "Size",
+    "benchmark-path-prefix": "Extra/Size"
+  },
+  {
+    "id": "build-time",
+    "title": "Build Time",
+    "benchmark-path-prefix": "Extra/Build Time"
+  },
+  {
+    "id": "build-memory-use",
+    "title": "Build Memory Use",
+    "benchmark-path-prefix": "Extra/Build Memory Use"
+  },
+  {
+    "id": "startup-time",
+    "title": "Startup Time",
+    "benchmark-path-prefix": "Extra/Startup Time"
+  },
+  {
+    "id": "memory-use",
+    "title": "Memory Use",
+    "benchmark-path-prefix": "Extra/Memory Use"
   }
 ]
