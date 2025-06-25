@@ -48,52 +48,6 @@
   </tr>
 </table>
 
-<h2>Engine information</h2>
-<table class="table-first-column-align-right">
-  <thead>
-    <td>Build type</td>
-    <td>
-      <span style="opacity: 0.65"><sub><abbr title="SCons flags: target=editor optimize=debug">Debug</abbr></sub> Debug editor<br></span>
-      <sub><abbr title="SCons flags: target=template_release optimize=speed lto=full">Release</abbr></sub> Release export template
-    </td>
-  </thead>
-  <tr>
-    <td><abbr title="Using GCC compiler with all caches cleared">Time to build</abbr></td>
-    <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.build_time.debug 0.001 | lang.FormatNumber 0 }} seconds<br></span>
-      <sub>Release</sub> {{ mul $benchmark.build_time.release 0.001 | lang.FormatNumber 0 }} seconds
-    </td>
-  </tr>
-  <tr>
-    <td><abbr title="Using GCC compiler with all caches cleared">Build peak memory usage</abbr></td>
-    <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.build_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
-      <sub>Release</sub> {{ mul $benchmark.build_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
-    </td>
-  </tr>
-  <tr>
-    <td><abbr title="Measured on an empty project">Startup + shutdown time</abbr></td>
-    <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ $benchmark.empty_project_startup_shutdown_time.debug | lang.FormatNumber 0 }} ms<br></span>
-      <sub>Release</sub> {{ $benchmark.empty_project_startup_shutdown_time.release | lang.FormatNumber 0 }} ms
-    </td>
-  </tr>
-  <tr>
-    <td><abbr title="Measured on an empty project">Startup + shutdown peak memory usage</abbr></td>
-    <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.empty_project_startup_shutdown_peak_memory_usage.debug 0.001 | lang.FormatNumber 2 }} MB<br></span>
-      <sub>Release</sub> {{ mul $benchmark.empty_project_startup_shutdown_peak_memory_usage.release 0.001 | lang.FormatNumber 2 }} MB
-    </td>
-  </tr>
-  <tr>
-    <td><abbr title="Measured after stripping debug symbols">Binary size</abbr></td>
-    <td>
-      <span style="opacity: 0.65"><sub>Debug</sub> {{ mul $benchmark.binary_size.debug 0.001 | lang.FormatNumber 0 }} KB<br></span>
-      <sub>Release</sub> {{ mul $benchmark.binary_size.release 0.001 | lang.FormatNumber 0 }} KB
-    </td>
-  </tr>
-</table>
-
 <h2>Benchmark results</h2>
 <em>For all values, lower is better.</em>
 <details open>
@@ -200,5 +154,68 @@
     </tbody>
   </table>
 </details>
+
+<details open>
+  <summary><strong>RAM</strong></summary>
+  <table class="table-first-column-align-right">
+    <thead>
+    <tr>
+      <td>Name</td>
+      <td>RAM</td>
+    </tr>
+    </thead>
+    <tbody>
+    {{ range $benchmark.benchmarks }}
+    {{ if gt .results.cpu_debug.ram_bytes 0 }}
+    <tr>
+      <td>
+        <sub style="opacity: 0.65">
+          {{ delimit (first (sub (len .path) 1) .path) " > "}}
+        </sub>
+        <br>
+        <strong>{{ index (last 1 .path) 0 }}</strong>
+      </td>
+      <td>
+        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.cpu_debug.ram_bytes }} <sub>b</sub><br></span>
+        <sub>Release</sub> {{ .results.cpu_release.ram_bytes }} <sub>b</sub>
+      </td>
+    </tr>
+    {{ end }}
+    {{ end }}
+    </tbody>
+  </table>
+</details>
+
+<details open>
+  <summary><strong>Size</strong></summary>
+  <table class="table-first-column-align-right">
+    <thead>
+    <tr>
+      <td>Name</td>
+      <td>Size</td>
+    </tr>
+    </thead>
+    <tbody>
+    {{ range $benchmark.benchmarks }}
+    {{ if gt .results.cpu_debug.size_bytes 0 }}
+    <tr>
+      <td>
+        <sub style="opacity: 0.65">
+          {{ delimit (first (sub (len .path) 1) .path) " > "}}
+        </sub>
+        <br>
+        <strong>{{ index (last 1 .path) 0 }}</strong>
+      </td>
+      <td>
+        <span style="opacity: 0.65"><sub>Debug</sub> {{ .results.cpu_debug.size_bytes }} <sub>b</sub><br></span>
+        <sub>Release</sub> {{ .results.cpu_release.size_bytes }} <sub>b</sub>
+      </td>
+    </tr>
+    {{ end }}
+    {{ end }}
+    </tbody>
+  </table>
+</details>
+
 
 {{ end }}
