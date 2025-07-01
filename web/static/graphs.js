@@ -25,6 +25,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 	}
 	// Group by series.
 	const xAxis = [];
+	const commits = [];
 	const series = new Map();
 	const processResult = (path, data, process) => {
 		Object.entries(data).forEach(([key, value]) => {
@@ -40,7 +41,8 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 	// Get list all series and fill it in.
 	allBenchmarks.forEach((benchmark, count) => {
 		// Process a day/commit
-		xAxis.push(benchmark.date + "." + benchmark.commit);
+		xAxis.push(Date.parse(benchmark.date));
+		commits.push(benchmark.commit);
 
 		// Get all series.
 		benchmark.benchmarks.forEach((instance) => {
@@ -156,6 +158,12 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			y: {
 				formatter: (value, opts) => (type === "compact" ? value + "%" : value),
 			},
+			x: {
+				formatter: function(value, opts) {
+					const commit = commits[opts.dataPointIndex];
+					return '' + new Date(value).toISOString().substring(0, 10) + " (" + commit + ")";
+				},
+			},
 		},
 		dataLabels: {
 			enabled: false,
@@ -189,6 +197,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 					: ["#4ecdc4"]
 				: undefined,
 		xaxis: {
+			type: 'datetime',
 			categories: xAxis,
 			labels: {
 				show: type !== "compact",
