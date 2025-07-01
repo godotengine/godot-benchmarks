@@ -162,7 +162,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 				formatter: function(value, opts) {
 					const commit = commits[opts.dataPointIndex];
 					return '' + new Date(value).toISOString().substring(0, 10) + " (" + commit + ")";
-				}
+				},
 			},
 		},
 		dataLabels: {
