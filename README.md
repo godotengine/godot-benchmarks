@@ -20,7 +20,7 @@ following commands in that folder:
 
 ```bash
 cd gdextension/
-git submodule update --init --recursive
+git  odule update --init --recursive
 scons
 scons target=template_release
 ```

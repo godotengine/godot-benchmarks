@@ -212,43 +212,45 @@ BINARY_SIZE_RELEASE="$(stat --printf="%s" "$GODOT_RELEASE")"
 
 echo "Appending extra benchmarks."
 EXTRA_JSON=$(cat << EOF
-"benchmarks": [
-  {
-    "category": "Extra/Size",
-    "name": "Binary Size",
-    "results": { "cpu_debug": { "size_bytes": $BINARY_SIZE_DEBUG}, "cpu_release": { "size_bytes": $BINARY_SIZE_RELEASE } }
-  },
-  {
-    "category": "Extra/Build Time",
-    "name": "Build Time",
-    "results": { "cpu_debug": { "time": $TIME_TO_BUILD_DEBUG}, "cpu_release": { "time": $TIME_TO_BUILD_RELEASE } }
-  },
-  {
-    "category": "Extra/Build Memory Use",
-    "name": "Build Peak Memory Use",
-    "results": { "cpu_debug": { "ram_bytes": $PEAK_MEMORY_BUILD_DEBUG}, "cpu_release": { "ram_bytes": $PEAK_MEMORY_BUILD_RELEASE } }
-  },
-  {
-    "category": "Extra/Startup Time",
-    "name": "Startup + Shutdown Time",
-    "results": { "cpu_debug": { "time": $TIME_TO_STARTUP_SHUTDOWN_DEBUG}, "cpu_release": { "time": $TIME_TO_STARTUP_SHUTDOWN_RELEASE } }
-  },
-  {
-    "category": "Extra/Startup Time",
-    "name": "Startup Time With Shader Cache",
-    "results": { "cpu_debug": { "time": $TIME_TO_STARTUP_SHADER_CACHE}, "cpu_release": { "time": $TIME_TO_STARTUP_SHADER_CACHE } }
-  },
-  {
-    "category": "Extra/Startup Time",
-    "name": "Startup Time Without Shader Cache",
-    "results": { "cpu_debug": { "time": $TIME_TO_STARTUP_NO_SHADER_CACHE}, "cpu_release": { "time": $TIME_TO_STARTUP_NO_SHADER_CACHE } }
-  },
-  {
-    "category": "Extra/Memory Use",
-    "name": "Startup + Shutdown Peak Memory Use",
-    "results": { "cpu_debug": { "ram_bytes": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG}, "cpu_release": { "ram_bytes": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE } }
-  }
-]
+{
+  "benchmarks": [
+    {
+      "category": "Extra/Size",
+      "name": "Binary Size",
+      "results": { "cpu_debug": { "size_bytes": $BINARY_SIZE_DEBUG}, "cpu_release": { "size_bytes": $BINARY_SIZE_RELEASE } }
+    },
+    {
+      "category": "Extra/Build Time",
+      "name": "Build Time",
+      "results": { "cpu_debug": { "time": $TIME_TO_BUILD_DEBUG}, "cpu_release": { "time": $TIME_TO_BUILD_RELEASE } }
+    },
+    {
+      "category": "Extra/Build Memory Use",
+      "name": "Build Peak Memory Use",
+      "results": { "cpu_debug": { "ram_bytes": $PEAK_MEMORY_BUILD_DEBUG}, "cpu_release": { "ram_bytes": $PEAK_MEMORY_BUILD_RELEASE } }
+    },
+    {
+      "category": "Extra/Startup Time",
+      "name": "Startup + Shutdown Time",
+      "results": { "cpu_debug": { "time": $TIME_TO_STARTUP_SHUTDOWN_DEBUG}, "cpu_release": { "time": $TIME_TO_STARTUP_SHUTDOWN_RELEASE } }
+    },
+    {
+      "category": "Extra/Startup Time",
+      "name": "Startup Time With Shader Cache",
+      "results": { "cpu_debug": { "time": $TIME_TO_STARTUP_SHADER_CACHE}, "cpu_release": { "time": $TIME_TO_STARTUP_SHADER_CACHE } }
+    },
+    {
+      "category": "Extra/Startup Time",
+      "name": "Startup Time Without Shader Cache",
+      "results": { "cpu_debug": { "time": $TIME_TO_STARTUP_NO_SHADER_CACHE}, "cpu_release": { "time": $TIME_TO_STARTUP_NO_SHADER_CACHE } }
+    },
+    {
+      "category": "Extra/Memory Use",
+      "name": "Startup + Shutdown Peak Memory Use",
+      "results": { "cpu_debug": { "ram_bytes": $PEAK_MEMORY_STARTUP_SHUTDOWN_DEBUG}, "cpu_release": { "ram_bytes": $PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE } }
+    }
+  ]
+}
 EOF
 )
 echo "$EXTRA_JSON" > "/tmp/extra.md"
