@@ -108,6 +108,14 @@ else
 	PEAK_MEMORY_BUILD_RELEASE=1
 fi
 
+# Build the GDExtension that is part of the project.
+# Don't count this as part of the build time benchmark, as it's project-specific.
+pushd "$DIR/gdextension/"
+for target in "template_debug" "template_release"; do
+	scons target="$target" -j$(nproc)
+done
+popd
+
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
 GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64"
 
