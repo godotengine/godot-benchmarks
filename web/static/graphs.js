@@ -69,30 +69,36 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 
 	let customColor = undefined;
 
-	if (type === "compact") {
-		// Kind of "normalize" the series, dividing by the average.
-		series.forEach((serie, key) => {
-			let count = 0;
-			let mean = 0.0;
-			serie.forEach((el) => {
-				if (el != null) {
-					mean += el;
-					count += 1;
+	// Normalize each series:
+	// - The last n samples are used as 'reference'.
+	// - The median defines the value 1.0.
+	series.forEach((serie, key) => {
+		const NUM_VALUES_USED_FOR_REFERENCE = 10;
+		let values = [];
+		for (let i = serie.length - 1; i >= 0; i--) {
+			let el = serie[i];
+			if (el != null) {
+				values.push(el);
+				if (values.length >= NUM_VALUES_USED_FOR_REFERENCE) {
+					break;
 				}
-			});
-			mean = mean / count;
+			}
+		}
+		values.sort();
+		let median = values[Math.floor(NUM_VALUES_USED_FOR_REFERENCE / 2)];
 
-			//const std = Math.sqrt(input.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
-			series.set(
-				key,
-				serie.map((v) => {
-					if (v != null) {
-						return v / mean; // Devide by the mean.
-					}
-					return null;
-				}),
-			);
-		});
+		series.set(
+			key,
+			serie.map((v) => {
+				if (v != null) {
+					return v / median;
+				}
+				return null;
+			}),
+		);
+	});
+
+	if (type === "compact") {
 		// Combine all into a single, averaged serie.
 		const outputSerie = [];
 		for (let i = 0; i < allBenchmarks.length; i++) {
@@ -106,7 +112,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			});
 			let point = null;
 			if (count >= 1) {
-				point = Math.round((sum * 1000) / count) / 10; // Round to 3 decimals.
+				point = sum / count;
 			}
 			outputSerie.push(point);
 		}
@@ -144,10 +150,10 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			height: type === "compact" ? 200 : 600,
 			type: "line",
 			zoom: {
-				enabled: false,
+				enabled: type !== 'compact',
 			},
 			toolbar: {
-				show: false,
+				show: type !== 'compact',
 			},
 			animations: {
 				enabled: false,
@@ -155,9 +161,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 		},
 		tooltip: {
 			theme: "dark",
-			y: {
-				formatter: (value, opts) => (type === "compact" ? value + "%" : value),
-			},
+			shared: false,
 			x: {
 				formatter: function(value, opts) {
 					const commit = commits[opts.dataPointIndex];
@@ -204,9 +208,14 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			},
 		},
 		yaxis: {
-			tickAmount: 4,
-			min: type === "compact" ? 0 : undefined,
-			max: type === "compact" ? 200 : undefined,
+			tickAmount: type === "compact" ? 4 : 8,
+			showAlways: true,
+			min: 0.0,
+			max: 2,
+			// TODO Somehow broken :(
+			// logarithmic: true,
+			// logBase: 10,
+			decimalsInFloat: 2,
 		},
 		legend: {
 			show: type !== "compact",
