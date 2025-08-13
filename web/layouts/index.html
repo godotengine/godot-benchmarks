@@ -17,9 +17,9 @@
       Normalized (percentage of the average time). <strong>Lower is better on all graphs.</strong>
     </div>
   </div>
-  <div style="display: grid; grid-template-columns: 50% 50%; gap: 1em;">
+  <div style="display: grid; grid-template-columns: 33% 33% 33%; gap: 2em;">
     {{ range $graphs }}
-      <div style="display: flex; flex-direction: column; gap: 1em;">
+      <div style="display: flex; flex-direction: column; gap: 0.5em;">
         <div style="align-self: center;">
           <a href="/graph/{{ .id }}">{{ .title }}</a>
         </div>

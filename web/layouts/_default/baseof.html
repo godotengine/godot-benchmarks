@@ -6,7 +6,6 @@
     <meta name="theme-color" content="#3d8fcc">
     <title>{{ block "title" . }}{{ .Site.Title }}{{ end }}</title>
     <link rel="canonical" href="{{ .Permalink }}">
-    <link rel="stylesheet" href="{{ .Site.BaseURL }}thirdparty/apexcharts/apexcharts.css">
     <link rel="stylesheet" href="{{ .Site.BaseURL }}thirdparty/water.css">
     <link rel="stylesheet" href="{{ .Site.BaseURL }}main.css">
     <link rel="manifest" href="{{ .Site.BaseURL }}site.webmanifest">
@@ -23,7 +22,7 @@
     © 2022-present Godot Engine contributors – <a href="https://github.com/godotengine/godot-benchmarks/tree/main/web">Website source code</a>
     </footer>
 
-    <script src="{{ .Site.BaseURL }}thirdparty/apexcharts/apexcharts.min.js"></script>
+    <script src="{{ .Site.BaseURL }}thirdparty/plotly.min.js"></script>
     <script>
       if (window.location.href.includes("://godotengine.github.io/godot-benchmarks-results/")) {
         // Perform redirect.
