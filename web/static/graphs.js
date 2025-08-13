@@ -10,6 +10,11 @@ function getAllowedMetrics() {
 	return allowedMetrics;
 }
 
+const godotReleaseDates = {
+	"2024-08-15": "4.3",
+	"2025-03-03": "4.4",
+};
+
 // Themes extracted using https://stackoverflow.com/questions/71721049/react-plotly-js-apply-dark-plotly-dark-theme
 // Derives from plotly
 const plotlyTemplatePlotly = {
@@ -1196,6 +1201,28 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 		},
 		height: type === "compact" ? 150 : 500,
 		template: prefersDark ? plotlyTemplatePlotlyDark : plotlyTemplatePlotly,
+		shapes: Object.entries(godotReleaseDates).map(([date, name]) => ({
+			name,
+			type: 'line',
+			x0: date,
+			y0: 0,
+			x1: date,
+			yref: 'paper',
+			y1: 1,
+			line: {
+				color: 'grey',
+				width: type === "compact" ? 1.0 : 1.5,
+				dash: 'dot'
+			}
+		})),
+		annotations: Object.entries(godotReleaseDates).map(([date, name]) => ({
+			xanchor: 'right',
+			x: date,
+			y: 1,
+			yref: 'paper',
+			text: name + " ",
+			showarrow: false,
+		}))
 	};
 
 	// Initialize Plotly.js plot
