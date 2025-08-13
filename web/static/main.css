@@ -8,6 +8,10 @@ footer {
 	text-align: center;
 }
 
+body {
+	max-width: 1200px;
+}
+
 header {
 	background-color: var(--background);
 	border-radius: 0 0 6px 6px;
