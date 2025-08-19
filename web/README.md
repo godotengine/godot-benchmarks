@@ -19,7 +19,7 @@ which runs benchmarks on a dedicated server with various GPU models.
 - [Hugo](https://gohugo.io/) is used to create a homepage listing recent
   benchmarked commits, plus a single page per engine commit. This allows linking
   to individual benchmarked commit in a future-proof way.
-- [ApexCharts](https://apexcharts.com/) is used to draw graphs on the homepage.
+- [Plotly.js](https://plotly.com/javascript/) is used to draw graphs on the homepage.
 - [Water.css](https://watercss.kognise.dev/) is used to provide styling,
   including automatic dark theme support.
 
