@@ -1111,32 +1111,60 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 		);
 	});
 
+	const outputLowerIQR = [];
+	const outputUpperIQR = [];
+	const outputMin = [];
+	const outputMax = [];
 	if (type === "compact") {
 		// Combine all into a single, averaged serie.
-		const outputSerie = [];
+		const outputMedian = [];
+
 		for (let i = 0; i < allBenchmarks.length; i++) {
-			let count = 0;
-			let sum = 0;
-			series.forEach((serie, key) => {
+			const values = [];
+
+			// Collect non-null values for the current index
+			series.forEach((serie) => {
 				if (serie[i] != null) {
-					count += 1;
-					sum += serie[i];
+					values.push(serie[i]);
 				}
 			});
-			let point = null;
-			if (count >= 1) {
-				point = sum / count;
+
+			if (values.length > 0) {
+				// Sort values to calculate median and IQR
+				values.sort((a, b) => a - b);
+				const mid = Math.floor(values.length / 2);
+
+				// Calculate median
+				const median = values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+				outputMedian.push(median);
+
+				// Calculate IQR
+				const q1 = values[Math.floor((values.length / 4))];
+				const q3 = values[Math.floor((3 * values.length) / 4)];
+				outputLowerIQR.push(q1);
+				outputUpperIQR.push(q3);
+
+				// Min / Max
+				outputMin.push(values[0]);
+				outputMax.push(values.slice(-1)[0]);
+			} else {
+				// Handle case of no data for the point
+				outputMedian.push(null);
+				outputLowerIQR.push(null);
+				outputUpperIQR.push(null);
+				outputMin.push(null);
+				outputMax.push(null);
 			}
-			outputSerie.push(point);
 		}
+
 		series.clear();
-		series.set("Average", outputSerie);
+		series.set("Median", outputMedian);
 
 		// Detect whether we went down or not on the last 10 benchmarks.
 		const lastElementsCount = 3;
 		const totalConsideredCount = 10;
-		const lastElements = outputSerie.slice(-lastElementsCount);
-		const comparedTo = outputSerie.slice(
+		const lastElements = outputMedian.slice(-lastElementsCount);
+		const comparedTo = outputMedian.slice(
 			-totalConsideredCount,
 			-lastElementsCount,
 		);
@@ -1166,6 +1194,27 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 		},
 		fillcolor: type === "compact" ? 'rgba(78, 205, 196, 0.5)' : undefined
 	}));
+
+	if (type === "compact") {
+		// Plot the interquartile range as a filled background.
+		plotlySeries.unshift({
+			x: xAxis.concat(xAxis.slice().reverse()), // x for upper followed by reversed x for lower
+			y: outputUpperIQR.concat(outputLowerIQR.slice().reverse()), // y for upper followed by lower in reverse
+			fill: 'toself',
+			fillcolor: 'rgba(0,100,80,0.35)',
+			line: {color: 'rgba(255,255,255,0)'},
+			showlegend: false,
+			hoverinfo: "none",
+		}, {
+			x: xAxis.concat(xAxis.slice().reverse()), // x for upper followed by reversed x for lower
+			y: outputMax.concat(outputMin.slice().reverse()), // y for upper followed by lower in reverse
+			fill: 'toself',
+			fillcolor: 'rgba(0,100,80,0.2)',
+			line: {color: 'rgba(255,255,255,0)'},
+			showlegend: false,
+			hoverinfo: "none",
+		});
+	}
 
 	var prefersDark = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
