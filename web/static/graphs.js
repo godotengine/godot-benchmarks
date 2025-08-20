@@ -1111,13 +1111,18 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 		);
 	});
 
-	const outputLowerIQR = [];
-	const outputUpperIQR = [];
-	const outputMin = [];
-	const outputMax = [];
+	const prefersDark = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+	const currentTemplate = prefersDark ? plotlyTemplatePlotlyDark : plotlyTemplatePlotly;
+
+	let plotlySeries = [];
 	if (type === "compact") {
 		// Combine all into a single, averaged serie.
 		const outputMedian = [];
+
+		const outputLowerIQR = [];
+		const outputUpperIQR = [];
+		const outputMin = [];
+		const outputMax = [];
 
 		for (let i = 0; i < allBenchmarks.length; i++) {
 			const values = [];
@@ -1157,9 +1162,6 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			}
 		}
 
-		series.clear();
-		series.set("Median", outputMedian);
-
 		// Detect whether we went down or not on the last 10 benchmarks.
 		const lastElementsCount = 3;
 		const totalConsideredCount = 10;
@@ -1178,26 +1180,9 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 		} else if (trend < -10) {
 			customColor = "#00E200";
 		}
-	}
 
-	// Extracting necessary data for Plotly.js from the series
-	var plotlySeries = Array.from(series.entries()).map(([name, value]) => ({
-		x: xAxis,
-		y: value,
-		hovertext: Array.from(commits.map(commit => commit + "<br>" + name)),
-		type: 'scatter',
-		mode: 'lines',
-		hoverinfo:"x+y+text",
-		name: name,
-		line: {
-			color: type === "compact" ? (customColor || "#4ecdc4") : undefined,
-		},
-		fillcolor: type === "compact" ? 'rgba(78, 205, 196, 0.5)' : undefined
-	}));
-
-	if (type === "compact") {
 		// Plot the interquartile range as a filled background.
-		plotlySeries.unshift({
+		plotlySeries.push({
 			x: xAxis.concat(xAxis.slice().reverse()), // x for upper followed by reversed x for lower
 			y: outputUpperIQR.concat(outputLowerIQR.slice().reverse()), // y for upper followed by lower in reverse
 			fill: 'toself',
@@ -1214,9 +1199,42 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			showlegend: false,
 			hoverinfo: "none",
 		});
-	}
 
-	var prefersDark = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+		// Plot the median.
+		plotlySeries.push({
+			x: xAxis,
+			y: outputMedian,
+			hovertext: Array.from(commits.map(commit => commit)),
+			type: 'scatter',
+			mode: 'lines',
+			hoverinfo:"x+y+text",
+			name: "Median",
+			line: {
+				color: customColor || "#4ecdc4",
+			},
+		});
+	}
+	else {
+		// Sort by name such that each group has the full range of colors if need be.
+		const seriesArray = [...series.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+		for (let i = 0; i < seriesArray.length; i++) {
+			const [name, values] = seriesArray[i];
+			const groupIndex = name.indexOf("/");
+			const groupName = name.slice(0, groupIndex);
+
+			plotlySeries.push({
+				x: xAxis,
+				y: values,
+				hovertext: Array.from(commits.map(commit => commit + "<br>" + name)),
+				type: 'scatter',
+				mode: 'lines',
+				hoverinfo:"x+y+text",
+				name: name.slice(groupIndex + 1),
+				legendgroup: groupName,
+				legendgrouptitle: { text: groupName },
+			})
+		}
+	}
 
 	var layout = {
 		title: '',
@@ -1237,6 +1255,9 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			tickformat: '.2f'
 		},
 		showlegend: type !== 'compact',
+		legend: {
+			groupclick:"toggleitem",
+		},
 		hovermode: 'closest',
 		transition: {
 			duration: 0,
@@ -1249,7 +1270,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			pad: 4
 		},
 		height: type === "compact" ? 150 : 500,
-		template: prefersDark ? plotlyTemplatePlotlyDark : plotlyTemplatePlotly,
+		template: currentTemplate,
 		shapes: Object.entries(godotReleaseDates).map(([date, name]) => ({
 			name,
 			type: 'line',
