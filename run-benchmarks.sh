@@ -93,7 +93,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
 	# echo "Generating .NET glue."
 	# bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
 	# echo "Building .NET assemblies."
-	# # https://docs.godotengine.org/en/stable/contributing/development/compiling/compiling_with_dotnet.html#nuget-packages
+	# # https://docs.godotengine.org/en/stable/engine_details/development/compiling/compiling_with_dotnet.html#nuget-packages
 	# mkdir -p "$HOME/MyLocalNugetSource"
 	# # Source may already exist, so allow failure for the command below.
 	# dotnet nuget add source "$HOME/MyLocalNugetSource" --name MyLocalNugetSource || true
