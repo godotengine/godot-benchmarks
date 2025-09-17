@@ -13,6 +13,7 @@ function getAllowedMetrics() {
 const godotReleaseDates = {
 	"2024-08-15": "4.3",
 	"2025-03-03": "4.4",
+	"2025-09-15": "4.5",
 };
 
 // Themes extracted using https://stackoverflow.com/questions/71721049/react-plotly-js-apply-dark-plotly-dark-theme
