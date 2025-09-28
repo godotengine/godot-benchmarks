@@ -187,7 +187,7 @@ PEAK_MEMORY_STARTUP_SHUTDOWN_RELEASE=$(/usr/bin/time -f "%M" "$GODOT_RELEASE" --
 
 # Import resources and build C# solutions in the project (required to run it).
 echo "Performing resource importing and C# solution building."
-$GODOT_DEBUG --headless --editor --gpu-index 1 --build-solutions --quit-after 2
+$GODOT_DEBUG --headless --import --gpu-index 1 --build-solutions --quit-after 2
 
 # Run CPU benchmarks.
 
