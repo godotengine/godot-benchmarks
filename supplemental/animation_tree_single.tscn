@@ -90,7 +90,7 @@ nodes/Animation/node = SubResource("AnimationNodeAnimation_wc5p8")
 nodes/Animation/position = Vector2(-260, 120)
 "nodes/Animation 2/node" = SubResource("AnimationNodeAnimation_i5arm")
 "nodes/Animation 2/position" = Vector2(-260, 280)
-node_connections = [&"Add2", 0, &"Animation", &"Add2", 1, &"Animation 2", &"output", 0, &"Add2"]
+node_connections = [&"output", 0, &"Add2", &"Add2", 0, &"Animation", &"Add2", 1, &"Animation 2"]
 
 [node name="Node3D" type="Node3D"]
 
@@ -107,4 +107,4 @@ autoplay = "new_animation_2"
 [node name="AnimationTree" type="AnimationTree" parent="."]
 tree_root = SubResource("AnimationNodeBlendTree_jsk3o")
 anim_player = NodePath("../AnimationPlayer")
-parameters/Add2/add_amount = true
+parameters/Add2/add_amount = 0.0

@@ -7261,6 +7261,7 @@ animation = &"fight_punch"
 animation = &"run"
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_rss0p"]
+nodes/output/position = Vector2(1060, 60)
 nodes/Dash/node = SubResource("AnimationNodeAnimation_06uah")
 nodes/Dash/position = Vector2(360, 280)
 nodes/Idle/node = SubResource("AnimationNodeBlendSpace1D_vjq6h")
@@ -7279,8 +7280,7 @@ nodes/Punch/node = SubResource("AnimationNodeAnimation_p7i53")
 nodes/Punch/position = Vector2(600, 480)
 nodes/Run/node = SubResource("AnimationNodeAnimation_a76xv")
 nodes/Run/position = Vector2(120, 120)
-nodes/output/position = Vector2(1060, 60)
-node_connections = [&"IdleOrRun", 0, &"Idle", &"IdleOrRun", 1, &"Run", &"OneShotDash", 0, &"IdleOrRun", &"OneShotDash", 1, &"Dash", &"OneShotKick", 0, &"OneShotDash", &"OneShotKick", 1, &"Kick", &"OneShotPunch", 0, &"OneShotKick", &"OneShotPunch", 1, &"Punch", &"output", 0, &"OneShotPunch"]
+node_connections = [&"output", 0, &"OneShotPunch", &"IdleOrRun", 0, &"Idle", &"IdleOrRun", 1, &"Run", &"OneShotDash", 0, &"IdleOrRun", &"OneShotDash", 1, &"Dash", &"OneShotKick", 0, &"OneShotDash", &"OneShotKick", 1, &"Kick", &"OneShotPunch", 0, &"OneShotKick", &"OneShotPunch", 1, &"Punch"]
 
 [node name="Mannequiny" type="Node3D"]
 
