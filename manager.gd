@@ -285,13 +285,41 @@ func get_results_dict(results_prefix: String = "") -> Dictionary:
 	# Only list information that doesn't change across benchmark runs on different GPUs,
 	# as JSON files are merged together. Otherwise, the fields would overwrite each other
 	# with different information.
+
+	# Benchmark binaries are compiled with GCC (which matches official binaries),
+	# so we check for the GCC version.
+	# TODO: Write the name/version of the actual compiler that was used to compile the binary
+	# by inserting this information at compile-time (see GH-98845).
+	var output := []
+	var execute_gcc := OS.execute("gcc", ["--version"], output)
+	var compiler := ""
+	if execute_gcc == OK and output.size() >= 1:
+		compiler = output[0].split("\n")[0]
+	else:
+		push_warning("Can't detect C/C++ compiler version. Make sure `gcc` is installed and in `PATH`.")
+
+	# Benchmark binaries are linked with GNU ld (which matches official binaries),
+	# so we check for the ld version.
+	# TODO: Write the name/version of the actual linker that was used to link the binary
+	# by inserting this information at compile-time (see GH-98845).
+	output = []
+	var execute_ld := OS.execute("ld", ["--version"], output)
+	var linker := ""
+	if execute_ld == OK and output.size() >= 1:
+		linker = output[0].split("\n")[0]
+	else:
+		push_warning("Can't detect C/C++ linker
+		 version. Make sure `ld` is installed and in `PATH`.")
+
 	var dict := {
 		engine = {
 			version = version_string,
 			version_hash = version_info.hash,
 		},
 		system = {
-			os = OS.get_name(),
+			os = "%s %s" % [OS.get_distribution_name(), OS.get_version_alias()],
+			compiler = compiler,
+			linker = linker,
 			cpu_name = OS.get_processor_name(),
 			cpu_architecture = (
 				"x86_64" if OS.has_feature("x86_64")
