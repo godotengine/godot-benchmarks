@@ -66,6 +66,15 @@ if [[ "$ARG1" != "--skip-build" ]]; then
 	fi
 	touch .gdignore
 
+  clear_build_environment() {
+    git clean -qdfx --exclude bin
+    if command -v ccache &> /dev/null; then
+      # Clear ccache to avoid skewing the build time results.
+      ccache --clear
+    fi
+    touch .gdignore
+  }
+
 	# Measure clean build times for debug and release builds (in milliseconds).
 	# Also create a `.gdignore` file to prevent Godot from importing resources
 	# within the Godot Git clone.
@@ -75,17 +84,26 @@ if [[ "$ARG1" != "--skip-build" ]]; then
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
-	git clean -qdfx --exclude bin
-	if command -v ccache &> /dev/null; then
-		# Clear ccache to avoid skewing the build time results.
-		ccache --clear
-	fi
-	touch .gdignore
+	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
 	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
+
+	clear_build_environment
+
+	BEGIN="$(date +%s%3N)"
+	PEAK_MEMORY_BUILD_DEV=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	END="$(date +%s%3N)"
+	TIME_TO_BUILD_DEV="$((END - BEGIN))"
+
+	clear_build_environment
+
+	BEGIN="$(date +%s%3N)"
+	PEAK_MEMORY_BUILD_SCU=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes scu_build=yes module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	END="$(date +%s%3N)"
+	TIME_TO_BUILD_SCU="$((END - BEGIN))"
 
 	# FIXME: C# is disabled because the engine crashes on exit after running benchmarks.
 	#
@@ -104,8 +122,12 @@ else
 	echo "run-benchmarks: Skipping engine build as requested on the command line."
 	TIME_TO_BUILD_DEBUG=1
 	TIME_TO_BUILD_RELEASE=1
+	TIME_TO_BUILD_DEV=1
+	TIME_TO_BUILD_SCU=1
 	PEAK_MEMORY_BUILD_DEBUG=1
 	PEAK_MEMORY_BUILD_RELEASE=1
+	PEAK_MEMORY_BUILD_DEV=1
+	PEAK_MEMORY_BUILD_SCU=1
 fi
 
 # Build the GDExtension that is part of the project.
@@ -222,12 +244,12 @@ EXTRA_JSON=$(cat << EOF
     {
       "category": "Extra/Build Time",
       "name": "Build Time",
-      "results": { "cpu_debug": { "time": $TIME_TO_BUILD_DEBUG}, "cpu_release": { "time": $TIME_TO_BUILD_RELEASE } }
+      "results": { "cpu_debug": { "time": $TIME_TO_BUILD_DEBUG}, "cpu_release": { "time": $TIME_TO_BUILD_RELEASE }, "cpu_dev": { "time": $TIME_TO_BUILD_DEV }, "cpu_scu": { "time": $TIME_TO_BUILD_SCU } }
     },
     {
       "category": "Extra/Build Memory Use",
       "name": "Build Peak Memory Use",
-      "results": { "cpu_debug": { "ram_bytes": $PEAK_MEMORY_BUILD_DEBUG}, "cpu_release": { "ram_bytes": $PEAK_MEMORY_BUILD_RELEASE } }
+      "results": { "cpu_debug": { "ram_bytes": $PEAK_MEMORY_BUILD_DEBUG}, "cpu_release": { "ram_bytes": $PEAK_MEMORY_BUILD_RELEASE }, "cpu_dev": { "ram_bytes": $PEAK_MEMORY_BUILD_DEV }, "cpu_scu": { "ram_bytes": $PEAK_MEMORY_BUILD_SCU } }
     },
     {
       "category": "Extra/Startup Time",
