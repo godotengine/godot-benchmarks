@@ -1052,8 +1052,9 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 		});
 	};
 
+	const totalBenchmarkCount = allBenchmarks.length;
 	// Get list all series and fill it in.
-	allBenchmarks.forEach((benchmark, count) => {
+	allBenchmarks.forEach((benchmark, index) => {
 		// Process a day/commit
 		xAxis.push(Date.parse(benchmark.date));
 		commits.push(benchmark.commit);
@@ -1074,9 +1075,9 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 					return;
 				}
 				if (!series.has(path)) {
-					series.set(path, Array(count).fill(null));
+					series.set(path, Array(totalBenchmarkCount).fill(null));
 				}
-				series.get(path).push(value);
+				series.get(path)[index] = value;
 			});
 		});
 	});
@@ -1099,7 +1100,7 @@ function displayGraph(targetDivID, graphID, type = "full", filter = "") {
 			}
 		}
 		values.sort();
-		let median = values[Math.floor(NUM_VALUES_USED_FOR_REFERENCE / 2)];
+		let median = values[Math.floor(values.length / 2)];
 
 		series.set(
 			key,
