@@ -27,14 +27,23 @@ which runs benchmarks on a dedicated server with various GPU models.
 
 ### Development
 
-- Create JSON data or [fetch existing JSON data from the live website](https://github.com/godotengine/godot-benchmarks-results),
-  and copy the JSON files into the `src-data/benchmarks` folder. Files should be named using format
-  `YYYY-MM-DD_hash.json` where `hash` is a 9-character Git commit hash of the Godot build used
-  (truncated from a full commit hash). The files can also have the `.md` extension
-  (for backward compatibility), but they should still be JSON inside.
-- Run [./generate-content.py](./generate-content.py). This should create `.md` pages in both the
-  `content/benchmark` and the `content/graph` folders.
-- Run `hugo server`.
+Create JSON data (using the `run-benchmarks.sh` script, as described above),
+or fetch existing JSON data from the live website:
+
+```shell
+git clone https://github.com/godotengine/godot-benchmarks-results.git src-data/benchmarks
+```
+
+Generate server files from the benchmarks:
+```shell
+python content.py
+```
+
+Now, you can run the server:
+
+```shell
+hugo server
+```
 
 ### Production
 

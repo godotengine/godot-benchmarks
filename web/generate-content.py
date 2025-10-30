@@ -14,16 +14,14 @@
 
 import json
 import sys
-import os
-from os.path import isdir, isfile, join
+import pathlib
 
 # Source data paths.
-graphs_path = "./src-data/graphs.json"
 if len(sys.argv) == 1:
     benchmarks_path = "./src-data/benchmarks"
 elif len(sys.argv) == 2:
     benchmarks_path = sys.argv[1]
-    if not isdir(benchmarks_path):
+    if not pathlib.Path(benchmarks_path).is_dir():
         raise ValueError(benchmarks_path + " is not a valid folder")
 else:
     raise ValueError("Invalid number of arguments")
@@ -37,23 +35,19 @@ data_output_json = {
 
 ### BENCHMARKS ###
 
-# Fetch the list of benchmark files
-benchmark_input_filename_test = lambda f: (f.endswith(".json") or f.endswith(".md"))
-benchmarks_files = [
-    f for f in os.listdir(benchmarks_path) if (isfile(join(benchmarks_path, f)) and benchmark_input_filename_test(f))
-]
-
 # Add the list of benchmarks.
-for f in benchmarks_files:
-    json_file = open(join(benchmarks_path, f))
+for path in pathlib.Path(benchmarks_path).glob("*"): # type: pathlib.Path
+    if path.suffix != ".md" and path.suffix != ".json":
+        continue
 
-    # Extract data from filename.
-    key = f.removesuffix(".json").removesuffix(".md")
-    date = key.split("_")[0]
-    commit = key.split("_")[1]
+    parts = path.stem.split("_")
+    if len(parts) != 2: # Could be the readme, for example
+        continue
+
+    date, commit = parts
 
     # Load and modify the benchmark file.
-    output_dict = json.load(json_file)
+    output_dict = json.loads(path.read_text())
     output_dict["date"] = date
     output_dict["commit"] = commit
 
@@ -70,37 +64,29 @@ for f in benchmarks_files:
 
     # Add it to the list.
     data_output_json["benchmarks"].append(output_dict)
-    json_file.close()
 
 ### GRAPHS ###
 
 # Add the graphs.
-json_file = open(graphs_path)
-data_output_json["graphs"] = json.load(json_file)
-json_file.close()
+data_output_json["graphs"] = json.loads(pathlib.Path("src-data/graphs.json").read_text())
 
 ### DUMPING data.json ###
 
 # Create a big json with all of the data.
-data_filename = "./data/data.json"
-data_file = open(data_filename, "w")
-json.dump(data_output_json, data_file, indent=4)
-data_file.close()
+pathlib.Path("data/data.json").write_text(json.dumps(data_output_json, indent=4))
 
 ### CREATE .md FILES (for the pages) ###
 
 # Create a .md file for each benchmark.
-benchmarks_content_path = "./content/benchmark"
-if not os.path.exists(benchmarks_content_path):
-    os.mkdir(benchmarks_content_path)
+benchmarks_content_path = pathlib.Path("./content/benchmark")
+benchmarks_content_path.mkdir(exist_ok=True)
 for benchmark in data_output_json["benchmarks"]:
     filename = benchmark["date"] + "_" + benchmark["commit"] + ".md"
-    open(join(benchmarks_content_path, filename), "a").close()
+    (benchmarks_content_path / filename).touch(exist_ok=True)
 
 # Create a .md file for each graph.
-graphs_content_path = "./content/graph"
-if not os.path.exists(graphs_content_path):
-    os.mkdir(graphs_content_path)
+graphs_content_path = pathlib.Path("./content/graph")
+graphs_content_path.mkdir(exist_ok=True)
 for graph in data_output_json["graphs"]:
     filename = graph["id"] + ".md"
-    open(join(graphs_content_path, filename), "a").close()
+    (graphs_content_path / filename).touch(exist_ok=True)
