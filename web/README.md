@@ -35,6 +35,7 @@ git clone https://github.com/godotengine/godot-benchmarks-results.git src-data/b
 ```
 
 Generate server files from the benchmarks:
+
 ```shell
 python content.py
 ```
