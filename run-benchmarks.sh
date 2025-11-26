@@ -87,7 +87,7 @@ if [[ "$ARG1" != "--skip-build" ]]; then
 	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes disable_path_overrides=no -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
 
