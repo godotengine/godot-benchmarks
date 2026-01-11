@@ -44,7 +44,33 @@
   </tr>
   <tr>
     <td>Operating system</td>
-    <td>Fedora 40 64-bit</td>
+    <td>
+      {{ if $benchmark.system.os }}
+      {{ $benchmark.system.os }}
+      {{ else }}
+      (unknown)
+      {{ end }}
+    </td>
+  </tr>
+  <tr>
+    <td>C/C++ compiler</td>
+    <td>
+      {{ if $benchmark.system.compiler }}
+      {{ $benchmark.system.compiler }}
+      {{ else }}
+      (unknown)
+      {{ end }}
+    </td>
+  </tr>
+  <tr>
+    <td>C/C++ linker</td>
+    <td>
+      {{ if $benchmark.system.linker }}
+      {{ $benchmark.system.linker }}
+      {{ else }}
+      (unknown)
+      {{ end }}
+    </td>
   </tr>
 </table>
 
