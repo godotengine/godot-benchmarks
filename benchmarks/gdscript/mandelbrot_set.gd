@@ -14,7 +14,7 @@ func hsv(hue: float, sat: float, value: float) -> Color:
 	var f := hue / 60.0 - h
 	var p := value * (1.0 - sat)
 	var q := value * (1.0 - sat * f)
-	var t = value * (1.0 - sat * (1.0 - f))
+	var t := value * (1.0 - sat * (1.0 - f))
 	if h == 0 or h == 6:
 		return Color(value, t, p)
 	if h == 1:

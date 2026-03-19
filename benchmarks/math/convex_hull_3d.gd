@@ -8,7 +8,7 @@ const POSITION := Vector3(0.0, 0.0, 0.0)
 func generate_point_cloud(size: float, num_points: int, position: Vector3) -> PackedVector3Array:
 	var points := PackedVector3Array()
 	for _i in num_points:
-		var point = position + Vector3(
+		var point := position + Vector3(
 			randf_range(-size, size),
 			randf_range(-size, size),
 			randf_range(-size, size),
@@ -18,8 +18,8 @@ func generate_point_cloud(size: float, num_points: int, position: Vector3) -> Pa
 
 
 func mesh_with_vertices(vertices: PackedVector3Array) -> Mesh:
-	var arr_mesh = ArrayMesh.new()
-	var arrays = []
+	var arr_mesh := ArrayMesh.new()
+	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 

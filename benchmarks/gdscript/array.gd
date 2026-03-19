@@ -38,7 +38,7 @@ func benchmark_typed_int_array() -> void:
 
 
 func benchmark_untyped_int_array() -> void:
-	var array = []
+	var array := []
 	for i in ITERATIONS:
 		array.push_back(i)
 	for i in ITERATIONS:
@@ -78,7 +78,7 @@ func benchmark_typed_float_array() -> void:
 
 
 func benchmark_untyped_float_array() -> void:
-	var array = []
+	var array := []
 	for i in ITERATIONS:
 		array.push_back(i)
 	for i in ITERATIONS:
@@ -108,7 +108,7 @@ func benchmark_typed_vector2_array() -> void:
 
 
 func benchmark_untyped_vector2_array() -> void:
-	var array = []
+	var array := []
 	for i in ITERATIONS:
 		array.push_back(Vector2(i, i))
 	for i in ITERATIONS:
@@ -138,7 +138,7 @@ func benchmark_typed_vector3_array() -> void:
 
 
 func benchmark_untyped_vector3_array() -> void:
-	var array = []
+	var array := []
 	for i in ITERATIONS:
 		array.push_back(Vector3(i, i, i))
 	for i in ITERATIONS:
@@ -168,7 +168,7 @@ func benchmark_typed_color_array() -> void:
 
 
 func benchmark_untyped_color_array() -> void:
-	var array = []
+	var array := []
 	for i in ITERATIONS:
 		array.push_back(Color(i, i, i, 1.0))
 	for i in ITERATIONS:
@@ -198,7 +198,7 @@ func benchmark_typed_string_array() -> void:
 
 
 func benchmark_untyped_string_array() -> void:
-	var array = []
+	var array := []
 	for i in ITERATIONS:
 		array.push_back(str("Godot ", i))
 	for i in ITERATIONS:
@@ -208,13 +208,13 @@ func benchmark_untyped_string_array() -> void:
 
 
 func benchmark_fill_loop() -> void:
-	var array = []
+	var array := []
 	array.resize(10_000_000)
 	for i in array.size():
 		array[i] = 1234
 
 
 func benchmark_fill_method() -> void:
-	var array = []
+	var array := []
 	array.resize(10_000_000)
 	array.fill(1234)

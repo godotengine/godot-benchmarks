@@ -15,10 +15,10 @@ class Bunnymark extends Node2D:
 	var canvasitem_draw_api := false
 	var meshinstance2d := false
 
-	var nodes := []
-	var speeds := []
-	var positions := []
-	var hues := []
+	var nodes: Array[Node2D]
+	var speeds: PackedVector2Array
+	var positions: PackedVector2Array
+	var hues: PackedColorArray
 
 	func _init(settings: Dictionary) -> void:
 		count = settings.get("count", 1)
@@ -31,7 +31,7 @@ class Bunnymark extends Node2D:
 
 	func create_nodes() -> void:
 		for i in count:
-			var node
+			var node: Node2D
 			if not meshinstance2d:
 				node = Sprite2D.new()
 			else:
@@ -57,26 +57,26 @@ class Bunnymark extends Node2D:
 
 	func _process(time: float) -> void:
 		for i in count:
-			var spd = speeds[i]
-			var pos = positions[i]
+			var spd := speeds[i]
+			var pos := positions[i]
 
-			var x_delta = abs(pos.x - 0)
+			var x_delta := absf(pos.x - 0)
 			if x_delta > 400:
 				spd *= Vector2(-1, 1)
 
-			var floor_delta = pos.y - 400
+			var floor_delta := pos.y - 400
 			if floor_delta > 0:
-				positions[i] += Vector2(0, -2*floor_delta)
+				positions[i] += Vector2(0, -2 * floor_delta)
 				spd *= Vector2(1, -1)
 
 			spd += gravity * time
 			speeds[i] = spd
-			positions[i] += time*spd
+			positions[i] += time * spd
 
 		if not canvasitem_draw_api:
 			for i in count:
-				var pos = positions[i]
-				var node = nodes[i]
+				var pos := positions[i]
+				var node := nodes[i]
 				node.transform.origin = pos
 		else:
 			queue_redraw()
@@ -86,7 +86,7 @@ class Bunnymark extends Node2D:
 			return
 
 		for i in count:
-			var pos = positions[i]
+			var pos := positions[i]
 			draw_texture(texture, pos, hues[i])
 
 func benchmark_bunnymark_canvasitem_draw_api_5000() -> Node2D:

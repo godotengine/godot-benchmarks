@@ -2,7 +2,7 @@ extends Benchmark
 
 const NUM_ITERATIONS := 1000000
 
-func _bench_noise(noise) -> void:
+func _bench_noise(noise: FastNoiseLite) -> void:
 	for i in NUM_ITERATIONS:
 		noise.get_noise_1d(i)
 		noise.get_noise_2d(i, i)

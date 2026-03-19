@@ -6,7 +6,7 @@ const ITERATIONS := 100
 var threads: Array[Thread]
 var sem := Semaphore.new()
 
-func _init_threads(p_count: int, p_contention_min: float = 1.0, p_contention_max: float = 1.0):
+func _init_threads(p_count: int, p_contention_min: float = 1.0, p_contention_max: float = 1.0) -> void:
 	for i in p_count:
 		var th := Thread.new()
 		var duty: float
@@ -19,7 +19,7 @@ func _init_threads(p_count: int, p_contention_min: float = 1.0, p_contention_max
 		threads.push_back(th)
 	sem.post(threads.size())
 
-func _term_threads():
+func _term_threads() -> void:
 	for th in threads:
 		th.wait_to_finish()
 	threads = []

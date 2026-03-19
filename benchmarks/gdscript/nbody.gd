@@ -131,7 +131,7 @@ func energy(nbody: int) -> float:
 	return e
 
 
-func offset_momentum(b: Array[Nbody], nbody: int):
+func offset_momentum(b: Array[Nbody], nbody: int) -> void:
 	var px := 0.0
 	var py := 0.0
 	var pz := 0.0
