@@ -90,7 +90,12 @@
     "benchmark-path-prefix": "Navigation/Navigation 3d"
   },
   {
-    "id": "physics",
+    "id": "physics-rigid-body-2d",
+    "title": "Rigid Body 2D",
+    "benchmark-path-prefix": "Physics/Rigid Body 2d"
+  },
+  {
+    "id": "physics-rigid-body-3d",
     "title": "Rigid Body 3D",
     "benchmark-path-prefix": "Physics/Rigid Body 3d"
   },
