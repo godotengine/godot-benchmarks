@@ -168,7 +168,7 @@ internal partial class LargeGC : RefCounted
     }
 }
 
-internal class SmallGC : RefCounted
+internal partial class SmallGC : RefCounted
 {
     public LargeGC m_pLarge;
 
