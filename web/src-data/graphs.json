@@ -35,6 +35,96 @@
     "benchmark-path-prefix": "Core/Signal"
   },
   {
+    "id": "csharp-alloc",
+    "title": "C# Alloc",
+    "benchmark-path-prefix": "Csharp/Alloc"
+  },
+  {
+    "id": "csharp-array",
+    "title": "C# Array",
+    "benchmark-path-prefix": "Csharp/Array"
+  },
+  {
+    "id": "csharp-binary-trees",
+    "title": "C# Binary Trees",
+    "benchmark-path-prefix": "Csharp/Binary Trees"
+  },
+  {
+    "id": "csharp-control",
+    "title": "C# Control",
+    "benchmark-path-prefix": "Csharp/Control"
+  },
+  {
+    "id": "csharp-for-loop",
+    "title": "C# For Loop",
+    "benchmark-path-prefix": "Csharp/For Loop"
+  },
+  {
+    "id": "csharp-hello-world",
+    "title": "C# Hello World",
+    "benchmark-path-prefix": "Csharp/Hello World"
+  },
+  {
+    "id": "csharp-interop-structs-performance",
+    "title": "C# Interop Structs Performance",
+    "benchmark-path-prefix": "Csharp/Interop Structs Performance"
+  },
+  {
+    "id": "csharp-lambda-performance",
+    "title": "C# Lambda Performance",
+    "benchmark-path-prefix": "Csharp/Lambda Performance"
+  },
+  {
+    "id": "csharp-list",
+    "title": "C# List",
+    "benchmark-path-prefix": "Csharp/List"
+  },
+  {
+    "id": "csharp-mandelbrot-set",
+    "title": "C# Mandelbrot Set",
+    "benchmark-path-prefix": "Csharp/Mandelbrot Set"
+  },
+  {
+    "id": "csharp-merkle-trees",
+    "title": "C# Merkle Trees",
+    "benchmark-path-prefix": "Csharp/Merkle Trees"
+  },
+  {
+    "id": "csharp-nbody",
+    "title": "C# Nbody",
+    "benchmark-path-prefix": "Csharp/Nbody"
+  },
+  {
+    "id": "csharp-spectral-norm",
+    "title": "C# Spectral Norm",
+    "benchmark-path-prefix": "Csharp/Spectral Norm"
+  },
+  {
+    "id": "csharp-string-checksum",
+    "title": "C# String Checksum",
+    "benchmark-path-prefix": "Csharp/String Checksum"
+  },
+  {
+    "id": "csharp-string-format",
+    "title": "C# String Format",
+    "benchmark-path-prefix": "Csharp/String Format"
+  },
+  {
+    "id": "csharp-string-manipulation",
+    "title": "C# String Manipulation",
+    "benchmark-path-prefix": "Csharp/String Manipulation"
+  },
+  {
+    "id": "csharp-physics-rigid-body-2d",
+    "title": "C# Rigid Body 2D",
+    "benchmark-path-prefix": "Csharp/Physics/Rigid Body 2d"
+  },
+  {
+    "id": "csharp-physics-rigid-body-3d",
+    "title": "C# Rigid Body 3D",
+    "benchmark-path-prefix": "Csharp/Physics/Rigid Body 3d"
+  },
+  {
     "id": "gdscript-allocations",
     "title": "GDscript Allocations",
     "benchmark-path-prefix": "Gdscript/Alloc"
