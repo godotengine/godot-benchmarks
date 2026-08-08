@@ -4,15 +4,19 @@ public partial class Array : Benchmark
 {
     public void BenchmarkFillLoop()
     {
-        int[] array = new int[10_000_000];
+        Godot.Collections.Array<int> array = new Godot.Collections.Array<int>();
+        array.Resize(10_000_000);
 
-        for(int i = 0; i < array.Length; i++)
-        { array[i] = 1234; }
+        for (int i = 0; i < array.Count; i++)
+        {
+            array[i] = 1234;
+        }
     }
 
     public void BenchmarkFillMethod()
     {
-        int[] array = new int[10_000_000];
-        System.Array.Fill(array, 1234);
+        Godot.Collections.Array<int> array = new Godot.Collections.Array<int>();
+        array.Resize(10_000_000);
+        array.Fill(1234);
     }
 }
