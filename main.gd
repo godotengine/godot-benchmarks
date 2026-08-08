@@ -73,11 +73,30 @@ func _ready() -> void:
 		# from the interface after the fact.
 		item.set_checked(0, true)
 		if arg_include_benchmarks:
-			if not path.matchn(arg_include_benchmarks):
-				item.set_checked(0, false)
+			if arg_include_benchmarks.contains(";"):
+				print("Multiple include benchmarks specified, using semicolon as separator: %s" % arg_include_benchmarks)
+				var include_benchmarks := arg_include_benchmarks.split(";", false)
+				var matched := false
+				for include_benchmark in include_benchmarks:
+					if path.matchn(include_benchmark):
+						matched = true
+						break
+				if not matched:
+					item.set_checked(0, false)
+			else:
+				if not path.matchn(arg_include_benchmarks):
+					item.set_checked(0, false)
 		if arg_exclude_benchmarks:
-			if path.matchn(arg_exclude_benchmarks):
-				item.set_checked(0, false)
+			if arg_exclude_benchmarks.contains(";"):
+				print("Multiple exclude benchmarks specified, using semicolon as separator: %s" % arg_exclude_benchmarks)
+				var exclude_benchmarks := arg_exclude_benchmarks.split(";", false)
+				for exclude_benchmark in exclude_benchmarks:
+					if path.matchn(exclude_benchmark):
+						item.set_checked(0, false)
+						break
+			else:
+				if path.matchn(arg_exclude_benchmarks):
+					item.set_checked(0, false)
 
 		var results := Manager.get_test_result_as_dict(test_id)
 		var metric_names := ["render_cpu", "render_gpu", "idle", "physics", "time"]
