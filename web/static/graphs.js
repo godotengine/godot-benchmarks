@@ -15,6 +15,7 @@ const godotReleaseDates = {
 	"2025-03-03": "4.4",
 	"2025-09-15": "4.5",
 	"2026-01-26": "4.6",
+	"2026-06-18": "4.7",
 };
 
 // Themes extracted using https://stackoverflow.com/questions/71721049/react-plotly-js-apply-dark-plotly-dark-theme
