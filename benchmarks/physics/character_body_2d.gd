@@ -12,7 +12,7 @@ class TestScene:
 	var n_of_character_bodies: int
 	var character_bodies: Array[CharacterBody2D] = []
 	var capsule_mesh := CapsuleMesh.new()
-	var window_size: Vector2i
+	var viewport_size: Vector2
 
 	func _init(_n_of_character_bodies: int) -> void:
 		n_of_character_bodies = _n_of_character_bodies
@@ -20,13 +20,13 @@ class TestScene:
 		capsule_mesh.height = 28.0
 
 	func _ready() -> void:
-		window_size = get_window().size
+		viewport_size = get_viewport_rect().size
 		tile_map_node = tile_map_scene.instantiate()
 		add_child(tile_map_node)
 		for i in n_of_character_bodies:
 			var body := CharacterBody2D.new()
 			body.position = Vector2(
-				randf_range(0.0, window_size.x), randf_range(0.0, window_size.y)
+				randf_range(0.0, viewport_size.x), randf_range(0.0, viewport_size.y)
 			)
 			var collision_shape := CollisionShape2D.new()
 			collision_shape.shape = CapsuleShape2D.new()
