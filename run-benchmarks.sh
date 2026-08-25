@@ -80,42 +80,36 @@ if [[ "$ARG1" != "--skip-build" ]]; then
 	# within the Godot Git clone.
 	# WARNING: Any untracked and ignored files included in the repository will be removed!
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug module_mono_enabled=yes progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
 	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes disable_path_overrides=no -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=yes progress=no debug_symbols=yes disable_path_overrides=no -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
 
 	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_DEV=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_DEV=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes module_mono_enabled=yes progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_DEV="$((END - BEGIN))"
 
 	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_SCU=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes scu_build=yes module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_SCU=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes scu_build=yes module_mono_enabled=yes progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_SCU="$((END - BEGIN))"
 
-	# FIXME: C# is disabled because the engine crashes on exit after running benchmarks.
-	#
 	# Generate Mono glue for C# build to work.
-	# echo "Generating .NET glue."
-	# bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
-	# echo "Building .NET assemblies."
-	# # https://docs.godotengine.org/en/stable/engine_details/development/compiling/compiling_with_dotnet.html#nuget-packages
-	# mkdir -p "$HOME/MyLocalNugetSource"
-	# # Source may already exist, so allow failure for the command below.
-	# dotnet nuget add source "$HOME/MyLocalNugetSource" --name MyLocalNugetSource || true
-	# modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --push-nupkgs-local "$HOME/MyLocalNugetSource"
+	echo "Generating .NET glue."
+	bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
+	echo "Building .NET assemblies."
+	modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin
 
 	cd "$DIR"
 else
@@ -130,6 +124,25 @@ else
 	PEAK_MEMORY_BUILD_SCU=1
 fi
 
+# Generate a NuGet config that will pick up the built assemblies in the Godot source
+# dir and cache them in a local .packages dir for use with the project
+cat > NuGet.config <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <!-- use a local package folder so all packages this project needs are cached locally
+    and it's much easier to clean a local folder than the global nuget cache -->
+    <add key="repositorypath" value=".packages" />
+    <add key="globalPackagesFolder" value=".packages" />
+  </config>
+  <packageSources>
+    <!-- Pick up godot nuget packages from this location -->
+    <add key="Local godot build" value="$GODOT_REPO_DIR/bin/GodotSharp/Tools/nupkgs" />
+  </packageSources>
+</configuration>
+EOF
+
+
 # Build the GDExtension that is part of the project.
 # Don't count this as part of the build time benchmark, as it's project-specific.
 pushd "$DIR/gdextension/"
@@ -139,12 +152,12 @@ done
 popd
 
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
-GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64"
+GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64.mono"
 
 # Path to the Godot release binary to run. Used for CPU release and GPU benchmarks.
 # The release binary is assumed to be the same commit as the debug build.
 # Things will break if this is not the case.
-GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64"
+GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64.mono"
 
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
