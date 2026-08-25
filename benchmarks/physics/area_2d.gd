@@ -7,7 +7,7 @@ class TestScene:
 	var num_character_bodies: int
 	var num_area_2d: int
 	var area_2d_nodes: Array[Area2D]
-	var window_size: Vector2i
+	var viewport_size: Vector2
 	var time_accum := 0.0
 	var shapes: Array[Shape2D] = [
 		RectangleShape2D.new(),
@@ -31,11 +31,11 @@ class TestScene:
 		meshes[2].height = 20.0
 
 	func _ready() -> void:
-		window_size = get_window().size
+		viewport_size = get_viewport_rect().size
 		for i in num_character_bodies:
 			var character_body := CharacterBody2D.new()
 			character_body.position = Vector2(
-				randf_range(0.0, window_size.x), randf_range(0.0, window_size.y)
+				randf_range(0.0, viewport_size.x), randf_range(0.0, viewport_size.y)
 			)
 			add_random_shape(character_body)
 			add_child(character_body)
@@ -43,7 +43,7 @@ class TestScene:
 		for i in num_area_2d:
 			var area_2d := Area2D.new()
 			area_2d.position = Vector2(
-				randf_range(0.0, window_size.x), randf_range(0.0, window_size.y)
+				randf_range(0.0, viewport_size.x), randf_range(0.0, viewport_size.y)
 			)
 			add_random_shape(area_2d)
 			add_child(area_2d)
