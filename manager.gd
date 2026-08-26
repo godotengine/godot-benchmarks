@@ -12,6 +12,7 @@ const CPP_CLASS_NAMES: Array[StringName] = [
 	&"CPPBenchmarkMandelbrotSet",
 	&"CPPBenchmarkMerkleTrees",
 	&"CPPBenchmarkNbody",
+	&"CPPBenchmarkSignal",
 	&"CPPBenchmarkSpectralNorm",
 	&"CPPBenchmarkStringChecksum",
 	&"CPPBenchmarkStringFormat",
