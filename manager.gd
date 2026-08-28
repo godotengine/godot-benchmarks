@@ -4,6 +4,7 @@ const RANDOM_SEED := 0x60d07
 const CPP_CLASS_NAMES: Array[StringName] = [
 	&"CPPBenchmarkAlloc",
 	&"CPPBenchmarkArray",
+	&"CPPBenchmarkArrayOps",
 	&"CPPBenchmarkBinaryTrees",
 	&"CPPBenchmarkControl",
 	&"CPPBenchmarkForLoop",
