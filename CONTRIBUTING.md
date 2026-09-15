@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing!
 
-Please visit the [Contributing docs](https://contributing.godotengine.org/en/latest/other/benchmarks.html) to learn how to contribute.
+Please visit the [Contributing docs](https://contributing.godotengine.org/en/latest/development/other/benchmarks.html) to learn how to contribute.
 
 > [!NOTE]
 >
