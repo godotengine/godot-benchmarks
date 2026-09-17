@@ -80,42 +80,39 @@ if [[ "$ARG1" != "--skip-build" ]]; then
 	# within the Godot Git clone.
 	# WARNING: Any untracked and ignored files included in the repository will be removed!
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_DEBUG=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor optimize=debug module_mono_enabled=yes progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_DEBUG="$((END - BEGIN))"
 
 	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes disable_path_overrides=no -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_RELEASE=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=yes progress=no debug_symbols=yes disable_path_overrides=no -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_RELEASE="$((END - BEGIN))"
 
 	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_DEV=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_DEV=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes module_mono_enabled=yes progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_DEV="$((END - BEGIN))"
 
 	clear_build_environment
 
 	BEGIN="$(date +%s%3N)"
-	PEAK_MEMORY_BUILD_SCU=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes scu_build=yes module_mono_enabled=no progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
+	PEAK_MEMORY_BUILD_SCU=$( (/usr/bin/time -f "%M" scons platform=linuxbsd target=editor dev_build=yes scu_build=yes module_mono_enabled=yes progress=no debug_symbols=yes -j$(nproc) 2>&1 || true) | tail -1)
 	END="$(date +%s%3N)"
 	TIME_TO_BUILD_SCU="$((END - BEGIN))"
 
-	# FIXME: C# is disabled because the engine crashes on exit after running benchmarks.
-	#
+	# Also make a non-mono build to run the release benchmarks that don't use C# and avoid crashing.
+	scons platform=linuxbsd target=template_release optimize=speed lto=full module_mono_enabled=no progress=no debug_symbols=yes disable_path_overrides=no -j$(nproc) 2>&1
+
 	# Generate Mono glue for C# build to work.
-	# echo "Generating .NET glue."
-	# bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
-	# echo "Building .NET assemblies."
-	# # https://docs.godotengine.org/en/stable/engine_details/development/compiling/compiling_with_dotnet.html#nuget-packages
-	# mkdir -p "$HOME/MyLocalNugetSource"
-	# # Source may already exist, so allow failure for the command below.
-	# dotnet nuget add source "$HOME/MyLocalNugetSource" --name MyLocalNugetSource || true
-	# modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --push-nupkgs-local "$HOME/MyLocalNugetSource"
+	echo "Generating .NET glue."
+	bin/godot.linuxbsd.editor.x86_64.mono --headless --generate-mono-glue modules/mono/glue
+	echo "Building .NET assemblies."
+	modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin
 
 	cd "$DIR"
 else
@@ -130,6 +127,25 @@ else
 	PEAK_MEMORY_BUILD_SCU=1
 fi
 
+# Generate a NuGet config that will pick up the built assemblies in the Godot source
+# dir and cache them in a local .packages dir for use with the project
+cat > NuGet.config <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <!-- use a local package folder so all packages this project needs are cached locally
+    and it's much easier to clean a local folder than the global nuget cache -->
+    <add key="repositorypath" value=".packages" />
+    <add key="globalPackagesFolder" value=".packages" />
+  </config>
+  <packageSources>
+    <!-- Pick up godot nuget packages from this location -->
+    <add key="Local godot build" value="$GODOT_REPO_DIR/bin/GodotSharp/Tools/nupkgs" />
+  </packageSources>
+</configuration>
+EOF
+
+
 # Build the GDExtension that is part of the project.
 # Don't count this as part of the build time benchmark, as it's project-specific.
 pushd "$DIR/gdextension/"
@@ -139,15 +155,69 @@ done
 popd
 
 # Path to the Godot debug binary to run. Used for CPU debug benchmarks.
-GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64"
+GODOT_DEBUG="$GODOT_REPO_DIR/bin/godot.linuxbsd.editor.x86_64.mono"
 
 # Path to the Godot release binary to run. Used for CPU release and GPU benchmarks.
 # The release binary is assumed to be the same commit as the debug build.
 # Things will break if this is not the case.
 GODOT_RELEASE="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64"
+GODOT_RELEASE_MONO="$GODOT_REPO_DIR/bin/godot.linuxbsd.template_release.x86_64.mono"
 
 COMMIT_HASH="$($GODOT_DEBUG --version | rev | cut --delimiter="." --field="1" | rev)"
 DATE="$(date +'%Y-%m-%d')"
+
+# Export the project so it can be run with the mono module initialized.
+cat > "export_presets.cfg" <<EOF
+[runnable_presets]
+Linux="Linux"
+[preset.0]
+name="Linux"
+platform="Linux"
+dedicated_server=false
+custom_features=""
+export_filter="all_resources"
+include_filter=""
+exclude_filter=""
+export_path=""
+patches=PackedStringArray()
+patch_delta_encoding=false
+patch_delta_compression_level_zstd=19
+patch_delta_min_reduction=0.1
+patch_delta_include_filters="*"
+patch_delta_exclude_filters=""
+encryption_include_filters=""
+encryption_exclude_filters=""
+seed=0
+encrypt_pck=false
+encrypt_directory=false
+script_export_mode=2
+[preset.0.options]
+custom_template/debug=""
+custom_template/release="$GODOT_RELEASE_MONO"
+debug/export_console_wrapper=1
+binary_format/embed_pck=false
+texture_format/s3tc_bptc=true
+texture_format/etc2_astc=false
+shader_baker/enabled=false
+binary_format/architecture="x86_64"
+ssh_remote_deploy/enabled=false
+ssh_remote_deploy/host="user@host_ip"
+ssh_remote_deploy/port="22"
+ssh_remote_deploy/extra_args_ssh=""
+ssh_remote_deploy/extra_args_scp=""
+ssh_remote_deploy/run_script="#!/usr/bin/env bash
+export DISPLAY=:0
+unzip -o -q \"{temp_dir}/{archive_name}\" -d \"{temp_dir}\"
+\"{temp_dir}/{exe_name}\" {cmd_args}"
+ssh_remote_deploy/cleanup_script="#!/usr/bin/env bash
+pkill -x -f \"{temp_dir}/{exe_name} {cmd_args}\"
+rm -rf \"{temp_dir}\""
+dotnet/include_scripts_content=false
+dotnet/include_debug_symbols=true
+dotnet/embed_build_outputs=false
+EOF
+$GODOT_DEBUG --headless --export-release "Linux" -o "$GODOT_REPO_DIR/bin/godot.linuxbsd.release.x86_64.mono"
+GODOT_RELEASE_EXPORTED="$GODOT_REPO_DIR/bin/godot.linuxbsd.release.x86_64.mono"
 
 # Measure average engine startup + shutdown times over 20 runs (in milliseconds),
 # as well as peak memory usage.
@@ -214,8 +284,10 @@ $GODOT_DEBUG --headless --import --gpu-index 1 --build-solutions --quit-after 2
 # Run CPU benchmarks.
 
 echo "Running CPU benchmarks."
-$GODOT_DEBUG --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_debug.md" --json-results-prefix="cpu_debug"
-$GODOT_RELEASE --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --exclude-benchmarks="rendering/*" --save-json="/tmp/cpu_release.md" --json-results-prefix="cpu_release"
+$GODOT_DEBUG --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --exclude-benchmarks="rendering/*;csharp/*" --save-json="/tmp/cpu_debug.md" --json-results-prefix="cpu_debug"
+$GODOT_DEBUG --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --include-benchmarks="csharp/*" --save-json="/tmp/cpu_debug_csharp.md" --json-results-prefix="cpu_debug"
+$GODOT_RELEASE --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --exclude-benchmarks="rendering/*;csharp/*" --save-json="/tmp/cpu_release.md" --json-results-prefix="cpu_release"
+$GODOT_RELEASE_EXPORTED --audio-driver Dummy --gpu-index 1 -- --run-benchmarks --include-benchmarks="csharp/*" --save-json="/tmp/cpu_release_csharp.md" --json-results-prefix="cpu_release"
 
 # Run GPU benchmarks.
 # TODO: Run on NVIDIA GPU.
@@ -288,7 +360,7 @@ rm -f "$OUTPUT_PATH"
 # Merge benchmark run JSONs together.
 # Use editor build as release build errors due to missing PCK file.
 echo "Merging JSON files together."
-$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_release.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md /tmp/extra.md --output-path "$OUTPUT_PATH"
+$GODOT_DEBUG --headless --path "$DIR" --script merge_json.gd -- /tmp/cpu_debug.md /tmp/cpu_debug_csharp.md /tmp/cpu_release.md /tmp/cpu_release_csharp.md /tmp/amd.md /tmp/intel.md /tmp/nvidia.md /tmp/extra.md --output-path "$OUTPUT_PATH"
 
 # Build website files after running all benchmarks, so that benchmarks
 # appear on the web interface.
