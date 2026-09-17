@@ -35,6 +35,10 @@ window/vsync/vsync_mode=0
 
 project/assembly_name="Godot Benchmarks"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/export_runtime_assets/plugin.cfg")
+
 [gui]
 
 theme/default_theme_scale=1.5
