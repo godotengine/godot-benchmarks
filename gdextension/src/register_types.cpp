@@ -10,10 +10,12 @@
 #include "benchmarks/mandelbrot_set.h"
 #include "benchmarks/merkle_trees.h"
 #include "benchmarks/nbody.h"
+#include "benchmarks/node_path.h"
 #include "benchmarks/spectral_norm.h"
 #include "benchmarks/string_checksum.h"
 #include "benchmarks/string_format.h"
 #include "benchmarks/string_manipulation.h"
+#include "benchmarks/string_name.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -37,10 +39,12 @@ void initialize_benchmark_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(CPPBenchmarkMandelbrotSet);
 	GDREGISTER_CLASS(CPPBenchmarkMerkleTrees);
 	GDREGISTER_CLASS(CPPBenchmarkNbody);
+	GDREGISTER_CLASS(CPPBenchmarkNodePath);
 	GDREGISTER_CLASS(CPPBenchmarkSpectralNorm);
 	GDREGISTER_CLASS(CPPBenchmarkStringChecksum);
 	GDREGISTER_CLASS(CPPBenchmarkStringFormat);
 	GDREGISTER_CLASS(CPPBenchmarkStringManipulation);
+	GDREGISTER_CLASS(CPPBenchmarkStringName);
 }
 
 void uninitialize_benchmark_module(ModuleInitializationLevel p_level) {
