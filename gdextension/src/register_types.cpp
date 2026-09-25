@@ -2,6 +2,7 @@
 
 #include "benchmarks/alloc.h"
 #include "benchmarks/array.h"
+#include "benchmarks/array_ops.h"
 #include "benchmarks/binary_trees.h"
 #include "benchmarks/control.h"
 #include "benchmarks/forloop.h"
@@ -29,6 +30,7 @@ void initialize_benchmark_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(CPPBenchmark);
 	GDREGISTER_CLASS(CPPBenchmarkAlloc);
 	GDREGISTER_CLASS(CPPBenchmarkArray);
+	GDREGISTER_CLASS(CPPBenchmarkArrayOps);
 	GDREGISTER_CLASS(CPPBenchmarkBinaryTrees);
 	GDREGISTER_CLASS(CPPBenchmarkControl);
 	GDREGISTER_CLASS(CPPBenchmarkForLoop);
