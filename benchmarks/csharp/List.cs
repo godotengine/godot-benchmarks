@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using Godot.Collections;
 
 // Similar to GDScript Array benchmarks, but using C# List instead
 
@@ -6,9 +6,16 @@ public partial class List : Benchmark
 {
     private const int ITERATIONS = 2_000_000;
 
+    public void BenchmarkEmptyList()
+    {
+        Array<int> list = new Array<int>();
+        for (int i = 0; i < ITERATIONS; i++)
+        { list.IndexOf(0); }
+    }
+
     public void BenchmarkInt32List()
     {
-        List<int> list = new List<int>();
+        Array<int> list = new Array<int>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add(i); }
@@ -22,7 +29,7 @@ public partial class List : Benchmark
 
     public void BenchmarkInt64List()
     {
-        List<long> list = new List<long>();
+        Array<long> list = new Array<long>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add(i); }
@@ -36,7 +43,7 @@ public partial class List : Benchmark
 
     public void BenchmarkFloat32List()
     {
-        List<float> list = new List<float>();
+        Array<float> list = new Array<float>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add(i); }
@@ -50,7 +57,7 @@ public partial class List : Benchmark
 
     public void BenchmarkFloat64List()
     {
-        List<double> list = new List<double>();
+        Array<double> list = new Array<double>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add(i); }
@@ -64,7 +71,7 @@ public partial class List : Benchmark
 
     public void BenchmarkVector2List()
     {
-        List<Godot.Vector2> list = new List<Godot.Vector2>();
+        Array<Godot.Vector2> list = new Array<Godot.Vector2>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add(new Godot.Vector2(i, i)); }
@@ -78,7 +85,7 @@ public partial class List : Benchmark
 
     public void BenchmarkVector3List()
     {
-        List<Godot.Vector3> list = new List<Godot.Vector3>();
+        Array<Godot.Vector3> list = new Array<Godot.Vector3>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add(new Godot.Vector3(i, i, i)); }
@@ -92,7 +99,7 @@ public partial class List : Benchmark
 
     public void BenchmarkColorList()
     {
-        List<Godot.Color> list = new List<Godot.Color>();
+        Array<Godot.Color> list = new Array<Godot.Color>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add(new Godot.Color(i, i, i, 1.0f)); }
@@ -106,7 +113,7 @@ public partial class List : Benchmark
 
     public void BenchmarkStringList()
     {
-        List<string> list = new List<string>();
+        Array<string> list = new Array<string>();
 
         for(int i = 0; i < ITERATIONS; i++)
         { list.Add("Godot " + i.ToString()); }

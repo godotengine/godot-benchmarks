@@ -11,6 +11,8 @@ logs/
 .mono/
 data_*/
 mono_crash.*.json
+.packages/
+NuGet.config
 
 # System/tool-specific ignores
 .directory
